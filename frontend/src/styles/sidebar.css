@@ -1,0 +1,44 @@
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    background: #020817;
+    color: white;
+    padding: 24px;
+}
+
+.sidebar-top {
+    margin-bottom: 40px;
+}
+
+.sidebar-top h2 {
+    font-size: 32px;
+}
+
+.sidebar-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    color: #cbd5e1;
+    transition: 0.3s ease;
+}
+
+.sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-link.active {
+    background: #2563eb;
+    color: white;
+}
