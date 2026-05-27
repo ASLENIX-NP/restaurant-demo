@@ -1,0 +1,411 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.takeorder-page {
+    display: flex;
+    min-height: 100vh;
+    background: #f4f7fb;
+    font-family: Arial, sans-serif;
+}
+
+
+/* SIDEBAR */
+
+.takeorder-sidebar {
+    width: 250px;
+    background: linear-gradient( 180deg, #020b2d, #031448);
+    color: white;
+    padding: 30px 20px;
+}
+
+.takeorder-logo h1 {
+    font-size: 42px;
+    margin-bottom: 50px;
+}
+
+.takeorder-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.takeorder-nav a {
+    text-decoration: none;
+    color: white;
+    padding: 15px;
+    border-radius: 14px;
+    transition: 0.3s;
+}
+
+.takeorder-nav a:hover,
+.takeorder-nav .active {
+    background: linear-gradient( 90deg, #2962ff, #7b2ff7);
+}
+
+
+/* MAIN */
+
+.takeorder-main {
+    flex: 1;
+    padding: 20px;
+}
+
+
+/* TOPBAR */
+
+.takeorder-topbar {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.takeorder-topbar-right {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.takeorder-topbar-right input {
+    padding: 12px;
+    width: 250px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+.takeorder-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #2962ff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.takeorder-logout {
+    border: none;
+    background: #ff3b30;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+
+/* TABLE */
+
+.takeorder-table-section {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.takeorder-table-list {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.takeorder-table-list button {
+    padding: 14px 25px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.takeorder-table-list .active {
+    background: #7b2ff7;
+    color: white;
+}
+
+
+/* BODY */
+
+.takeorder-body {
+    display: flex;
+    gap: 20px;
+}
+
+.takeorder-left {
+    flex: 1;
+    display: flex;
+    gap: 20px;
+}
+
+
+/* CATEGORY */
+
+.takeorder-category-box {
+    width: 200px;
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.takeorder-category-box button {
+    border: none;
+    background: transparent;
+    padding: 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.takeorder-category-box .active {
+    background: linear-gradient( 90deg, #2962ff, #7b2ff7);
+    color: white;
+}
+
+
+/* MENU */
+
+.takeorder-menu-section {
+    flex: 1;
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.takeorder-menu-top {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.takeorder-menu-top input {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+}
+
+.takeorder-menu-top button {
+    padding: 14px 20px;
+    border-radius: 12px;
+    border: none;
+    background: #7b2ff7;
+    color: white;
+}
+
+.takeorder-menu-grid {
+    display: grid;
+    grid-template-columns: repeat( auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+
+/* CARD */
+
+.takeorder-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.takeorder-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.takeorder-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #22c55e;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.takeorder-card h4 {
+    padding: 15px 15px 5px;
+}
+
+.takeorder-card p {
+    padding: 0 15px;
+    color: gray;
+    font-size: 14px;
+}
+
+.takeorder-card-bottom {
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.takeorder-card-bottom span {
+    color: #5b21b6;
+    font-weight: bold;
+}
+
+.takeorder-card-bottom button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: #7b2ff7;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+
+/* CART */
+
+.takeorder-cart {
+    width: 350px;
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.takeorder-cart-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.takeorder-cart-header span {
+    background: #ede9fe;
+    color: #7b2ff7;
+    padding: 8px 15px;
+    border-radius: 10px;
+}
+
+.takeorder-cart-items {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.takeorder-cart-item {
+    display: flex;
+    gap: 15px;
+}
+
+.takeorder-cart-item img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.takeorder-cart-info {
+    flex: 1;
+}
+
+.takeorder-qty {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.takeorder-qty button {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: #ede9fe;
+    color: #7b2ff7;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.takeorder-cart-price {
+    text-align: right;
+}
+
+.takeorder-cart-price button {
+    border: none;
+    background: transparent;
+    color: red;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.takeorder-summary {
+    margin-top: 25px;
+}
+
+.takeorder-summary div {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.takeorder-summary .total {
+    font-size: 24px;
+    font-weight: bold;
+    color: #7b2ff7;
+}
+
+.takeorder-kitchen-btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    background: linear-gradient( 90deg, #2962ff, #7b2ff7);
+    color: white;
+    border-radius: 14px;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.takeorder-action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.takeorder-action-buttons button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1200px) {
+    .takeorder-body {
+        flex-direction: column;
+    }
+    .takeorder-cart {
+        width: 100%;
+    }
+}
+
+@media (max-width: 900px) {
+    .takeorder-page {
+        flex-direction: column;
+    }
+    .takeorder-sidebar {
+        width: 100%;
+    }
+    .takeorder-left {
+        flex-direction: column;
+    }
+    .takeorder-category-box {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+    }
+}

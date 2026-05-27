@@ -1,0 +1,433 @@
+/* src/styles/saleshistory.css */
+
+.sales-history-page {
+    padding: 30px;
+    background: #f5f7fb;
+    min-height: 100vh;
+}
+
+
+/* TOP */
+
+.sales-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.sales-top h1 {
+    font-size: 42px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.sales-top p {
+    color: #64748b;
+}
+
+.sales-top-actions {
+    display: flex;
+    gap: 14px;
+}
+
+.date-btn,
+.filter-btn,
+.export-btn {
+    height: 48px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: 1px solid #dbe2ea;
+    background: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.filter-btn,
+.export-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+/* STATS */
+
+.sales-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    margin-bottom: 30px;
+}
+
+.sales-stat-card {
+    background: white;
+    border-radius: 18px;
+    padding: 22px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+}
+
+.stat-icon {
+    width: 65px;
+    height: 65px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+.green {
+    background: #dcfce7;
+}
+
+.blue {
+    background: #dbeafe;
+}
+
+.orange {
+    background: #ffedd5;
+}
+
+.purple {
+    background: #f3e8ff;
+}
+
+.sales-stat-card h4 {
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.sales-stat-card h2 {
+    font-size: 30px;
+    margin-bottom: 6px;
+    color: #0f172a;
+}
+
+.sales-stat-card span {
+    color: #16a34a;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* MAIN CONTENT */
+
+.sales-content {
+    display: grid;
+    grid-template-columns: 2.2fr 1fr;
+    gap: 24px;
+}
+
+
+/* LEFT */
+
+.sales-left {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+
+/* FILTERS */
+
+.sales-filters {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.sales-search {
+    flex: 1;
+    height: 50px;
+    border: 1px solid #dbe2ea;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 10px;
+}
+
+.sales-search input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 14px;
+}
+
+.sales-filters select {
+    height: 50px;
+    border-radius: 12px;
+    border: 1px solid #dbe2ea;
+    padding: 0 14px;
+    background: white;
+    font-weight: 500;
+}
+
+
+/* DATE */
+
+.sales-date {
+    color: #2563eb;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+
+/* SALES ROW */
+
+.sales-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 18px;
+}
+
+.sales-time {
+    min-width: 80px;
+    color: #64748b;
+    font-weight: 500;
+    padding-top: 28px;
+}
+
+.sales-info {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #edf2f7;
+    border-radius: 16px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 0.8fr 0.8fr 0.8fr auto auto;
+    align-items: center;
+    gap: 16px;
+}
+
+.sales-id h4 {
+    color: #2563eb;
+    margin-bottom: 6px;
+}
+
+.sales-id p,
+.sales-id span,
+.sales-items p,
+.sales-payment p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.sales-items h4,
+.sales-payment h4,
+.sales-amount {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.sale-status {
+    padding: 8px 14px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.completed {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.refunded {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.details-btn {
+    border: 1px solid #dbe2ea;
+    background: white;
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.arrow-icon {
+    color: #64748b;
+}
+
+
+/* LOAD */
+
+.load-more {
+    text-align: center;
+    margin-top: 20px;
+    color: #64748b;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
+/* RIGHT */
+
+.sales-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.right-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+}
+
+.right-card h3 {
+    margin-bottom: 20px;
+    color: #0f172a;
+}
+
+
+/* CHART */
+
+.payment-chart {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.circle-chart {
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    background: conic-gradient( #22c55e 0% 36%, #2563eb 36% 68%, #4ade80 68% 86%, #9333ea 86% 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-center {
+    width: 110px;
+    height: 110px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-center h4 {
+    font-size: 14px;
+    color: #64748b;
+}
+
+.chart-center p {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.chart-details {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.chart-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.green-dot {
+    background: #22c55e;
+}
+
+.blue-dot {
+    background: #2563eb;
+}
+
+.lightgreen-dot {
+    background: #4ade80;
+}
+
+.purple-dot {
+    background: #9333ea;
+}
+
+
+/* SUMMARY */
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.summary-item span {
+    color: #64748b;
+}
+
+.summary-item strong {
+    color: #0f172a;
+}
+
+
+/* BUTTONS */
+
+.quick-btn {
+    width: 100%;
+    height: 48px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+}
+
+.blue-btn {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.green-btn {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1400px) {
+    .sales-content {
+        grid-template-columns: 1fr;
+    }
+    .sales-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .sales-stats {
+        grid-template-columns: 1fr;
+    }
+    .sales-filters {
+        flex-direction: column;
+    }
+    .sales-info {
+        grid-template-columns: 1fr;
+    }
+    .sales-row {
+        flex-direction: column;
+    }
+    .sales-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+}

@@ -41,6 +41,7 @@ import OrderHistory from "../pages/staff/OrderHistory";
 /* CASHIER */
 import CashierDashboard from "../pages/cashier/Dashboard";
 import Payments from "../pages/cashier/Payments";
+import PendingBills from "../pages/cashier/PendingBills";
 import Invoices from "../pages/cashier/Invoices";
 import SalesHistory from "../pages/cashier/SalesHistory";
 
@@ -230,6 +231,15 @@ const AppRoutes = () => {
             path="payments"
             element={
               <Payments />
+            }
+          />
+
+          {/* NEW PENDING BILLS */}
+
+          <Route
+            path="pending-bills"
+            element={
+              <PendingBills />
             }
           />
 

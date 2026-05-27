@@ -108,6 +108,7 @@ const Dashboard = () => {
           <input
             type="text"
             placeholder="Search table..."
+            className="table-search"
           />
 
         </div>
@@ -118,7 +119,7 @@ const Dashboard = () => {
 
             <div
               key={index}
-              className={`table-card ${table.status}`}
+              className={`table-card ${table.status.toLowerCase()}`}
             >
 
               <div className="table-top">
@@ -127,18 +128,28 @@ const Dashboard = () => {
                   Table {table.number}
                 </h3>
 
-                <span>
-                  ●
+                <span
+                  className={`table-status ${table.status.toLowerCase()}`}
+                >
+                  {table.status}
                 </span>
 
               </div>
 
-              <p>
-                {table.status}
-              </p>
+              <div className="table-body">
 
-              <button>
-                Manage Table
+                <p>
+                  {table.status === "Occupied"
+                    ? "Customers Dining"
+                    : table.status === "Reserved"
+                    ? "Reserved for Guest"
+                    : "Ready for New Guests"}
+                </p>
+
+              </div>
+
+              <button className="manage-btn">
+                Manage Table {table.number}
               </button>
 
             </div>
@@ -173,7 +184,9 @@ const Dashboard = () => {
 
               <h3>#ORD-1025</h3>
 
-              <p>Table 2 • 3 Items</p>
+              <p>
+                Table 2 • 3 Items
+              </p>
 
             </div>
 
@@ -189,7 +202,9 @@ const Dashboard = () => {
 
               <h3>#ORD-1026</h3>
 
-              <p>Table 5 • 2 Items</p>
+              <p>
+                Table 5 • 2 Items
+              </p>
 
             </div>
 
@@ -205,7 +220,9 @@ const Dashboard = () => {
 
               <h3>#ORD-1027</h3>
 
-              <p>Table 1 • 5 Items</p>
+              <p>
+                Table 1 • 5 Items
+              </p>
 
             </div>
 
