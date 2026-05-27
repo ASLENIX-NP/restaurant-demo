@@ -1,0 +1,265 @@
+/* src/styles/readyorders.css */
+
+.ready-page {
+    padding: 30px;
+    background: #f5f7fb;
+    min-height: 100vh;
+}
+
+.ready-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.ready-topbar h1 {
+    font-size: 48px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.breadcrumb {
+    color: #8b95a7;
+    font-size: 15px;
+}
+
+.breadcrumb span {
+    margin: 0 10px;
+}
+
+.date-btn {
+    border: 1px solid #e5e7eb;
+    background: white;
+    padding: 14px 20px;
+    border-radius: 14px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.ready-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.stat-icon {
+    width: 76px;
+    height: 76px;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 34px;
+}
+
+.green {
+    background: #dff7e5;
+}
+
+.blue {
+    background: #dcebff;
+}
+
+.orange {
+    background: #ffe7d9;
+}
+
+.stat-card h2 {
+    font-size: 52px;
+    color: #0f172a;
+    margin-bottom: 6px;
+}
+
+.stat-card h4 {
+    font-size: 24px;
+    color: #111827;
+    margin-bottom: 6px;
+}
+
+.stat-card p {
+    color: #7b8794;
+    font-size: 15px;
+}
+
+.ready-queue {
+    background: white;
+    border-radius: 24px;
+    padding: 28px;
+}
+
+.queue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.queue-header h2 {
+    font-size: 34px;
+    color: #111827;
+}
+
+.queue-header button {
+    border: none;
+    background: none;
+    color: #2563eb;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.ready-card {
+    background: #fff;
+    border: 1px solid #ececec;
+    border-radius: 24px;
+    padding: 24px;
+    transition: 0.3s;
+}
+
+.ready-card:hover {
+    transform: translateY(-4px);
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.card-top h3 {
+    font-size: 30px;
+    color: #111827;
+}
+
+.ready-badge {
+    background: #dcfce7;
+    color: #15803d;
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.order-meta {
+    color: #374151;
+    margin-bottom: 14px;
+    font-size: 18px;
+}
+
+.customer {
+    color: #111827;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.ready-card hr {
+    border: none;
+    border-top: 1px solid #ececec;
+    margin: 18px 0;
+}
+
+.items-list {
+    padding-left: 18px;
+    margin-bottom: 22px;
+}
+
+.items-list li {
+    margin-bottom: 12px;
+    font-size: 18px;
+    color: #111827;
+}
+
+.time-boxes {
+    margin-bottom: 24px;
+}
+
+.time-card {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 18px;
+}
+
+.time-card span {
+    display: block;
+    color: #64748b;
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.time-card h4 {
+    font-size: 30px;
+    color: #111827;
+}
+
+.serve-btn {
+    width: 100%;
+    background: linear-gradient(to right, #020617, #0b1d48);
+    color: white;
+    border: none;
+    padding: 18px;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 35px;
+}
+
+.pagination button {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid #dbe2ea;
+    background: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.pagination .active {
+    background: #081028;
+    color: white;
+}
+
+@media (max-width: 1200px) {
+    .orders-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .ready-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .orders-grid {
+        grid-template-columns: 1fr;
+    }
+    .ready-topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+}

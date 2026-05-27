@@ -1,66 +1,64 @@
 import "../../styles/cashier.css";
 
 const SalesHistory = () => {
+
+  const sales = [
+    {
+      id: 1,
+      amount: 2400,
+      method: "eSewa",
+      date: "Today",
+    },
+
+    {
+      id: 2,
+      amount: 1800,
+      method: "Cash",
+      date: "Today",
+    },
+
+    {
+      id: 3,
+      amount: 3200,
+      method: "Card",
+      date: "Yesterday",
+    },
+  ];
+
   return (
     <div>
+
       <div className="page-header">
         <h1>Sales History</h1>
 
         <p>
-          View completed transactions
+          Daily transaction records
         </p>
       </div>
 
-      <div className="sales-table-card">
-        <table>
-          <thead>
-            <tr>
-              <th>Invoice</th>
-              <th>Table</th>
-              <th>Method</th>
-              <th>Amount</th>
-              <th>Status</th>
-            </tr>
-          </thead>
+      <div className="sales-history">
 
-          <tbody>
-            <tr>
-              <td>#1001</td>
-              <td>4</td>
-              <td>Cash</td>
-              <td>Rs. 2,400</td>
-              <td>
-                <span className="paid-status">
-                  Paid
-                </span>
-              </td>
-            </tr>
+        {sales.map((sale) => (
+          <div
+            className="sale-card"
+            key={sale.id}
+          >
+            <h2>
+              Rs. {sale.amount}
+            </h2>
 
-            <tr>
-              <td>#1002</td>
-              <td>7</td>
-              <td>Card</td>
-              <td>Rs. 1,850</td>
-              <td>
-                <span className="paid-status">
-                  Paid
-                </span>
-              </td>
-            </tr>
+            <p>
+              Payment:
+              {sale.method}
+            </p>
 
-            <tr>
-              <td>#1003</td>
-              <td>2</td>
-              <td>eSewa</td>
-              <td>Rs. 3,100</td>
-              <td>
-                <span className="paid-status">
-                  Paid
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            <p>
+              Date:
+              {sale.date}
+            </p>
+          </div>
+        ))}
+
       </div>
     </div>
   );

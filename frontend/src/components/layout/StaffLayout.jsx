@@ -1,54 +1,70 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, NavLink } from "react-router-dom";
 
-import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
+import "../../styles/layout.css";
+
 const StaffLayout = () => {
-  const links = [
-    {
-      path: "/staff",
-      label: "Dashboard",
-      icon: "📊",
-    },
-
-    {
-      path: "/staff/take-order",
-      label: "Take Order",
-      icon: "📝",
-    },
-
-    {
-      path: "/staff/tables",
-      label: "Tables",
-      icon: "🍽️",
-    },
-
-    {
-      path: "/staff/reservations",
-      label: "Reservations",
-      icon: "📅",
-    },
-
-    {
-      path: "/staff/history",
-      label: "History",
-      icon: "🕒",
-    },
-  ];
-
   return (
-    <div className="dashboard-layout">
-      <Sidebar
-        links={links}
-        title="ASLENIX"
-      />
+    <div className="layout">
 
-      <div className="main-content">
+      {/* SIDEBAR */}
+      <div className="sidebar">
+
+        <h1 className="logo">
+          ASLENIX
+        </h1>
+
+        <nav className="sidebar-menu">
+
+          <NavLink
+            to="/staff"
+            end
+            className="menu-item"
+          >
+            📊 Dashboard
+          </NavLink>
+
+          <NavLink
+            to="/staff/take-order"
+            className="menu-item"
+          >
+            📝 Take Order
+          </NavLink>
+
+          <NavLink
+            to="/staff/tables"
+            className="menu-item"
+          >
+            🍽️ Tables
+          </NavLink>
+
+          <NavLink
+            to="/staff/reservations"
+            className="menu-item"
+          >
+            🗓️ Reservations
+          </NavLink>
+
+          <NavLink
+            to="/staff/history"
+            className="menu-item"
+          >
+            🕓 History
+          </NavLink>
+
+        </nav>
+      </div>
+
+      {/* MAIN */}
+      <div className="main">
+
         <Navbar title="Staff Panel" />
 
-        <div className="page-content">
+        <div className="content">
           <Outlet />
         </div>
+
       </div>
     </div>
   );

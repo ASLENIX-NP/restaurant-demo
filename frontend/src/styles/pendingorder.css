@@ -1,0 +1,266 @@
+.pending-page {
+    padding: 30px;
+    background: #f5f7fb;
+    min-height: 100vh;
+}
+
+
+/* HEADER */
+
+.pending-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.pending-header h1 {
+    font-size: 42px;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.pending-header p {
+    color: #7c8595;
+    font-size: 15px;
+}
+
+.date-btn {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+
+/* STATS */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+    margin-bottom: 35px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.stat-icon {
+    width: 78px;
+    height: 78px;
+    border-radius: 20px;
+    font-size: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.yellow {
+    background: #fff2c7;
+}
+
+.green {
+    background: #d9ffe5;
+}
+
+.stat-card h2 {
+    font-size: 50px;
+    margin-bottom: 5px;
+    color: #0f172a;
+}
+
+.stat-card h4 {
+    font-size: 24px;
+    margin-bottom: 5px;
+    color: #111827;
+}
+
+.stat-card p {
+    color: #7c8595;
+}
+
+
+/* QUEUE */
+
+.queue-wrapper {
+    background: white;
+    padding: 30px;
+    border-radius: 22px;
+}
+
+.queue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.queue-header h2 {
+    font-size: 32px;
+    color: #111827;
+}
+
+.queue-header a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+
+/* ORDERS GRID */
+
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+
+/* CARD */
+
+.order-card {
+    background: #fff;
+    border: 1px solid #ececec;
+    border-radius: 22px;
+    padding: 24px;
+    transition: 0.3s;
+}
+
+.order-card:hover {
+    transform: translateY(-5px);
+}
+
+.order-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.order-top h3 {
+    font-size: 30px;
+    color: #111827;
+}
+
+.badge {
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.high {
+    background: #ffe2e2;
+    color: #ef4444;
+}
+
+.medium {
+    background: #fff3d6;
+    color: #f59e0b;
+}
+
+.order-info {
+    color: #374151;
+    font-size: 18px;
+    margin-bottom: 14px;
+}
+
+.customer {
+    color: #111827;
+    margin-bottom: 18px;
+    font-size: 17px;
+}
+
+.divider {
+    height: 1px;
+    background: #ececec;
+    margin-bottom: 18px;
+}
+
+.items-list {
+    list-style: none;
+    margin-bottom: 22px;
+}
+
+.items-list li {
+    margin-bottom: 12px;
+    color: #111827;
+    font-size: 17px;
+}
+
+
+/* TIME ROW */
+
+.time-row {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.time-box {
+    flex: 1;
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.time-box span {
+    display: block;
+    color: #7c8595;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.time-box h4 {
+    font-size: 25px;
+    color: #111827;
+}
+
+
+/* BUTTON */
+
+.cook-btn {
+    width: 100%;
+    background: linear-gradient(to right, #0f172a, #001f54);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 18px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
+/* PAGINATION */
+
+.pagination {
+    margin-top: 35px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.pagination button {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.pagination .active {
+    background: #0f172a;
+    color: white;
+}

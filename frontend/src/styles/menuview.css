@@ -1,0 +1,206 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    background: #f4f4f4;
+}
+
+
+/* PAGE */
+
+.menu-view-page {
+    min-height: 100vh;
+    padding: 40px 20px;
+    background: #f5f5f5;
+}
+
+
+/* HEADER */
+
+.menu-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.menu-header h1 {
+    font-size: 58px;
+    font-weight: 800;
+    color: #c1121f;
+    margin-bottom: 10px;
+}
+
+.menu-header p {
+    font-size: 20px;
+    color: #555;
+}
+
+
+/* SECTION */
+
+.menu-section {
+    margin-bottom: 70px;
+}
+
+
+/* TITLE */
+
+.menu-title {
+    font-size: 44px;
+    color: #111;
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+
+/* CATEGORY BUTTONS */
+
+.category-buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 45px;
+}
+
+.category-btn {
+    border: none;
+    padding: 14px 26px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.available-category {
+    background: white;
+    color: #111;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.available-category:hover {
+    background: #c1121f;
+    color: white;
+}
+
+.unavailable-category {
+    background: #e63946;
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.active-category {
+    background: #c1121f;
+    color: white;
+}
+
+
+/* FOOD GRID */
+
+.food-grid {
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax(260px, 1fr));
+    gap: 40px;
+}
+
+
+/* CARD */
+
+.food-card {
+    background: white;
+    border-radius: 28px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+    transition: 0.35s;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.food-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.14);
+}
+
+
+/* IMAGE */
+
+.food-image {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    margin: -70px auto 20px auto;
+    border: 8px solid white;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+
+/* CONTENT */
+
+.food-content {
+    text-align: center;
+}
+
+.food-content h3 {
+    font-size: 28px;
+    color: #111;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.food-content p {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 18px;
+    min-height: 60px;
+}
+
+
+/* PRICE */
+
+.food-content h2 {
+    color: #c1121f;
+    font-size: 34px;
+    font-weight: 800;
+}
+
+
+/* BADGE */
+
+.food-card::before {
+    content: "Available";
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: #22c55e;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+    .menu-header h1 {
+        font-size: 42px;
+    }
+    .menu-title {
+        font-size: 34px;
+    }
+    .food-grid {
+        grid-template-columns: 1fr;
+    }
+    .food-card {
+        margin-top: 50px;
+    }
+}

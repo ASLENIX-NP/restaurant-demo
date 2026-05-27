@@ -1,82 +1,117 @@
-import { useOrders } from "../../context/OrderContext";
+import {
+  useOrders,
+} from "../../context/OrderContext";
 
-import "../../styles/cashier.css";
+import "../../styles/dashboard.css";
 
 const Dashboard = () => {
-  const { orders } = useOrders();
+
+  const {
+    orders,
+    completeOrder,
+  } = useOrders();
 
   const readyOrders =
     orders.filter(
       (order) =>
-        order.status === "ready"
-    );
-
-  const totalRevenue =
-    orders.reduce(
-      (acc, order) =>
-        acc + order.total,
-      0
+        order.status ===
+        "Ready"
     );
 
   return (
     <div>
+
       <div className="page-header">
-        <h1>Cashier Dashboard</h1>
+
+        <h1>
+          Cashier Dashboard
+        </h1>
 
         <p>
           Process completed orders
         </p>
+
       </div>
 
-      {/* STATS */}
-      <div className="cashier-stats">
-        <div className="cashier-card">
-          <h3>Total Revenue</h3>
+      <div className="stats-grid">
 
-          <h2>
-            Rs. {totalRevenue}
-          </h2>
+        <div className="stat-card">
+          <h3>
+            Total Revenue
+          </h3>
+
+          <h1>
+            Rs.{" "}
+            {readyOrders.length *
+              1000}
+          </h1>
         </div>
 
-        <div className="cashier-card">
-          <h3>Ready Orders</h3>
+        <div className="stat-card">
+          <h3>
+            Ready Orders
+          </h3>
 
-          <h2>
-            {readyOrders.length}
-          </h2>
+          <h1>
+            {
+              readyOrders.length
+            }
+          </h1>
         </div>
+
       </div>
 
-      {/* READY ORDERS */}
-      <div className="cashier-section">
-        <div className="section-header">
-          <h2>
-            Orders Ready For Billing
-          </h2>
-        </div>
+      <div className="recent-orders">
 
-        <div className="payment-list">
-          {readyOrders.map((order) => (
-            <div
-              className="payment-item"
-              key={order.id}
-            >
-              <div>
-                <h3>
-                  Order #{order.id}
-                </h3>
+        <h2>
+          Orders Ready For Billing
+        </h2>
 
-                <p>
-                  Table {order.table}
-                </p>
+        {readyOrders.length ===
+        0 ? (
+          <p>
+            No Ready Orders
+          </p>
+        ) : (
+          readyOrders.map(
+            (order) => (
+              <div
+                key={order.id}
+                className="order-item"
+              >
+
+                <div>
+
+                  <h3>
+                    Order #
+                    {order.id}
+                  </h3>
+
+                  <p>
+                    Table:
+                    {
+                      order.table
+                    }
+                  </p>
+
+                </div>
+
+                <button
+                  className="complete-btn"
+                  onClick={() =>
+                    completeOrder(
+                      order.id
+                    )
+                  }
+                >
+                  Complete Payment
+                </button>
+
               </div>
+            )
+          )
+        )}
 
-              <h2>
-                Rs. {order.total}
-              </h2>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

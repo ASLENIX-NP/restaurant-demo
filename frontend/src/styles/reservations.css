@@ -1,0 +1,162 @@
+.reservations-page {
+    padding: 35px;
+    background: #f4f7fb;
+    min-height: 100vh;
+}
+
+
+/* HEADER */
+
+.reservations-header {
+    margin-bottom: 35px;
+}
+
+.reservations-header h1 {
+    font-size: 46px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 10px;
+}
+
+.reservations-header p {
+    color: #6b7280;
+    font-size: 18px;
+}
+
+
+/* GRID */
+
+.reservations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 28px;
+}
+
+
+/* CARD */
+
+.reservation-card {
+    background: white;
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    transition: 0.3s;
+}
+
+.reservation-card:hover {
+    transform: translateY(-5px);
+}
+
+
+/* TOP */
+
+.reservation-top {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.reservation-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reservation-top h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+
+/* STATUS */
+
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.Confirmed {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.Pending {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.VIP {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+
+/* DETAILS */
+
+.reservation-details {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.detail-box {
+    background: #f9fafb;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.detail-box span {
+    font-size: 24px;
+}
+
+.detail-box p {
+    color: #111827;
+    font-weight: 600;
+}
+
+
+/* BUTTON */
+
+.view-btn {
+    width: 100%;
+    border: none;
+    background: black;
+    color: white;
+    padding: 16px;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.view-btn:hover {
+    background: #2563eb;
+}
+
+
+/* MOBILE */
+
+@media(max-width:768px) {
+    .reservations-page {
+        padding: 20px;
+    }
+    .reservations-header h1 {
+        font-size: 34px;
+    }
+}

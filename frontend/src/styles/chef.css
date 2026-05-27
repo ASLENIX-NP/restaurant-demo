@@ -1,96 +1,305 @@
-.chef-stats {
+.chef-dashboard-page {
+    padding: 30px;
+    background: #f4f7fb;
+    min-height: 100vh;
+}
+
+.chef-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.chef-header h1 {
+    font-size: 42px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.chef-header p {
+    color: #6b7280;
+    margin-top: 8px;
+}
+
+.date-btn {
+    border: none;
+    background: white;
+    padding: 14px 22px;
+    border-radius: 14px;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+}
+
+.stats-grid {
     display: grid;
-    grid-template-columns: repeat( auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
 }
 
-.chef-card {
+.stat-card {
     background: white;
+    border-radius: 24px;
     padding: 24px;
-    border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
 
-.chef-card h3 {
-    color: #64748b;
-    margin-bottom: 10px;
+.icon {
+    width: 65px;
+    height: 65px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
 }
 
-.chef-card h2 {
-    font-size: 32px;
+.yellow {
+    background: #fef3c7;
 }
 
-.kitchen-board {
+.blue {
+    background: #dbeafe;
+}
+
+.green {
+    background: #dcfce7;
+}
+
+.purple {
+    background: #ede9fe;
+}
+
+.stat-card h3 {
+    font-size: 34px;
+    font-weight: 800;
+}
+
+.stat-card p {
+    color: #6b7280;
+    margin-top: 5px;
+}
+
+.dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 2fr 1.2fr 1.2fr;
     gap: 24px;
 }
 
-.kitchen-column {
+.panel-card {
     background: white;
-    padding: 20px;
-    border-radius: 20px;
-    min-height: 500px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
 }
 
-.kitchen-column h2 {
-    margin-bottom: 20px;
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
 }
 
-.kitchen-order {
-    padding: 20px;
-    border-radius: 16px;
-    margin-bottom: 20px;
-    color: white;
+.card-header h2 {
+    font-size: 22px;
+    font-weight: 700;
 }
 
-.kitchen-order h3 {
-    margin-bottom: 10px;
-}
-
-.kitchen-order p {
-    margin-bottom: 16px;
-}
-
-.kitchen-order ul {
-    margin-bottom: 20px;
-    padding-left: 20px;
-}
-
-.kitchen-order li {
-    margin-bottom: 8px;
-}
-
-.kitchen-order button {
-    width: 100%;
-    padding: 12px;
-    border-radius: 12px;
-    background: white;
+.card-header button {
+    border: none;
+    background: transparent;
+    color: #2563eb;
+    cursor: pointer;
     font-weight: 600;
 }
 
-.pending-order {
-    background: #d97706;
+.queue-order {
+    border-bottom: 1px solid #f1f5f9;
+    padding: 18px 0;
 }
 
-.cooking-order {
-    background: #2563eb;
+.order-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.ready-order {
-    background: #16a34a;
+.order-top h4 {
+    font-size: 18px;
+    font-weight: 700;
 }
 
-.orders-page-list {
+.order-top span {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.status {
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.in-progress {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.preparing {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.pending {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.order-items {
+    margin: 15px 0;
+}
+
+.order-items p {
+    margin-bottom: 8px;
+    color: #374151;
+}
+
+.order-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.action-btn {
+    background: #111827;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.overview-circle {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.circle {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: 18px solid #f59e0b;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.circle h2 {
+    font-size: 42px;
+    font-weight: 800;
+}
+
+.circle span {
+    color: #6b7280;
+}
+
+.overview-stats {
+    margin-top: 25px;
+}
+
+.overview-stats div {
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.gray {
+    background: #9ca3af;
+}
+
+.top-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.top-item h4 {
+    font-weight: 700;
+}
+
+.completed-order {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.completed-badge {
+    background: #dcfce7;
+    color: #16a34a;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.performance-grid {
     display: grid;
-    grid-template-columns: repeat( auto-fit, minmax(300px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
 }
 
-@media (max-width: 1100px) {
-    .kitchen-board {
+.performance-box {
+    background: #f9fafb;
+    border-radius: 18px;
+    padding: 20px;
+}
+
+.performance-box h3 {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.performance-box p {
+    margin-top: 8px;
+    color: #6b7280;
+}
+
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .chef-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    .chef-header h1 {
+        font-size: 32px;
+    }
+    .performance-grid {
         grid-template-columns: 1fr;
     }
 }

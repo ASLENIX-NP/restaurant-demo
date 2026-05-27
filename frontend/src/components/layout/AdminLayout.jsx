@@ -1,79 +1,164 @@
-import { Outlet } from "react-router-dom";
+import {
+  Outlet,
+  NavLink,
+  useNavigate,
+} from "react-router-dom";
 
-import Sidebar from "./Sidebar";
+import {
+  useAuth,
+} from "../../context/AuthContext";
+
 import Navbar from "./Navbar";
 
+import "../../styles/layout.css";
+
 const AdminLayout = () => {
-  const links = [
-    {
-      path: "/admin",
-      label: "Dashboard",
-      icon: "📊",
-    },
 
-    {
-      path: "/admin/menu",
-      label: "Menu",
-      icon: "🍔",
-    },
+  const navigate =
+    useNavigate();
 
-    {
-      path: "/admin/orders",
-      label: "Orders",
-      icon: "🧾",
-    },
+  const { logout } =
+    useAuth();
 
-    {
-      path: "/admin/kitchen",
-      label: "Kitchen",
-      icon: "👨‍🍳",
-    },
+  // LOGOUT
+  const handleLogout = () => {
 
-    {
-      path: "/admin/billing",
-      label: "Billing",
-      icon: "💰",
-    },
+    logout();
 
-    {
-      path: "/admin/inventory",
-      label: "Inventory",
-      icon: "📦",
-    },
-
-    {
-      path: "/admin/reports",
-      label: "Reports",
-      icon: "📈",
-    },
-
-    {
-      path: "/admin/tables",
-      label: "Tables",
-      icon: "🍽️",
-    },
-
-    {
-      path: "/admin/settings",
-      label: "Settings",
-      icon: "⚙️",
-    },
-  ];
+    navigate("/");
+  };
 
   return (
-    <div className="dashboard-layout">
-      <Sidebar
-        links={links}
-        title="ASLENIX"
-      />
+    <div className="layout">
 
-      <div className="main-content">
+      {/* SIDEBAR */}
+
+      <div className="sidebar">
+
+        <h1 className="logo">
+          ASLENIX
+        </h1>
+
+        <nav className="sidebar-menu">
+
+          {/* DASHBOARD */}
+
+          <NavLink
+            to="/admin"
+            end
+            className="menu-item"
+          >
+            📊 Dashboard
+          </NavLink>
+
+          {/* MENU */}
+
+          <NavLink
+            to="/admin/menu"
+            className="menu-item"
+          >
+            🍔 Menu
+          </NavLink>
+
+          {/* ORDERS */}
+
+          <NavLink
+            to="/admin/orders"
+            className="menu-item"
+          >
+            📦 Orders
+          </NavLink>
+
+          {/* KITCHEN */}
+
+          <NavLink
+            to="/admin/kitchen"
+            className="menu-item"
+          >
+            👨‍🍳 Kitchen
+          </NavLink>
+
+          {/* BILLING */}
+
+          <NavLink
+            to="/admin/billing"
+            className="menu-item"
+          >
+            💰 Billing
+          </NavLink>
+
+          {/* INVENTORY */}
+
+          <NavLink
+            to="/admin/inventory"
+            className="menu-item"
+          >
+            📦 Inventory
+          </NavLink>
+
+          {/* REPORTS */}
+
+          <NavLink
+            to="/admin/reports"
+            className="menu-item"
+          >
+            📈 Reports
+          </NavLink>
+
+          {/* TABLES */}
+
+          <NavLink
+            to="/admin/tables"
+            className="menu-item"
+          >
+            🍽️ Tables
+          </NavLink>
+
+          {/* EMPLOYEES */}
+
+          <NavLink
+            to="/admin/employees"
+            className="menu-item"
+          >
+            👥 Employees
+          </NavLink>
+
+          {/* SETTINGS */}
+
+          <NavLink
+            to="/admin/settings"
+            className="menu-item"
+          >
+            ⚙️ Settings
+          </NavLink>
+
+        </nav>
+
+        {/* LOGOUT */}
+
+        <button
+          className="logout-btn"
+          onClick={handleLogout}
+        >
+          🚪 Logout
+        </button>
+
+      </div>
+
+      {/* MAIN */}
+
+      <div className="main">
+
         <Navbar title="Admin Panel" />
 
-        <div className="page-content">
+        <div className="content">
+
           <Outlet />
+
         </div>
+
       </div>
+
     </div>
   );
 };

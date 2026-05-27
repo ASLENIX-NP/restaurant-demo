@@ -1,48 +1,63 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, NavLink } from "react-router-dom";
 
-import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
+import "../../styles/layout.css";
+
 const CashierLayout = () => {
-  const links = [
-    {
-      path: "/cashier",
-      label: "Dashboard",
-      icon: "📊",
-    },
-
-    {
-      path: "/cashier/payments",
-      label: "Payments",
-      icon: "💳",
-    },
-
-    {
-      path: "/cashier/invoice",
-      label: "Invoices",
-      icon: "🧾",
-    },
-
-    {
-      path: "/cashier/sales-history",
-      label: "Sales",
-      icon: "📈",
-    },
-  ];
-
   return (
-    <div className="dashboard-layout">
-      <Sidebar
-        links={links}
-        title="ASLENIX"
-      />
+    <div className="layout">
 
-      <div className="main-content">
+      {/* SIDEBAR */}
+      <div className="sidebar">
+
+        <h1 className="logo">
+          ASLENIX
+        </h1>
+
+        <nav className="sidebar-menu">
+
+          <NavLink
+            to="/cashier"
+            end
+            className="menu-item"
+          >
+            📊 Dashboard
+          </NavLink>
+
+          <NavLink
+            to="/cashier/payments"
+            className="menu-item"
+          >
+            💳 Payments
+          </NavLink>
+
+          <NavLink
+            to="/cashier/invoices"
+            className="menu-item"
+          >
+            🧾 Invoices
+          </NavLink>
+
+          <NavLink
+            to="/cashier/sales"
+            className="menu-item"
+          >
+            📈 Sales
+          </NavLink>
+
+        </nav>
+      </div>
+
+      {/* MAIN */}
+      <div className="main">
+
         <Navbar title="Cashier Panel" />
 
-        <div className="page-content">
+        <div className="content">
           <Outlet />
         </div>
+
       </div>
     </div>
   );

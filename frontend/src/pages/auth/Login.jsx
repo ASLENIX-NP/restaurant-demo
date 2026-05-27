@@ -1,121 +1,155 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import {
+  useNavigate,
+} from "react-router-dom";
+
+import {
+  useAuth,
+} from "../../context/AuthContext";
+
+import {
+  getUsers,
+} from "../../utils/users";
 
 import "../../styles/login.css";
 
 const Login = () => {
-  const navigate = useNavigate();
 
-  const [role, setRole] = useState("admin");
+  const navigate =
+    useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+  const { login } =
+    useAuth();
 
-    if (role === "admin") {
-      navigate("/admin");
+  const [username, setUsername] =
+    useState("");
+
+  const [password, setPassword] =
+    useState("");
+
+  const [error, setError] =
+    useState("");
+
+  // LOGIN
+  const handleLogin = () => {
+
+    const users =
+      getUsers();
+
+    const foundUser =
+      users.find(
+        (user) =>
+          user.username ===
+            username &&
+          user.password ===
+            password
+      );
+
+    // INVALID LOGIN
+    if (!foundUser) {
+
+      setError(
+        "Invalid username or password"
+      );
+
+      return;
     }
 
-    if (role === "staff") {
-      navigate("/staff");
-    }
+    // SAVE LOGIN
+    login(
+      foundUser.role
+    );
 
-    if (role === "cashier") {
-      navigate("/cashier");
-    }
-
-    if (role === "chef") {
-      navigate("/chef");
-    }
+    // REDIRECT
+    navigate(
+      `/${foundUser.role}`
+    );
   };
 
   return (
     <div className="login-page">
+
       <div className="login-card">
-        {/* LEFT SIDE */}
-        <div className="login-left">
-          <h1>ASLENIX ERP</h1>
+
+        <h1>
+          ASLENIX ERP
+        </h1>
+
+        <p>
+          Restaurant Management System
+        </p>
+
+        {/* USERNAME */}
+
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) =>
+            setUsername(
+              e.target.value
+            )
+          }
+        />
+
+        {/* PASSWORD */}
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) =>
+            setPassword(
+              e.target.value
+            )
+          }
+        />
+
+        {/* ERROR */}
+
+        {error && (
+
+          <div className="login-error">
+            {error}
+          </div>
+
+        )}
+
+        {/* LOGIN BUTTON */}
+
+        <button
+          onClick={handleLogin}
+        >
+          Login
+        </button>
+
+        {/* DEMO USERS */}
+
+        <div className="demo-users">
+
+          <h3>
+            Default Accounts
+          </h3>
 
           <p>
-            Restaurant Management System
+            admin / admin123
           </p>
 
-          <div className="role-preview">
-            <div className="preview-card">
-              👑 Admin Panel
-            </div>
+          <p>
+            staff / staff123
+          </p>
 
-            <div className="preview-card">
-              👨‍💼 Staff Panel
-            </div>
+          <p>
+            chef / chef123
+          </p>
 
-            <div className="preview-card">
-              💰 Cashier Panel
-            </div>
+          <p>
+            cashier / cashier123
+          </p>
 
-            <div className="preview-card">
-              👨‍🍳 Kitchen Panel
-            </div>
-          </div>
         </div>
 
-        {/* RIGHT SIDE */}
-        <div className="login-right">
-          <h2>Login</h2>
-
-          <form onSubmit={handleLogin}>
-            <div className="input-group">
-              <label>Email</label>
-
-              <input
-                type="email"
-                placeholder="Enter your email"
-              />
-            </div>
-
-            <div className="input-group">
-              <label>Password</label>
-
-              <input
-                type="password"
-                placeholder="Enter your password"
-              />
-            </div>
-
-            <div className="input-group">
-              <label>Select Role</label>
-
-              <select
-                value={role}
-                onChange={(e) =>
-                  setRole(e.target.value)
-                }
-              >
-                <option value="admin">
-                  Admin
-                </option>
-
-                <option value="staff">
-                  Staff
-                </option>
-
-                <option value="cashier">
-                  Cashier
-                </option>
-
-                <option value="chef">
-                  Chef
-                </option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              className="login-btn"
-            >
-              Login
-            </button>
-          </form>
-        </div>
       </div>
     </div>
   );
