@@ -1,18 +1,5 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+PORT = 5000
 
-const app = express();
+MONGO_URI = YOUR_MONGODB_CONNECTION
 
-app.use(cors());
-app.use(express.json());
-
-app.get("/", (req, res) => {
-    res.send("Restaurant Backend Running");
-});
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+JWT_SECRET = restaurant_secret_key
