@@ -303,3 +303,898 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+/* ==========================================================================
+   1. CORE PAGE CONTAINER LAYOUT
+   ========================================================================== */
+
+.chef-dashboard-page {
+    padding: 24px;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #f8fafc;
+    min-height: 100vh;
+    color: #0f172a;
+    box-sizing: border-box;
+}
+
+
+/* Header Flex Styling Control */
+
+.chef-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.chef-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+}
+
+.chef-header p {
+    color: #64748b;
+    font-size: 15px;
+    margin: 0;
+}
+
+
+/* Interactive Date Filter Layout Box */
+
+.date-btn {
+    background-color: #ffffff;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.date-btn:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+
+/* ==========================================================================
+   2. STATISTICS COUNTER MODULES
+   ========================================================================== */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.stat-card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03), 0 1px 2px rgba(15, 23, 42, 0.02);
+    border: 1px solid #f1f5f9;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-card h3 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.stat-card p {
+    margin: 2px 0 0 0;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.icon-wrapper.yellow {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.icon-wrapper.blue {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.icon-wrapper.green {
+    background-color: #f0fdf4;
+    color: #16a34a;
+}
+
+.icon-wrapper.purple {
+    background-color: #faf5ff;
+    color: #7c3aed;
+}
+
+
+/* ==========================================================================
+   3. SYSTEM INTERACTIVE DASHBOARD COLUMNS MATRIX SPLITTER
+   ========================================================================== */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr 0.9fr;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: 1.2fr 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* Shared Modular Card Structure Controls */
+
+.panel-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01), 0 1px 2px rgba(0, 0, 0, 0.02);
+    border: 1px solid #e2e8f0;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.card-header h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.view-all-btn {
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-all-btn:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+    border-color: #94a3b8;
+}
+
+
+/* ==========================================================================
+   4. LEFT COLUMN: LIVE PIPELINE QUEUE
+   ========================================================================== */
+
+.queue-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.queue-order-card {
+    background-color: #ffffff;
+    border-radius: 14px;
+    padding: 18px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.queue-order-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.04), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+    border-color: #cbd5e1;
+}
+
+.order-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+
+.order-card-header h4 {
+    margin: 0 0 2px 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.order-meta-info {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+
+/* Dynamic Lifecycle Pill Status Badges Setup */
+
+.status-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.pill-in-progress {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+}
+
+.pill-in-progress .status-dot {
+    background-color: #2563eb;
+}
+
+.pill-preparing {
+    background-color: #fff7ed;
+    color: #c2410c;
+}
+
+.pill-preparing .status-dot {
+    background-color: #ea580c;
+}
+
+.pill-pending {
+    background-color: #fef2f2;
+    color: #b91c1c;
+}
+
+.pill-pending .status-dot {
+    background-color: #dc2626;
+}
+
+
+/* Mid Bucket Item Configuration Container Rows */
+
+.order-items-bucket {
+    background-color: #f8fafc;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: 1px dashed #e2e8f0;
+}
+
+.bucket-item-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.item-quantity {
+    font-weight: 700;
+    color: #4f46e5;
+    background-color: #eef2ff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+.item-name {
+    font-weight: 600;
+    color: #334155;
+}
+
+
+/* Action Trigger Elements Card Footer Layer */
+
+.order-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.timer-badge {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.action-btn-start {
+    background-color: #4f46e5;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(79, 70, 229, 0.15);
+    transition: all 0.15s ease;
+}
+
+.action-btn-start:hover {
+    background-color: #4338ca;
+    transform: translateY(-1px);
+}
+
+
+/* ==========================================================================
+   5. MIDDLE COLUMN: ANALYTICS & DATA INSIGHT PANELS
+   ========================================================================== */
+
+.middle-column-group,
+.right-column-group {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.visualization-container {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0 24px 0;
+}
+
+
+/* Native High Performance Conic Dynamic Analytical Progress Ring Box */
+
+.analytics-conic-ring {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: conic-gradient( #fbbf24 0% 30%, #3b82f6 30% 55%, #22c55e 55% 75%, #cbd5e1 75% 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.inner-hole-cutout {
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03);
+}
+
+.inner-hole-cutout h2 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.inner-hole-cutout span {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+}
+
+
+/* Analytics Color Legend Indicators */
+
+.legend-pills-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 16px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: #475569;
+    font-weight: 500;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.legend-dot.status-yellow {
+    background-color: #fbbf24;
+}
+
+.legend-dot.status-blue {
+    background-color: #3b82f6;
+}
+
+.legend-dot.status-green {
+    background-color: #22c55e;
+}
+
+.legend-dot.status-gray {
+    background-color: #cbd5e1;
+}
+
+.legend-label {
+    flex-grow: 1;
+}
+
+.legend-val {
+    color: #1e293b;
+    margin-left: 4px;
+}
+
+
+/* Top Trending List Bars Mapping Layout Rules */
+
+.trending-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.trending-row-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.trending-meta-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.trending-meta-text h4 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.trending-meta-text span {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+
+/* Linear Progress Performance Track Bars */
+
+.progressbar-track-container {
+    width: 100%;
+    height: 6px;
+    background-color: #f1f5f9;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.progressbar-fill {
+    height: 100%;
+    background-color: #4f46e5;
+    border-radius: 9999px;
+    transition: width 0.5s ease-out;
+}
+
+
+/* ==========================================================================
+   6. RIGHT COLUMN: LOGISTICS REGISTRY & KPI SCORECARDS
+   ========================================================================== */
+
+.history-list-bucket {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.completed-row-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background-color: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+}
+
+.completed-main-info h4 {
+    margin: 0 0 2px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.completed-main-info span {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.success-badge {
+    font-size: 11px;
+    font-weight: 700;
+    background-color: #dcfce7;
+    color: #15803d;
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+
+/* Performance Metrics Quad Scorecards Matrix */
+
+.performance-metrics-matrix {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.metric-scorecard-box {
+    background-color: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+}
+
+.metric-scorecard-box h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.metric-scorecard-box p {
+    margin: 4px 0 0 0;
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+
+/* Food Waste / Critical Warning Scorecard Override */
+
+.metric-scorecard-box.warning-highlight h3 {
+    color: #b91c1c;
+}
+
+.metric-scorecard-box.warning-highlight {
+    background-color: #fdf2f2;
+    border-color: #fee2e2;
+}
+
+:root {
+    --primary: #4f46e5;
+    --bg-subtle: #f1f5f9;
+    --glass: rgba(255, 255, 255, 0.8);
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.chef-dashboard-container {
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+
+
+/* Header Styling */
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.header-text h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+}
+
+.header-text h1 span {
+    font-size: 0.8rem;
+    background: #ef4444;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 50px;
+    vertical-align: middle;
+    text-transform: uppercase;
+}
+
+
+/* Glass Stat Cards */
+
+.top-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.glass-stat-card {
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid white;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon.gold {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.stat-icon.blue {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.stat-icon.green {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.stat-icon.purple {
+    background: #f3e8ff;
+    color: #9333ea;
+}
+
+
+/* Main Grid Layout */
+
+.main-dashboard-content {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2rem;
+}
+
+
+/* Order Neon Cards */
+
+.order-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.order-neon-card {
+    background: white;
+    border-radius: 24px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.order-neon-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+}
+
+.order-id {
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.items-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.items-list li {
+    padding: 8px 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #475569;
+}
+
+.items-list li span {
+    color: var(--primary);
+    margin-right: 8px;
+    font-weight: 800;
+}
+
+
+/* Button & Badge Glow */
+
+.btn-glow {
+    background: #1e293b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-glow:hover {
+    background: var(--primary);
+    box-shadow: 0 0 15px rgba(79, 70, 229, 0.4);
+}
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.in-progress {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.preparing {
+    background: #ffedd5;
+    color: #9a3412;
+}
+
+.pending {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+
+/* Sidebar Cards */
+
+.sidebar-card {
+    background: #1e293b;
+    color: white;
+    padding: 1.5rem;
+    border-radius: 24px;
+    margin-bottom: 1.5rem;
+}
+
+.performance-rings {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 1rem;
+}
+
+.performance-item {
+    text-align: center;
+}
+
+.p-val {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #38bdf8;
+}
+
+.p-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
+}
+
+.history-item .time {
+    color: #94a3b8;
+}
+
+.history-item .check {
+    color: #4ade80;
+}
+
+
+/* Pulse Animation for "Live" */
+
+.dot-pulse {
+    height: 10px;
+    width: 10px;
+    background-color: #4ade80;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(74, 222, 128, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+    }
+}

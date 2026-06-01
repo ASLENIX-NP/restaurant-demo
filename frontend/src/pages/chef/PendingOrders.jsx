@@ -47,125 +47,128 @@ const orders = [
 const PendingOrders = () => {
   return (
     <div className="pending-page">
-
-      {/* HEADER */}
-      <div className="pending-header">
-        <div>
+      
+      {/* HEADER SECTION */}
+      <header className="pending-header">
+        <div className="header-titles">
           <h1>Pending Orders</h1>
-          <p>Dashboard &gt; Pending Orders</p>
+          <p className="breadcrumbs">Dashboard &gt; <span className="current">Pending Orders</span></p>
         </div>
 
-        <button className="date-btn">
-          📅 Today, May 31, 2025
-        </button>
-      </div>
+        <div className="header-actions">
+          <div className="live-pulse-indicator">
+            <span className="pulse-dot-orange"></span> Monitoring Queue
+          </div>
+          <button className="date-btn">
+            📅 Today, May 31, 2025
+          </button>
+        </div>
+      </header>
 
-      {/* STATS */}
-      <div className="stats-grid">
-
-        <div className="stat-card">
-          <div className="stat-icon yellow">📋</div>
-
-          <div>
-            <h2>24</h2>
+      {/* TOP ANALYTICS STRIP */}
+      <section className="stats-grid">
+        <div className="stat-card pending-summary-card">
+          <div className="stat-icon-wrapper gold-glow">📋</div>
+          <div className="stat-details">
+            <h3>24</h3>
             <h4>Total Pending</h4>
-            <p>All pending orders</p>
+            <p>Active items in live pipeline</p>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon green">⚡</div>
-
-          <div>
-            <h2>12m</h2>
+        <div className="stat-card pending-summary-card">
+          <div className="stat-icon-wrapper cyan-glow">⚡</div>
+          <div className="stat-details">
+            <h3>12m</h3>
             <h4>Average Waiting Time</h4>
-            <p>Across all pending orders</p>
+            <p>Across all current open tickets</p>
           </div>
         </div>
+      </section>
 
-      </div>
-
-      {/* QUEUE */}
-      <div className="queue-wrapper">
-
+      {/* QUEUE CONTROL BAR & MAIN CONTENT */}
+      <main className="queue-wrapper">
         <div className="queue-header">
-          <h2>Pending Orders Queue</h2>
-
-          <a href="/">View All Orders</a>
+          <div className="title-area">
+            <h2>Pending Orders Queue</h2>
+            <span className="live-counter-badge">{orders.length} Tickets Loaded</span>
+          </div>
+          <a href="/" className="view-all-link">View All Orders</a>
         </div>
 
+        {/* MODERN CARDS GRID */}
         <div className="orders-grid">
-
-          {orders.map((order, index) => (
-            <div className="order-card" key={index}>
-
-              <div className="order-top">
-
-                <h3>{order.id}</h3>
-
-                <span
-                  className={
-                    order.priority === "High"
-                      ? "badge high"
-                      : "badge medium"
-                  }
-                >
-                  {order.priority}
-                </span>
-              </div>
-
-              <p className="order-info">
-                {order.type} • {order.table}
-              </p>
-
-              <p className="customer">
-                👤 {order.customer}
-              </p>
-
-              <div className="divider"></div>
-
-              <ul className="items-list">
-                {order.items.map((item, i) => (
-                  <li key={i}>• {item}</li>
-                ))}
-              </ul>
-
-              <div className="time-row">
-
-                <div className="time-box">
-                  <span>Order Time</span>
-                  <h4>{order.time}</h4>
+          {orders.map((order, index) => {
+            const priorityClass = order.priority.toLowerCase();
+            return (
+              <div className={`order-card card-priority-${priorityClass}`} key={index}>
+                
+                <div className="order-top">
+                  <h3>{order.id}</h3>
+                  <span className={`priority-tag badge-${priorityClass}`}>
+                    {order.priority} Priority
+                  </span>
                 </div>
 
-                <div className="time-box">
-                  <span>Waiting Time</span>
-                  <h4>{order.waiting}</h4>
+                <div className="order-meta-row">
+                  <span className="type-pill">{order.type}</span>
+                  <span className="table-locator">• {order.table}</span>
                 </div>
 
+                <div className="customer-info-box">
+                  <span className="avatar-icon">👤</span> 
+                  <span className="customer-name">{order.customer}</span>
+                </div>
+
+                <div className="cool-divider"></div>
+
+                {/* CRISP FLOATING LINE ITEMS */}
+                <div className="items-list-container">
+                  {order.items.map((item, i) => (
+                    <div className="line-item-row" key={i}>
+                      <span className="item-bullet"></span>
+                      <span className="item-text-name">{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* DUAL METRIC TIME METERS */}
+                <div className="time-row">
+                  <div className="time-box src-time">
+                    <span>Order Time</span>
+                    <h4>{order.time}</h4>
+                  </div>
+
+                  <div className="time-box delta-time">
+                    <span>Waiting Time</span>
+                    <h4 className={priorityClass === "high" ? "alert-time" : ""}>
+                      {order.waiting}
+                    </h4>
+                  </div>
+                </div>
+
+                {/* ACTION TRIGGER BUTTON */}
+                <button className="cook-btn-action">
+                  <span className="btn-icon">🍳</span> Start Cooking
+                </button>
+
               </div>
-
-              <button className="cook-btn">
-                🍳 Start Cooking
-              </button>
-
-            </div>
-          ))}
-
+            );
+          })}
         </div>
 
-        {/* PAGINATION */}
-        <div className="pagination">
+        {/* COMPACT CLEAN PAGINATION ROW */}
+        <footer className="pagination-container">
+          <div className="pagination-wrapper">
+            <button className="nav-arrow">{"<"}</button>
+            <button className="page-num active-page">1</button>
+            <button className="page-num">2</button>
+            <button className="page-num">3</button>
+            <button className="nav-arrow">{">"}</button>
+          </div>
+        </footer>
 
-          <button>{"<"}</button>
-          <button className="active">1</button>
-          <button>2</button>
-          <button>3</button>
-          <button>{">"}</button>
-
-        </div>
-
-      </div>
-
+      </main>
     </div>
   );
 };

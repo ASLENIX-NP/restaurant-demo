@@ -214,3 +214,197 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+/* Modal Base Overlays */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    color: #333;
+}
+
+.modal-content hr {
+    margin: 12px 0 20px 0;
+    border: 0;
+    border-top: 1px solid #eee;
+}
+
+
+/* Forms layout elements */
+
+.form-group {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+
+/* Modal Actions and State Control Buttons */
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.cancel-btn,
+.modal-close-btn {
+    background: #f1f3f5;
+    color: #495057;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.save-btn {
+    background: #0066ff;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.save-btn:hover {
+    background: #0052cc;
+}
+
+
+/* View Details Specific Formats */
+
+.view-details-info p {
+    margin: 6px 0;
+    font-size: 15px;
+}
+
+.status-text {
+    font-weight: bold;
+}
+
+.status-text.available {
+    color: #2ecc71;
+}
+
+.status-text.occupied {
+    color: #e74c3c;
+}
+
+.status-text.reserved {
+    color: #f39c12;
+}
+
+.status-text.cleaning {
+    color: #3498db;
+}
+
+
+/* Modal Food List Container */
+
+.modal-order-list {
+    max-height: 180px;
+    overflow-y: auto;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.no-orders-text {
+    color: #7f8c8d;
+    font-style: italic;
+    font-size: 14px;
+    padding: 10px 0;
+}
+
+
+/* Individual Food Item Layout Row */
+
+.modal-order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #cbd5e1;
+}
+
+.item-name-qty {
+    display: flex;
+    gap: 10px;
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.item-qty {
+    color: #7f8c8d;
+}
+
+
+/* Food Status Badges (Interactive Buttons) */
+
+.delivery-toggle-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delivery-toggle-btn.pending {
+    background-color: #ffeaa7;
+    color: #d63031;
+}
+
+.delivery-toggle-btn.pending:hover {
+    background-color: #ffd32a;
+}
+
+.delivery-toggle-btn.delivered {
+    background-color: #e1f5fe;
+    color: #0288d1;
+}
+
+.delivery-toggle-btn.delivered:hover {
+    background-color: #b3e5fc;
+}

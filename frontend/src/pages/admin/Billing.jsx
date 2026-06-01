@@ -7,7 +7,6 @@ const Billing = () => {
     {
       billNo: "BIL-000128",
       orderId: "#TH1250",
-      customer: "John Doe",
       table: "Table 5",
       amount: "Rs. 2,500",
       payment: "Cash",
@@ -18,7 +17,6 @@ const Billing = () => {
     {
       billNo: "BIL-000127",
       orderId: "#TH1249",
-      customer: "Sarah Wilson",
       table: "Table 3",
       amount: "Rs. 1,800",
       payment: "UPI",
@@ -29,11 +27,10 @@ const Billing = () => {
     {
       billNo: "BIL-000126",
       orderId: "#TH1248",
-      customer: "Michael Brown",
       table: "Table 1",
       amount: "Rs. 3,200",
       payment: "Card",
-      status: "Unpaid",
+      status: "Paid",
       time: "10:05 AM",
     },
 
@@ -137,30 +134,6 @@ const Billing = () => {
 
         </div>
 
-        <div className="billing-stat-card">
-
-          <div className="billing-icon">
-            🔄
-          </div>
-
-          <div>
-
-            <h4>
-              Refunds
-            </h4>
-
-            <h2>
-              Rs. 6,500
-            </h2>
-
-            <p className="red">
-              ↓ 8.3% vs Yesterday
-            </p>
-
-          </div>
-
-        </div>
-
       </div>
 
       {/* TABLE SECTION */}
@@ -181,14 +154,6 @@ const Billing = () => {
 
               <button>
                 Paid
-              </button>
-
-              <button>
-                Unpaid
-              </button>
-
-              <button>
-                Refunded
               </button>
 
             </div>
@@ -213,10 +178,6 @@ const Billing = () => {
 
                 <th>
                   Order ID
-                </th>
-
-                <th>
-                  Customer
                 </th>
 
                 <th>
@@ -255,10 +216,6 @@ const Billing = () => {
 
                   <td>
                     {bill.orderId}
-                  </td>
-
-                  <td>
-                    {bill.customer}
                   </td>
 
                   <td>
@@ -330,23 +287,11 @@ const Billing = () => {
           <div className="details-row">
 
             <span>
-              Order ID
+              Table
             </span>
 
             <strong>
-              #TH1250
-            </strong>
-
-          </div>
-
-          <div className="details-row">
-
-            <span>
-              Customer
-            </span>
-
-            <strong>
-              John Doe
+              Table 5
             </strong>
 
           </div>
@@ -424,6 +369,7 @@ const Billing = () => {
       </div>
 
     </div>
+
   );
 };
 

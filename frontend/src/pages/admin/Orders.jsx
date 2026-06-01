@@ -1,6 +1,13 @@
+import { useState } from "react";
 import "../../styles/orders.css";
 
 const Orders = () => {
+
+  const [activeFilter, setActiveFilter] =
+    useState("All");
+
+  const [searchTerm, setSearchTerm] =
+    useState("");
 
   const orders = [
 
@@ -46,6 +53,33 @@ const Orders = () => {
 
   ];
 
+  const filteredOrders = orders.filter(
+    (order) => {
+
+      const matchesFilter =
+        activeFilter === "All"
+          ? true
+          : order.status === activeFilter;
+
+      const matchesSearch =
+        order.customer
+          .toLowerCase()
+          .includes(
+            searchTerm.toLowerCase()
+          ) ||
+        order.id
+          .toLowerCase()
+          .includes(
+            searchTerm.toLowerCase()
+          );
+
+      return (
+        matchesFilter &&
+        matchesSearch
+      );
+    }
+  );
+
   return (
 
     <div className="orders-page">
@@ -89,7 +123,7 @@ const Orders = () => {
             </h4>
 
             <h2>
-              540
+              {orders.length}
             </h2>
 
             <p>
@@ -113,7 +147,13 @@ const Orders = () => {
             </h4>
 
             <h2>
-              420
+              {
+                orders.filter(
+                  (o) =>
+                    o.status ===
+                    "Completed"
+                ).length
+              }
             </h2>
 
             <p>
@@ -137,7 +177,13 @@ const Orders = () => {
             </h4>
 
             <h2>
-              78
+              {
+                orders.filter(
+                  (o) =>
+                    o.status ===
+                    "Pending"
+                ).length
+              }
             </h2>
 
             <p className="red">
@@ -161,7 +207,13 @@ const Orders = () => {
             </h4>
 
             <h2>
-              32
+              {
+                orders.filter(
+                  (o) =>
+                    o.type ===
+                    "Delivery"
+                ).length
+              }
             </h2>
 
             <p>
@@ -182,19 +234,67 @@ const Orders = () => {
 
           <div className="orders-tabs">
 
-            <button className="active-tab">
+            <button
+              className={
+                activeFilter ===
+                "All"
+                  ? "active-tab"
+                  : ""
+              }
+              onClick={() =>
+                setActiveFilter(
+                  "All"
+                )
+              }
+            >
               All Orders
             </button>
 
-            <button>
+            <button
+              className={
+                activeFilter ===
+                "Pending"
+                  ? "active-tab"
+                  : ""
+              }
+              onClick={() =>
+                setActiveFilter(
+                  "Pending"
+                )
+              }
+            >
               Pending
             </button>
 
-            <button>
+            <button
+              className={
+                activeFilter ===
+                "Preparing"
+                  ? "active-tab"
+                  : ""
+              }
+              onClick={() =>
+                setActiveFilter(
+                  "Preparing"
+                )
+              }
+            >
               Preparing
             </button>
 
-            <button>
+            <button
+              className={
+                activeFilter ===
+                "Completed"
+                  ? "active-tab"
+                  : ""
+              }
+              onClick={() =>
+                setActiveFilter(
+                  "Completed"
+                )
+              }
+            >
               Completed
             </button>
 
@@ -204,6 +304,12 @@ const Orders = () => {
             type="text"
             placeholder="Search order..."
             className="orders-search"
+            value={searchTerm}
+            onChange={(e) =>
+              setSearchTerm(
+                e.target.value
+              )
+            }
           />
 
         </div>
@@ -248,79 +354,127 @@ const Orders = () => {
 
           <tbody>
 
-            {orders.map((order, index) => (
+            {filteredOrders.length ===
+            0 ? (
 
-              <tr key={index}>
+              <tr>
 
-                <td>
-                  {order.id}
-                </td>
-
-                <td>
-
-                  <div className="customer-info">
-
-                    <div className="customer-avatar">
-                      {order.customer[0]}
-                    </div>
-
-                    <div>
-
-                      <h4>
-                        {order.customer}
-                      </h4>
-
-                      <p>
-                        {order.phone}
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                </td>
-
-                <td>
-
-                  <div className="order-images">
-
-                    {order.items.map((img, i) => (
-
-                      <img
-                        key={i}
-                        src={img}
-                        alt=""
-                      />
-
-                    ))}
-
-                  </div>
-
-                </td>
-
-                <td>
-                  {order.type}
-                </td>
-
-                <td>
-                  {order.amount}
-                </td>
-
-                <td>
-
-                  <span className={`order-status ${order.status}`}>
-                    {order.status}
-                  </span>
-
-                </td>
-
-                <td>
-                  {order.time}
+                <td
+                  colSpan="7"
+                  style={{
+                    textAlign:
+                      "center",
+                    padding:
+                      "30px",
+                  }}
+                >
+                  No orders found
                 </td>
 
               </tr>
 
-            ))}
+            ) : (
+
+              filteredOrders.map(
+                (
+                  order,
+                  index
+                ) => (
+
+                  <tr
+                    key={index}
+                  >
+
+                    <td>
+                      {order.id}
+                    </td>
+
+                    <td>
+
+                      <div className="customer-info">
+
+                        <div className="customer-avatar">
+                          {
+                            order
+                              .customer[0]
+                          }
+                        </div>
+
+                        <div>
+
+                          <h4>
+                            {
+                              order.customer
+                            }
+                          </h4>
+
+                          <p>
+                            {
+                              order.phone
+                            }
+                          </p>
+
+                        </div>
+
+                      </div>
+
+                    </td>
+
+                    <td>
+
+                      <div className="order-images">
+
+                        {order.items.map(
+                          (
+                            img,
+                            i
+                          ) => (
+
+                            <img
+                              key={i}
+                              src={img}
+                              alt=""
+                            />
+
+                          )
+                        )}
+
+                      </div>
+
+                    </td>
+
+                    <td>
+                      {order.type}
+                    </td>
+
+                    <td>
+                      {
+                        order.amount
+                      }
+                    </td>
+
+                    <td>
+
+                      <span
+                        className={`order-status ${order.status}`}
+                      >
+                        {
+                          order.status
+                        }
+                      </span>
+
+                    </td>
+
+                    <td>
+                      {order.time}
+                    </td>
+
+                  </tr>
+
+                )
+              )
+
+            )}
 
           </tbody>
 
@@ -329,6 +483,7 @@ const Orders = () => {
       </div>
 
     </div>
+
   );
 };
 

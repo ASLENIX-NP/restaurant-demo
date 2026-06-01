@@ -437,3 +437,514 @@ body {
     border: none;
     cursor: pointer;
 }
+
+
+/* Core Styling Parameters for Cooking Interface Grid */
+
+.cooking-page {
+    background-color: #f8fafc;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+
+/* Polished Top Bar Header Design */
+
+.topbar {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 12px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.menu-brand-toggle {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.hamburger-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #475569;
+    cursor: pointer;
+}
+
+.panel-context-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.top-search-input {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 8px;
+    width: 260px;
+    font-size: 13px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.top-search-input:focus {
+    border-color: #cbd5e1;
+    background: #ffffff;
+}
+
+.notification-bell {
+    position: relative;
+    font-size: 20px;
+    cursor: pointer;
+    color: #64748b;
+}
+
+.badge-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chef-profile-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-left: 1px solid #e2e8f0;
+    padding-left: 20px;
+}
+
+.chef-avatar-wrapper {
+    font-size: 20px;
+    background: #f1f5f9;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.chef-meta-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.chef-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.chef-role {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.logout-action-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+
+/* Page Layout Contexts */
+
+.cooking-content {
+    padding: 32px;
+}
+
+.arrow-divider {
+    color: #cbd5e1;
+    margin: 0 4px;
+}
+
+.breadcrumbs .current {
+    color: #64748b;
+    font-weight: 500;
+}
+
+
+/* Top Glow Statistic Cards Strip */
+
+.stats-grid {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.stat-card.cook-metric-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #ffffff;
+    padding: 20px 24px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    flex: 1;
+}
+
+.deep-orange-glow {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+.indigo-glow {
+    background: #eef2ff;
+    color: #4f46e5;
+}
+
+.emerald-glow {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.stat-text-group h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.stat-text-group h4 {
+    font-size: 13px;
+    color: #475569;
+    margin: 2px 0;
+}
+
+.stat-text-group p {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 0;
+}
+
+
+/* Interactive Feed System Dashboard Panels */
+
+.queue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.queue-title-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.live-pill-tag {
+    background: #fef3c7;
+    color: #d97706;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.view-all-link-btn {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
+/* Advanced Pipeline Matrix Ticket Blocks */
+
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.order-card.cooking-card-elevation {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.status-pill-cooking {
+    background: #fff7ed;
+    color: #ea580c;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+}
+
+.order-meta-info-row {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0 14px 0;
+}
+
+.type-badge,
+.table-badge {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+
+/* Staff Assignment Profiles Block */
+
+.staff-assignment-box {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.assignment-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #475569;
+}
+
+.label-icon {
+    font-size: 14px;
+}
+
+.cool-divider {
+    height: 1px;
+    background: #f1f5f9;
+    margin: 16px 0;
+}
+
+
+/* Order Rows Lines Styles */
+
+.items-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+.cooking-item-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+}
+
+.cooking-dot-bullet {
+    width: 6px;
+    height: 6px;
+    background: #f59e0b;
+    border-radius: 50%;
+}
+
+.cooking-item-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #334155;
+}
+
+
+/* custom Input Styling Metrics Slider Override */
+
+.progress-slider-container {
+    margin-bottom: 16px;
+}
+
+.progress-head {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.progress-percentage-label {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.slider-track-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.progress-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 10px;
+    background: #e2e8f0;
+    outline: none;
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+}
+
+
+/* Custom Knob Slider Config */
+
+.progress-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ea580c;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s ease;
+}
+
+.progress-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.progress-fill-bar {
+    position: absolute;
+    left: 0;
+    height: 6px;
+    background: #ea580c;
+    border-radius: 10px 0 0 10px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+
+/* Bottom Metric Info badges */
+
+.time-left-badge {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.clock-icon {
+    font-size: 14px;
+}
+
+
+/* Trigger Controls Row Action Links */
+
+.ready-btn-action {
+    background: #1e293b;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s ease;
+}
+
+.ready-btn-action:hover {
+    background: #0f172a;
+}
+
+
+/* Modern Centered Controls Grid Footing */
+
+.queue-footer-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 20px;
+}
+
+.showing-entries-label {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.showing-entries-label strong {
+    color: #1e293b;
+}
+
+.pagination-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #ffffff;
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.pagination-wrapper button {
+    border: none;
+    background: transparent;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.pagination-wrapper button:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.pagination-wrapper button.active-page {
+    background: #2563eb;
+    color: white;
+}

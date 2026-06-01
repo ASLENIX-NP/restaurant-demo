@@ -160,3 +160,311 @@
         font-size: 34px;
     }
 }
+
+
+/* Core Layout Structure */
+
+.reservations-page {
+    padding: 24px;
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+.reservations-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.reservations-header p {
+    color: #64748b;
+    font-size: 15px;
+    margin-bottom: 32px;
+}
+
+
+/* Response Grid setup */
+
+.reservations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+
+/* Premium Card Design styles */
+
+.reservation-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border: 1px solid #f1f5f9;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.reservation-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+    border-color: #e2e8f0;
+}
+
+
+/* Card Top Row */
+
+.reservation-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.reservation-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.reservation-user-meta h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 6px 0;
+}
+
+
+/* Micro-Designed Status Badges */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-badge .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+
+/* Confirmed State Colors */
+
+.status-badge.confirmed {
+    background-color: #f0fdf4;
+    color: #16a34a;
+}
+
+.status-badge.confirmed .status-dot {
+    background-color: #16a34a;
+}
+
+
+/* Pending State Colors */
+
+.status-badge.pending {
+    background-color: #fffbeb;
+    color: #d97706;
+}
+
+.status-badge.pending .status-dot {
+    background-color: #d97706;
+}
+
+
+/* VIP State Colors */
+
+.status-badge.vip {
+    background-color: #faf5ff;
+    color: #7c3aed;
+    border: 1px dashed #c084fc;
+}
+
+.status-badge.vip .status-dot {
+    background-color: #7c3aed;
+}
+
+
+/* Mid-Card Data Rows Layout fixes */
+
+.reservation-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.detail-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #f8fafc;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #f1f5f9;
+}
+
+.detail-icon {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.detail-box p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #475569;
+}
+
+
+/* Clean Dynamic Buttons styling */
+
+.view-btn {
+    background-color: #0f172a;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 100%;
+}
+
+.view-btn:hover {
+    background-color: #1e293b;
+}
+
+
+/* ================= MODAL GRAPHICS SYSTEM ================= */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    background: #ffffff;
+    padding: 28px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 440px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 20px;
+    color: #0f172a;
+    margin: 0;
+}
+
+.close-x {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+.modal-body-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 18px 0 24px 0;
+}
+
+.modal-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    border-bottom: 1px dashed #f1f5f9;
+    padding-bottom: 8px;
+}
+
+.modal-row strong {
+    color: #64748b;
+}
+
+.modal-row span {
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.modal-notes-section {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 8px;
+    border-left: 3px solid #cbd5e1;
+}
+
+.modal-notes-section strong {
+    font-size: 13px;
+    color: #475569;
+}
+
+.modal-notes-section p {
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    color: #334155;
+    line-height: 1.5;
+}
+
+.modal-close-btn {
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.modal-close-btn:hover {
+    background: #e2e8f0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

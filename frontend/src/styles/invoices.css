@@ -307,3 +307,301 @@
         gap: 20px;
     }
 }
+
+
+/* Custom status filter selector input formatting */
+
+.status-dropdown {
+    padding: 8px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #4a5568;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.status-dropdown:focus {
+    border-color: #4f46e5;
+}
+
+
+/* Empty feedback configuration row alignment */
+
+.no-data-fallback {
+    text-align: center !important;
+    color: #718096;
+    padding: 32px !important;
+    font-style: italic;
+}
+
+
+/* Pagination navigation arrow design styling updates */
+
+.arrow-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.arrow-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+
+/* Layout Alignment Structures for Actions Grid Buttons */
+
+.action-buttons-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-action-btn {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.icon-action-btn:hover,
+.icon-action-btn.active-focus {
+    background: #f1f5f9;
+    color: #1e293b;
+    border-color: #cbd5e1;
+}
+
+
+/* Context Menu Floating Layout Anchoring Box */
+
+.inline-dropdown-anchor {
+    position: relative;
+}
+
+.context-action-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+    z-index: 50;
+    min-width: 150px;
+    padding: 6px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.context-action-menu button {
+    background: transparent;
+    border: none;
+    padding: 8px 14px;
+    text-align: left;
+    font-size: 13px;
+    color: #334155;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.context-action-menu button:hover {
+    background: #f8fafc;
+}
+
+.context-action-menu hr {
+    border: 0;
+    border-top: 1px solid #f1f5f9;
+    margin: 4px 0;
+}
+
+.context-action-menu .text-green {
+    color: #16a34a;
+}
+
+.context-action-menu .text-red {
+    color: #dc2626;
+}
+
+
+/* Modal Box UI Overlay Configurations */
+
+.invoice-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.invoice-modal-container {
+    background: #ffffff;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header-row {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.close-modal-x {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+.modal-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 20px 24px;
+    background: #f8fafc;
+}
+
+.modal-meta-grid .lbl {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.modal-meta-grid .val {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.modal-meta-grid .highlight-id {
+    color: #4f46e5;
+}
+
+.items-billing-ledger {
+    padding: 20px 24px;
+}
+
+.items-billing-ledger h4 {
+    margin-bottom: 12px;
+    color: #334155;
+}
+
+.modal-items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.modal-items-table th {
+    background: #f1f5f9;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #475569;
+}
+
+.modal-items-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    color: #334155;
+}
+
+.txt-center {
+    text-align: center;
+}
+
+.txt-right {
+    text-align: right;
+}
+
+.font-bold {
+    font-weight: 600;
+}
+
+.modal-summary-footer {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #f1f5f9;
+}
+
+.grand-total-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.grand-total-block h3 {
+    color: #1e293b;
+    font-size: 20px;
+}
+
+.modal-actions-footer-bar {
+    padding: 16px 24px;
+    background: #f8fafc;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid #e2e8f0;
+}
+
+.modal-print-btn {
+    background: #4f46e5;
+    color: #ffffff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.modal-print-btn:hover {
+    background: #4338ca;
+}

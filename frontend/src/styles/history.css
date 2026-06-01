@@ -153,3 +153,470 @@
         font-size: 32px;
     }
 }
+
+
+/* Core View Wrappers */
+
+.history-page {
+    padding: 24px;
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+
+/* Header Alignment Layout */
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.history-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 4px 0;
+}
+
+.history-header p {
+    color: #64748b;
+    font-size: 15px;
+    margin: 0;
+}
+
+
+/* Operational Actions Export Toggle Buttons */
+
+.export-btn {
+    background-color: #ffffff;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.export-btn:hover {
+    background-color: #f8fafc;
+    border-color: #94a3b8;
+}
+
+.export-btn.loading {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* Business Intelligence Micro Metrics Cards Row */
+
+.history-summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.summary-card {
+    background: #ffffff;
+    padding: 16px 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    border: 1px solid #f1f5f9;
+}
+
+.summary-card h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.summary-card p {
+    margin: 2px 0 0 0;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.card-icon.blue {
+    background-color: #eff6ff;
+}
+
+.card-icon.green {
+    background-color: #f0fdf4;
+}
+
+.card-icon.red {
+    background-color: #fdf2f2;
+}
+
+
+/* Filter Toolbar Layout Structure */
+
+.history-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.search-input-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+}
+
+.search-inside-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.search-input-wrapper input {
+    width: 100%;
+    padding: 10px 12px 10px 40px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.search-input-wrapper input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+
+/* Modern Tab Selectors */
+
+.filter-tabs {
+    display: flex;
+    background-color: #e2e8f0;
+    padding: 4px;
+    border-radius: 8px;
+    gap: 2px;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.tab-btn.active {
+    background-color: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Structural Master Grid Wrapper Styling */
+
+.history-table-wrapper {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f1f5f9;
+    overflow: hidden;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+}
+
+.history-table th {
+    background-color: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.history-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.table-row-hover:hover {
+    background-color: #fafafa;
+}
+
+
+/* Specialized Table Items Typo Elements */
+
+.order-id {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.table-badge {
+    background-color: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.amount {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+
+/* Enhanced Nested Customer Box */
+
+.customer-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.customer-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.customer-box h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.customer-box p {
+    margin: 2px 0 0 0;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+
+/* Status Component Pill Badges */
+
+.status-badge-history {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge-history .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.status-badge-history.completed {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.status-badge-history.completed .badge-dot {
+    background-color: #059669;
+}
+
+.status-badge-history.cancelled {
+    background-color: #fdf2f2;
+    color: #e02424;
+}
+
+.status-badge-history.cancelled .badge-dot {
+    background-color: #e02424;
+}
+
+
+/* Micro operational view data actions button */
+
+.action-inspect-btn {
+    background-color: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.action-inspect-btn:hover {
+    background-color: #edf2f7;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
+.empty-search-state {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+
+/* ================= MODAL DISPLAY SYSTEM ================= */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.3);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.invoice-modal {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.invoice-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #0f172a;
+}
+
+.invoice-header p {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.close-x-btn {
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+.divider-line {
+    border: 0;
+    border-top: 1px dashed #e2e8f0;
+    margin: 16px 0;
+}
+
+.invoice-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 13px;
+    color: #475569;
+}
+
+.invoice-meta-grid p {
+    margin: 0;
+}
+
+.section-title {
+    font-size: 13px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 20px 0 10px 0;
+}
+
+.invoice-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.invoice-item-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.invoice-item-row strong {
+    color: #64748b;
+    margin-left: 4px;
+}
+
+.invoice-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.invoice-total-row h3 {
+    margin: 0;
+    font-size: 15px;
+    color: #64748b;
+}
+
+.invoice-total-row h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #0f172a;
+    font-weight: 800;
+}
+
+.invoice-status-footer {
+    margin-top: 20px;
+    text-align: center;
+}

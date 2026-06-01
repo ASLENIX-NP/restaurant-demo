@@ -1,5 +1,0 @@
-PORT = 5000
-
-MONGO_URI = YOUR_MONGODB_CONNECTION
-
-JWT_SECRET = restaurant_secret_key

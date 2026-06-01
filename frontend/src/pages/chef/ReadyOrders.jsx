@@ -3,7 +3,7 @@
 import React from "react";
 import "../../styles/readyorders.css";
 
-const orders = [
+const initialOrders = [
   {
     id: "#TH1250",
     type: "Dine In",
@@ -36,13 +36,13 @@ const orders = [
 const ReadyOrders = () => {
   return (
     <div className="ready-page">
-
+      
+      {/* HEADER SECTION */}
       <div className="ready-topbar">
         <div>
           <h1>Ready Orders</h1>
-
           <div className="breadcrumb">
-            Dashboard <span>›</span> Ready Orders
+            Dashboard <span className="arrow-divider">›</span> <span className="current-page">Ready Orders</span>
           </div>
         </div>
 
@@ -51,119 +51,109 @@ const ReadyOrders = () => {
         </button>
       </div>
 
+      {/* STATS STRIP OVERVIEW */}
       <div className="ready-stats">
-
-        <div className="stat-card">
-          <div className="stat-icon green">✅</div>
-
-          <div>
+        <div className="stat-card border-green">
+          <div className="stat-icon green-bg">✅</div>
+          <div className="stat-info-block">
             <h2>12</h2>
             <h4>Ready to Serve</h4>
             <p>Orders ready for pickup</p>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon blue">🍽️</div>
-
-          <div>
+        <div className="stat-card border-blue">
+          <div className="stat-icon blue-bg">🍽️</div>
+          <div className="stat-info-block">
             <h2>8</h2>
             <h4>Dine In Orders</h4>
             <p>Ready to be served</p>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon orange">🛍️</div>
-
-          <div>
+        <div className="stat-card border-orange">
+          <div className="stat-icon orange-bg">🛍️</div>
+          <div className="stat-info-block">
             <h2>4</h2>
             <h4>Takeaway/Delivery</h4>
             <p>Ready for handover</p>
           </div>
         </div>
-
       </div>
 
+      {/* PIPELINE CONTAINER */}
       <div className="ready-queue">
-
         <div className="queue-header">
           <h2>Ready Orders Queue</h2>
-
-          <button>View All Orders</button>
+          <button className="view-all-btn">View All Orders</button>
         </div>
 
         <div className="orders-grid">
-
-          {orders.map((order, index) => (
+          {initialOrders.map((order, index) => (
             <div className="ready-card" key={index}>
-
+              
               <div className="card-top">
-
                 <h3>{order.id}</h3>
-
-                <span className="ready-badge">
-                  Ready
-                </span>
-
+                <span className="ready-badge">Ready</span>
               </div>
 
-              <div className="order-meta">
-                {order.type} • {order.table}
+              {/* SERVICE TYPE BADGES */}
+              <div className="order-meta-pills">
+                <span className="meta-pill type-pill">{order.type}</span>
+                <span className="meta-pill table-pill">{order.table}</span>
               </div>
 
-              <div className="customer">
-                👤 {order.customer}
-              </div>
-
-              <div className="customer">
-                👨‍🍳 {order.chef}
-              </div>
-
-              <hr />
-
-              <ul className="items-list">
-                {order.items.map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ul>
-
-              <div className="time-boxes">
-
-                <div className="time-card">
-                  <span>Completed At</span>
-                  <h4>{order.completedAt}</h4>
+              {/* DETAILS REGION */}
+              <div className="assignment-details">
+                <div className="detail-item">
+                  <span className="icon">👤</span>
+                  <p>Customer: <strong>{order.customer}</strong></p>
                 </div>
-
+                <div className="detail-item">
+                  <span className="icon">👨‍🍳</span>
+                  <p>Chef: <strong>{order.chef}</strong></p>
+                </div>
               </div>
 
+              <div className="card-divider"></div>
+
+              {/* PREPARED ITEMS BOX LIST */}
+              <div className="items-container">
+                {order.items.map((item, i) => (
+                  <div className="item-row-entry" key={i}>
+                    <span className="item-qty-badge">1x</span>
+                    <span className="item-name-text">{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* DELIVERY TIMESTAMPS CONTAINER */}
+              <div className="time-boxes">
+                <div className="time-card-wrapper">
+                  <span className="time-card-label">Completed At</span>
+                  <h4 className="time-card-value">{order.completedAt}</h4>
+                </div>
+              </div>
+
+              {/* CTA INTERACTION */}
               <button className="serve-btn">
                 ✔ Serve Now
               </button>
 
             </div>
           ))}
-
         </div>
 
-        <div className="pagination">
-
-          <button>{"<"}</button>
-
-          <button className="active">
-            1
-          </button>
-
-          <button>2</button>
-
-          <button>3</button>
-
-          <button>{">"}</button>
-
+        {/* CUSTOM PAGINATION STICKY WRAPPER */}
+        <div className="pagination-container">
+          <button className="nav-arrow-btn">‹</button>
+          <button className="page-number active">1</button>
+          <button className="page-number">2</button>
+          <button className="page-number">3</button>
+          <button className="nav-arrow-btn">›</button>
         </div>
 
       </div>
-
     </div>
   );
 };

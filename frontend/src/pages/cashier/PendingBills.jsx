@@ -1,5 +1,4 @@
-import React from "react";
-
+import React, { useState } from "react";
 import {
   Search,
   Printer,
@@ -9,7 +8,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-const pendingBills = [
+const pendingBillsData = [
   {
     id: "INV-1025",
     table: "Table 2",
@@ -17,8 +16,13 @@ const pendingBills = [
     amount: 1150,
     status: "Unpaid",
     time: "7:45 PM",
+    date: "2026/05/27",
+    items: [
+      { name: "Burger", qty: 1, price: 350 },
+      { name: "Pizza", qty: 1, price: 700 },
+      { name: "Coke", qty: 1, price: 100 },
+    ],
   },
-
   {
     id: "INV-1026",
     table: "Table 5",
@@ -26,8 +30,11 @@ const pendingBills = [
     amount: 600,
     status: "Partial",
     time: "8:10 PM",
+    date: "2026/05/27",
+    items: [
+      { name: "Pizza", qty: 1, price: 600 },
+    ],
   },
-
   {
     id: "INV-1027",
     table: "Table 1",
@@ -35,496 +42,263 @@ const pendingBills = [
     amount: 800,
     status: "Unpaid",
     time: "8:25 PM",
-  },
-];
-
-const items = [
-  {
-    name: "Burger",
-    qty: 1,
-    price: 350,
-  },
-
-  {
-    name: "Pizza",
-    qty: 1,
-    price: 700,
-  },
-
-  {
-    name: "Coke",
-    qty: 1,
-    price: 100,
+    date: "2026/05/27",
+    items: [
+      { name: "Burger", qty: 2, price: 350 },
+      { name: "Coke", qty: 1, price: 100 },
+    ],
   },
 ];
 
 export default function PendingBillsPage() {
+  const [selectedInvoice, setSelectedInvoice] = useState(pendingBillsData[0]);
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
 
-  const subtotal =
-    items.reduce(
-      (a, b) =>
-        a + b.qty * b.price,
-      0
-    );
-
+  const subtotal = selectedInvoice.items.reduce(
+    (acc, item) => acc + item.qty * item.price,
+    0
+  );
   const vat = subtotal * 0.13;
-
-  const total =
-    subtotal + vat + 50;
+  const serviceCharge = 50;
+  const total = subtotal + vat + serviceCharge;
 
   return (
-
-    <div className="min-h-screen bg-gray-100 p-6">
-
-      <main>
-
+    <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
+      <main className="max-w-[1600px] mx-auto">
+        
         {/* PAGE HEADER */}
-
         <div className="flex justify-between items-center mb-8">
-
           <div>
-
-            <h1 className="text-4xl font-bold text-gray-800">
+            <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">
               Pending Bills
             </h1>
-
-            <p className="text-gray-500 mt-1">
+            <p className="text-slate-400 text-sm mt-0.5">
               Manage all unpaid customer invoices
             </p>
-
           </div>
 
-          <div className="flex items-center gap-4">
-
-            <div className="bg-white px-4 py-3 rounded-xl flex items-center gap-2 shadow-sm">
-
-              <Search
-                size={18}
-                className="text-gray-400"
-              />
-
+          <div className="flex items-center gap-3">
+            <div className="bg-white border border-slate-200/80 px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm w-64 focus-within:border-purple-400 transition-all">
+              <Search size={16} className="text-slate-400" />
               <input
                 placeholder="Search..."
-                className="outline-none bg-transparent"
+                className="outline-none bg-transparent text-sm w-full placeholder:text-slate-400"
               />
-
             </div>
-
-            <button className="bg-purple-600 text-white px-5 py-3 rounded-xl">
+            <button className="bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm shadow-purple-200 transition">
               Today
             </button>
-
           </div>
-
         </div>
 
-        {/* SUMMARY */}
-
-        <div className="grid grid-cols-4 gap-5 mb-6">
-
+        {/* SUMMARY METRIC OVERVIEW CARDS */}
+        <div className="grid grid-cols-4 gap-5 mb-8">
           {[
-            {
-              title: "Pending Bills",
-              value: "28",
-              color: "text-red-500",
-            },
-
-            {
-              title: "Total Due",
-              value: "Rs. 24,500",
-              color: "text-purple-600",
-            },
-
-            {
-              title: "Partial Payments",
-              value: "12",
-              color: "text-orange-500",
-            },
-
-            {
-              title: "Completed Today",
-              value: "45",
-              color: "text-green-500",
-            },
-
+            { title: "Pending Bills", value: "28", color: "text-red-500" },
+            { title: "Total Due", value: "Rs. 24,500", color: "text-purple-600" },
+            { title: "Partial Payments", value: "12", color: "text-orange-500" },
+            { title: "Completed Today", value: "45", color: "text-green-500" },
           ].map((card) => (
-
-            <div
-              key={card.title}
-              className="bg-white rounded-2xl p-6 shadow-sm"
-            >
-
-              <p className="text-gray-500">
+            <div key={card.title} className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
                 {card.title}
               </p>
-
-              <h2 className={`text-3xl font-bold mt-2 ${card.color}`}>
+              <h2 className={`text-[26px] font-bold mt-1.5 ${card.color}`}>
                 {card.value}
               </h2>
-
             </div>
-
           ))}
-
         </div>
 
-        {/* MAIN CONTENT */}
-
-        <div className="grid grid-cols-12 gap-6">
-
-          {/* LEFT */}
-
-          <div className="col-span-4 bg-white rounded-2xl p-5 shadow-sm">
-
-            <div className="flex items-center justify-between mb-5">
-
-              <h2 className="text-xl font-bold">
+        {/* MAIN WORKSPACE CONTENT SPLIT */}
+        <div className="grid grid-cols-12 gap-6 items-start">
+          
+          {/* LEFT INVOICES LIST */}
+          <div className="col-span-4 bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col max-h-[calc(100vh-320px)] overflow-hidden">
+            <div className="flex items-center justify-between mb-4 pb-2">
+              <h2 className="text-base font-bold text-slate-900">
                 Pending Invoices
               </h2>
-
-              <div className="bg-gray-100 px-3 py-2 rounded-lg flex items-center gap-2">
-
-                <Search size={16} />
-
+              <div className="bg-slate-50 border border-slate-200/60 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 max-w-[150px] focus-within:max-w-[180px] transition-all">
+                <Search size={14} className="text-slate-400" />
                 <input
                   placeholder="Search..."
-                  className="bg-transparent outline-none text-sm"
+                  className="bg-transparent outline-none text-xs w-full text-slate-600 placeholder:text-slate-400"
                 />
-
               </div>
-
             </div>
 
-            <div className="space-y-4">
-
-              {pendingBills.map((bill) => (
-
-                <div
-                  key={bill.id}
-                  className="border rounded-2xl p-4 hover:shadow-lg hover:border-purple-500 transition cursor-pointer"
-                >
-
-                  <div className="flex justify-between">
-
-                    <div>
-
-                      <h3 className="font-bold text-lg">
-                        {bill.id}
-                      </h3>
-
-                      <p className="text-gray-500 text-sm">
-                        {bill.customer}
-                      </p>
-
+            <div className="space-y-3 overflow-y-auto pr-1 flex-1">
+              {pendingBillsData.map((bill) => {
+                const isSelected = selectedInvoice.id === bill.id;
+                return (
+                  <div
+                    key={bill.id}
+                    onClick={() => setSelectedInvoice(bill)}
+                    className={`border rounded-2xl p-4 transition-all cursor-pointer ${
+                      isSelected
+                        ? "border-purple-500 bg-purple-50/20 shadow-sm"
+                        : "border-slate-200/80 bg-white hover:shadow-md hover:border-slate-300"
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-sm">{bill.id}</h3>
+                        <p className="text-slate-400 text-xs mt-0.5">{bill.customer}</p>
+                      </div>
+                      <div className="text-right">
+                        <h3 className="font-bold text-slate-900 text-sm">Rs. {bill.amount}</h3>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block mt-1 ${
+                            bill.status === "Unpaid"
+                              ? "bg-red-50 text-red-500"
+                              : "bg-orange-50 text-orange-500"
+                          }`}
+                        >
+                          {bill.status}
+                        </span>
+                      </div>
                     </div>
+                    <div className="flex justify-between mt-3.5 text-xs text-slate-400 font-medium">
+                      <span>{bill.table}</span>
+                      <span>{bill.time}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
-                    <div className="text-right">
+          {/* RIGHT DETAILED PREVIEW AND PAYMENT COMPONENT */}
+          <div className="col-span-8 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+            
+            {/* INVOICE DETAIL CONTROL HEADER */}
+            <div className="flex justify-between items-start mb-5">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Invoice Details</h2>
+                <p className="text-purple-600 font-semibold text-xs mt-0.5">{selectedInvoice.id}</p>
+              </div>
+              <button className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition shadow-sm shadow-purple-100">
+                <Printer size={14} />
+                Print Bill
+              </button>
+            </div>
 
-                      <h3 className="font-bold text-lg">
-                        Rs. {bill.amount}
-                      </h3>
+            {/* CUSTOMER INFO BREAKDOWN METRICS */}
+            <div className="grid grid-cols-4 gap-3.5 mb-6">
+              {[
+                ["Customer", selectedInvoice.customer],
+                ["Table", selectedInvoice.table],
+                ["Date", selectedInvoice.date],
+                ["Time", selectedInvoice.time],
+              ].map(([label, value]) => (
+                <div key={label} className="bg-slate-50 border border-slate-100 rounded-xl p-3.5">
+                  <p className="text-slate-400 text-[11px] font-medium tracking-wide uppercase">{label}</p>
+                  <h3 className="font-bold text-slate-900 text-sm mt-0.5 truncate">{value}</h3>
+                </div>
+              ))}
+            </div>
 
-                      <span
-                        className={`text-xs px-3 py-1 rounded-full ${
-                          bill.status === "Unpaid"
-                            ? "bg-red-100 text-red-500"
-                            : "bg-orange-100 text-orange-500"
+            {/* SEGMENTED ITEMS DISH LISTING TABLE */}
+            <div className="overflow-hidden rounded-xl border border-slate-100 mb-6">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-50/70 border-b border-slate-100 font-semibold text-slate-400 uppercase tracking-wider">
+                  <tr>
+                    <th className="p-3.5 pl-4">Item</th>
+                    <th className="p-3.5 text-center">Qty</th>
+                    <th className="p-3.5">Price</th>
+                    <th className="p-3.5 pr-4 text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
+                  {selectedInvoice.items.map((item) => (
+                    <tr key={item.name} className="hover:bg-slate-50/40 transition-colors">
+                      <td className="p-3.5 pl-4 text-slate-900 font-semibold">{item.name}</td>
+                      <td className="p-3.5 text-center text-slate-500">{item.qty}</td>
+                      <td className="p-3.5 text-slate-500">Rs. {item.price}</td>
+                      <td className="p-3.5 pr-4 text-right text-slate-900 font-semibold">Rs. {item.qty * item.price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* CONTROLS SUB-GRID REGION */}
+            <div className="grid grid-cols-12 gap-6">
+              
+              {/* CHANNELS GATEWAY BUTTONS GRID */}
+              <div className="col-span-6">
+                <h3 className="text-sm font-bold text-slate-900 mb-3">Payment Method</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { name: "Cash", icon: <Wallet size={16} /> },
+                    { name: "Card", icon: <CreditCard size={16} /> },
+                    { name: "eSewa", icon: <Receipt size={16} /> },
+                    { name: "Khalti", icon: <Wallet size={16} /> },
+                  ].map((method) => {
+                    const isActive = paymentMethod === method.name;
+                    return (
+                      <button
+                        key={method.name}
+                        onClick={() => setPaymentMethod(method.name)}
+                        className={`border rounded-xl p-3.5 flex items-center justify-center gap-2 font-semibold text-xs transition-all ${
+                          isActive
+                            ? "bg-purple-600 border-purple-600 text-white shadow-sm shadow-purple-100"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
                         }`}
                       >
-                        {bill.status}
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                  <div className="flex justify-between mt-4 text-sm text-gray-500">
-
-                    <span>
-                      {bill.table}
-                    </span>
-
-                    <span>
-                      {bill.time}
-                    </span>
-
-                  </div>
-
+                        {method.icon}
+                        {method.name}
+                      </button>
+                    );
+                  })}
                 </div>
-
-              ))}
-
-            </div>
-
-          </div>
-
-          {/* RIGHT */}
-
-          <div className="col-span-8 bg-white rounded-2xl p-6 shadow-sm">
-
-            {/* INVOICE HEADER */}
-
-            <div className="flex justify-between items-start mb-6">
-
-              <div>
-
-                <h2 className="text-3xl font-bold text-gray-800">
-                  Invoice Details
-                </h2>
-
-                <p className="text-gray-500 mt-1">
-                  INV-1025
-                </p>
-
               </div>
 
-              <button className="flex items-center gap-2 bg-purple-600 text-white px-5 py-3 rounded-xl">
-
-                <Printer size={18} />
-
-                Print Bill
-
-              </button>
-
-            </div>
-
-            {/* CUSTOMER INFO */}
-
-            <div className="grid grid-cols-4 gap-4 mb-6">
-
-              {[
-                ["Customer", "Walk-in Customer"],
-                ["Table", "Table 2"],
-                ["Date", "2026/05/27"],
-                ["Time", "7:45 PM"],
-              ].map(([label, value]) => (
-
-                <div
-                  key={label}
-                  className="bg-gray-50 rounded-xl p-4"
-                >
-
-                  <p className="text-gray-500 text-sm">
-                    {label}
-                  </p>
-
-                  <h3 className="font-bold mt-1">
-                    {value}
+              {/* CALCULATION BILL BREAKDOWN AREA */}
+              <div className="col-span-6 bg-slate-50 border border-slate-100 rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3.5">
+                    Payment Summary
                   </h3>
-
+                  <div className="space-y-2 text-xs font-medium text-slate-600">
+                    <div className="flex justify-between">
+                      <span>Subtotal</span>
+                      <span className="text-slate-900 font-semibold">Rs. {subtotal}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>VAT (13%)</span>
+                      <span className="text-slate-900 font-semibold">Rs. {vat.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between pb-3 border-b border-slate-200/60">
+                      <span>Service Charge</span>
+                      <span className="text-slate-900 font-semibold">Rs. {serviceCharge}</span>
+                    </div>
+                    <div className="pt-2.5 flex justify-between items-baseline text-purple-600">
+                      <span className="font-bold text-sm">Total</span>
+                      <span className="text-xl font-extrabold">Rs. {total.toFixed(2)}</span>
+                    </div>
+                  </div>
                 </div>
 
-              ))}
-
-            </div>
-
-            {/* TABLE */}
-
-            <div className="overflow-hidden rounded-2xl border mb-6">
-
-              <table className="w-full">
-
-                <thead className="bg-gray-100">
-
-                  <tr className="text-left">
-
-                    <th className="p-4">
-                      Item
-                    </th>
-
-                    <th>
-                      Qty
-                    </th>
-
-                    <th>
-                      Price
-                    </th>
-
-                    <th>
-                      Total
-                    </th>
-
-                  </tr>
-
-                </thead>
-
-                <tbody>
-
-                  {items.map((item) => (
-
-                    <tr
-                      key={item.name}
-                      className="border-t"
-                    >
-
-                      <td className="p-4">
-                        {item.name}
-                      </td>
-
-                      <td>
-                        {item.qty}
-                      </td>
-
-                      <td>
-                        Rs. {item.price}
-                      </td>
-
-                      <td>
-                        Rs. {item.qty * item.price}
-                      </td>
-
-                    </tr>
-
-                  ))}
-
-                </tbody>
-
-              </table>
-
-            </div>
-
-            {/* PAYMENT SECTION */}
-
-            <div className="grid grid-cols-2 gap-6">
-
-              {/* METHODS */}
-
-              <div>
-
-                <h3 className="text-xl font-bold mb-4">
-                  Payment Method
-                </h3>
-
-                <div className="grid grid-cols-2 gap-4">
-
-                  {[
-                    {
-                      name: "Cash",
-                      icon: <Wallet size={18} />,
-                    },
-
-                    {
-                      name: "Card",
-                      icon: <CreditCard size={18} />,
-                    },
-
-                    {
-                      name: "eSewa",
-                      icon: <Receipt size={18} />,
-                    },
-
-                    {
-                      name: "Khalti",
-                      icon: <Wallet size={18} />,
-                    },
-
-                  ].map((method) => (
-
-                    <button
-                      key={method.name}
-                      className="border rounded-xl p-4 flex items-center justify-center gap-2 hover:bg-purple-600 hover:text-white transition"
-                    >
-
-                      {method.icon}
-
-                      {method.name}
-
-                    </button>
-
-                  ))}
-
-                </div>
-
-              </div>
-
-              {/* SUMMARY */}
-
-              <div className="bg-gray-50 rounded-2xl p-6">
-
-                <h3 className="text-xl font-bold mb-5">
-                  Payment Summary
-                </h3>
-
-                <div className="space-y-3">
-
-                  <div className="flex justify-between">
-
-                    <span>
-                      Subtotal
-                    </span>
-
-                    <span>
-                      Rs. {subtotal}
-                    </span>
-
-                  </div>
-
-                  <div className="flex justify-between">
-
-                    <span>
-                      VAT (13%)
-                    </span>
-
-                    <span>
-                      Rs. {vat.toFixed(2)}
-                    </span>
-
-                  </div>
-
-                  <div className="flex justify-between">
-
-                    <span>
-                      Service Charge
-                    </span>
-
-                    <span>
-                      Rs. 50
-                    </span>
-
-                  </div>
-
-                  <div className="border-t pt-4 flex justify-between text-2xl font-bold text-purple-600">
-
-                    <span>
-                      Total
-                    </span>
-
-                    <span>
-                      Rs. {total.toFixed(2)}
-                    </span>
-
-                  </div>
-
-                </div>
-
-                {/* ACTION BUTTONS */}
-
-                <div className="grid grid-cols-2 gap-4 mt-6">
-
-                  <button className="bg-orange-500 text-white py-3 rounded-xl font-semibold">
+                {/* FINAL PROCESSING ACTION DISPATCH BUTTONS */}
+                <div className="grid grid-cols-2 gap-3 mt-5">
+                  <button className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-3 rounded-xl transition shadow-sm shadow-orange-100">
                     Partial Payment
                   </button>
-
-                  <button className="bg-gradient-to-r from-purple-600 to-blue-500 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2">
-
-                    <CheckCircle size={18} />
-
+                  <button className="bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-95 text-white text-xs font-bold py-3 rounded-xl flex items-center justify-center gap-1.5 transition shadow-sm shadow-purple-100">
+                    <CheckCircle size={14} />
                     Complete Payment
-
                   </button>
-
                 </div>
 
               </div>
-
             </div>
 
           </div>
-
         </div>
 
       </main>
-
     </div>
   );
 }

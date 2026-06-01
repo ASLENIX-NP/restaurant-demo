@@ -94,9 +94,9 @@ const Kitchen = () => {
               <li>Alfredo Pasta</li>
             </ul>
 
-            <button className="start-btn">
-              Start Preparing
-            </button>
+            <div className="waiting-label">
+              Waiting for Kitchen
+            </div>
 
           </div>
 
@@ -125,9 +125,9 @@ const Kitchen = () => {
               <li>Garlic Bread</li>
             </ul>
 
-            <button className="ready-btn">
-              Mark Ready
-            </button>
+            <div className="preparing-label">
+              Preparing Food
+            </div>
 
           </div>
 
@@ -156,9 +156,9 @@ const Kitchen = () => {
               <li>Ice Tea</li>
             </ul>
 
-            <button className="complete-btn">
-              Complete Order
-            </button>
+            <div className="ready-label">
+              Ready For Service
+            </div>
 
           </div>
 

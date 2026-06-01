@@ -1,111 +1,127 @@
+import { useEffect, useState } from "react";
 import "../../styles/menu.css";
+import { getProducts } from "../../services/menuService";
 
 const Menu = () => {
+  const [menuItems, setMenuItems] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
 
-  const menuItems = [
+const [newItem, setNewItem] = useState({
+  name: "",
+  category: "",
+  price: "",
+  description: "",
+  image: "",
+});
 
-    {
-      id: 1,
+  useEffect(() => {
+    loadProducts();
+  }, []);
 
-      name: "Chicken Burger",
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
 
-      description:
-        "Juicy grilled burger with cheese",
+      const data = await getProducts();
 
-      category: "Fast Food",
+      console.log("PRODUCTS FROM SUPABASE:", data);
 
-      price: 450,
+      setMenuItems(data || []);
+    } catch (error) {
+      console.error("MENU ERROR:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      status: "Active",
+  const filteredItems = menuItems.filter((item) =>
+    item.name?.toLowerCase().includes(search.toLowerCase())
+  );
 
-      image:
-        "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1200&auto=format&fit=crop",
-    },
+  const totalItems = menuItems.length;
 
-    {
-      id: 2,
+  const totalCategories = [
+    ...new Set(menuItems.map((item) => item.category)),
+  ].length;
 
-      name: "Pepperoni Pizza",
+  const activeItems = menuItems.filter(
+    (item) => item.status === true
+  ).length;
 
-      description:
-        "Italian pizza with extra cheese",
+  const inactiveItems = menuItems.filter(
+    (item) => item.status === false
+  ).length;
 
-      category: "Italian",
+  const avgPrice =
+    totalItems > 0
+      ? Math.round(
+          menuItems.reduce(
+            (sum, item) => sum + Number(item.price || 0),
+            0
+          ) / totalItems
+        )
+      : 0;
 
-      price: 900,
+  const popularDish =
+    totalItems > 0
+      ? menuItems[0]?.name
+      : "-";
+      const handleAddItem = () => {
 
-      status: "Active",
+  if (
+    !newItem.name ||
+    !newItem.category ||
+    !newItem.price
+  ) {
+    alert(
+      "Please fill all required fields"
+    );
+    return;
+  }
 
-      image:
-        "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1200&auto=format&fit=crop",
-    },
+  const item = {
+    id: Date.now(),
+    ...newItem,
+    status: true,
+  };
 
-    {
-      id: 3,
+  setMenuItems([
+    ...menuItems,
+    item,
+  ]);
 
-      name: "Cold Coffee",
+  setNewItem({
+    name: "",
+    category: "",
+    price: "",
+    description: "",
+    image: "",
+  });
 
-      description:
-        "Refreshing cold coffee",
-
-      category: "Beverage",
-
-      price: 250,
-
-      status: "Inactive",
-
-      image:
-        "https://images.unsplash.com/photo-1517701604599-bb29b565090c?q=80&w=1200&auto=format&fit=crop",
-    },
-
-    {
-      id: 4,
-
-      name: "Buff Momo",
-
-      description:
-        "Fresh Nepali style momo",
-
-      category: "Nepali",
-
-      price: 320,
-
-      status: "Active",
-
-      image:
-        "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1200&auto=format&fit=crop",
-    },
-
-  ];
+  setShowAddModal(false);
+};
 
   return (
-
     <div className="taste-menu-page">
 
-      {/* TOP */}
+      {/* HEADER */}
 
       <div className="taste-header">
-
         <div>
-
-          <h1>
-            Menu Management
-          </h1>
-
-          <p>
-            Dashboard
-            {" > "}
-            Menu Management
-          </p>
-
+          <h1>Menu Management</h1>
+          <p>Dashboard {" > "} Menu Management</p>
         </div>
 
-        <button className="taste-add-btn">
-
-          + Add New Item
-
-        </button>
-
+       <button
+  className="taste-add-btn"
+  onClick={() =>
+    setShowAddModal(true)
+  }
+>
+  + Add New Item
+</button>
       </div>
 
       {/* STATS */}
@@ -113,99 +129,57 @@ const Menu = () => {
       <div className="taste-stats-grid">
 
         <div className="taste-stat-card">
-
-          <div className="stat-icon">
-            🍔
-          </div>
-
+          <div className="stat-icon">🍔</div>
           <div>
-
-            <h3>
-              Total Items
-            </h3>
-
-            <h1>
-              128
-            </h1>
-
-            <p>
-              +12 this month
-            </p>
-
+            <h3>Total Items</h3>
+            <h1>{totalItems}</h1>
+            <p>All Menu Products</p>
           </div>
-
         </div>
 
         <div className="taste-stat-card">
-
-          <div className="stat-icon">
-            📂
-          </div>
-
+          <div className="stat-icon">📂</div>
           <div>
-
-            <h3>
-              Categories
-            </h3>
-
-            <h1>
-              12
-            </h1>
-
-            <p>
-              +2 this month
-            </p>
-
+            <h3>Categories</h3>
+            <h1>{totalCategories}</h1>
+            <p>Food Categories</p>
           </div>
-
         </div>
 
         <div className="taste-stat-card">
-
-          <div className="stat-icon">
-            👁
-          </div>
-
+          <div className="stat-icon">✅</div>
           <div>
-
-            <h3>
-              Active Items
-            </h3>
-
-            <h1>
-              110
-            </h1>
-
-            <p>
-              86% of total
-            </p>
-
+            <h3>Available</h3>
+            <h1>{activeItems}</h1>
+            <p>Ready To Order</p>
           </div>
-
         </div>
 
         <div className="taste-stat-card">
-
-          <div className="stat-icon">
-            ❌
-          </div>
-
+          <div className="stat-icon">❌</div>
           <div>
-
-            <h3>
-              Inactive Items
-            </h3>
-
-            <h1>
-              18
-            </h1>
-
-            <p>
-              14% of total
-            </p>
-
+            <h3>Unavailable</h3>
+            <h1>{inactiveItems}</h1>
+            <p>Out Of Stock</p>
           </div>
+        </div>
 
+        <div className="taste-stat-card">
+          <div className="stat-icon">💰</div>
+          <div>
+            <h3>Avg Price</h3>
+            <h1>Rs. {avgPrice}</h1>
+            <p>Average Price</p>
+          </div>
+        </div>
+
+        <div className="taste-stat-card">
+          <div className="stat-icon">🔥</div>
+          <div>
+            <h3>Popular Dish</h3>
+            <h1>{popularDish}</h1>
+            <p>Top Seller</p>
+          </div>
         </div>
 
       </div>
@@ -214,185 +188,239 @@ const Menu = () => {
 
       <div className="taste-table-container">
 
-        {/* CONTROLS */}
-
         <div className="taste-controls">
 
           <div className="category-buttons">
-
             <button className="active-category">
-
               All
-
             </button>
-
-            <button>
-              Fast Food
-            </button>
-
-            <button>
-              Italian
-            </button>
-
-            <button>
-              Beverage
-            </button>
-
-            <button>
-              Nepali
-            </button>
-
           </div>
 
           <div className="taste-search-box">
-
             <input
               type="text"
               placeholder="Search menu items..."
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
             />
+          </div>
+
+        </div>
+
+        {loading ? (
+          <h3 style={{ padding: "20px" }}>
+            Loading Products...
+          </h3>
+        ) : (
+          <table className="taste-table">
+
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              {filteredItems.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="6"
+                    style={{
+                      textAlign: "center",
+                      padding: "30px",
+                    }}
+                  >
+                    No Products Found
+                  </td>
+                </tr>
+              ) : (
+                filteredItems.map((item) => (
+                  <tr key={item.id}>
+
+                    <td>{item.id}</td>
+
+                    <td>
+                      <div className="food-info">
+
+                        <img
+                          src={
+                            item.image ||
+                            "https://via.placeholder.com/80"
+                          }
+                          alt={item.name}
+                        />
+
+                        <div>
+                          <h3>{item.name}</h3>
+                          <p>{item.description}</p>
+                        </div>
+
+                      </div>
+                    </td>
+
+                    <td>
+                      <span className="category-badge">
+                        {item.category}
+                      </span>
+                    </td>
+
+                    <td>
+                      Rs. {item.price}
+                    </td>
+
+                    <td>
+                      <span
+                        className={
+                          item.status
+                            ? "status-active"
+                            : "status-inactive"
+                        }
+                      >
+                        {item.status
+                          ? "Active"
+                          : "Inactive"}
+                      </span>
+                    </td>
+
+                    <td>
+                      <div className="action-buttons">
+
+                        <button
+                          className="edit-action"
+                          onClick={() =>
+                            alert(
+                              `Edit ${item.name}`
+                            )
+                          }
+                        >
+                          ✏️ Edit
+                        </button>
+
+                        <button
+                          className="delete-action"
+                          onClick={() =>
+                            alert(
+                              `Delete ${item.name}`
+                            )
+                          }
+                        >
+                          🗑 Delete
+                        </button>
+
+                      </div>
+                    </td>
+
+                  </tr>
+                ))
+              )}
+
+            </tbody>
+
+          </table>
+        )}
+
+           </div>
+
+      {showAddModal && (
+
+        <div className="menu-modal-overlay">
+
+          <div className="menu-modal">
+
+            <h2>Add New Menu Item</h2>
+
+            <input
+              type="text"
+              placeholder="Item Name"
+              value={newItem.name}
+              onChange={(e) =>
+                setNewItem({
+                  ...newItem,
+                  name: e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="text"
+              placeholder="Category"
+              value={newItem.category}
+              onChange={(e) =>
+                setNewItem({
+                  ...newItem,
+                  category: e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="number"
+              placeholder="Price"
+              value={newItem.price}
+              onChange={(e) =>
+                setNewItem({
+                  ...newItem,
+                  price: e.target.value,
+                })
+              }
+            />
+
+            <input
+              type="text"
+              placeholder="Image URL"
+              value={newItem.image}
+              onChange={(e) =>
+                setNewItem({
+                  ...newItem,
+                  image: e.target.value,
+                })
+              }
+            />
+
+            <textarea
+              placeholder="Description"
+              value={newItem.description}
+              onChange={(e) =>
+                setNewItem({
+                  ...newItem,
+                  description: e.target.value,
+                })
+              }
+            />
+
+            <div className="modal-buttons">
+
+              <button
+                className="save-btn"
+                onClick={handleAddItem}
+              >
+                Save Item
+              </button>
+
+              <button
+                className="cancel-btn"
+                onClick={() =>
+                  setShowAddModal(false)
+                }
+              >
+                Cancel
+              </button>
+
+            </div>
 
           </div>
 
         </div>
 
-        {/* TABLE */}
-
-        <table className="taste-table">
-
-          <thead>
-
-            <tr>
-
-              <th>
-                #
-              </th>
-
-              <th>
-                Item
-              </th>
-
-              <th>
-                Category
-              </th>
-
-              <th>
-                Price
-              </th>
-
-              <th>
-                Status
-              </th>
-
-              <th>
-                Actions
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {menuItems.map(
-              (
-                item,
-                index
-              ) => (
-
-                <tr key={index}>
-
-                  <td>
-                    {item.id}
-                  </td>
-
-                  <td>
-
-                    <div className="food-info">
-
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                      />
-
-                      <div>
-
-                        <h3>
-                          {item.name}
-                        </h3>
-
-                        <p>
-                          {item.description}
-                        </p>
-
-                      </div>
-
-                    </div>
-
-                  </td>
-
-                  <td>
-
-                    <span className="category-badge">
-
-                      {item.category}
-
-                    </span>
-
-                  </td>
-
-                  <td>
-                    Rs.
-                    {" "}
-                    {item.price}
-                  </td>
-
-                  <td>
-
-                    <span
-                      className={
-                        item.status ===
-                        "Active"
-                          ? "status-active"
-                          : "status-inactive"
-                      }
-                    >
-
-                      {item.status}
-
-                    </span>
-
-                  </td>
-
-                  <td>
-
-                    <div className="action-buttons">
-
-                      <button className="edit-action">
-
-                        ✏
-
-                      </button>
-
-                      <button className="delete-action">
-
-                        🗑
-
-                      </button>
-
-                    </div>
-
-                  </td>
-
-                </tr>
-
-              )
-            )}
-
-          </tbody>
-
-        </table>
-
-      </div>
+      )}
 
     </div>
   );
