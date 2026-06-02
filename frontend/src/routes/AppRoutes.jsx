@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "../pages/auth/Login";
 import ProtectedRoute from "./ProtectedRoute";
@@ -24,12 +24,9 @@ import Tables from "../pages/staff/Tables";
 import Reservations from "../pages/staff/Reservations";
 import OrderHistory from "../pages/staff/OrderHistory";
 
-// ================= CHEF =================
+// ================= CHEF (Cleaned to Dashboard Only) =================
 import ChefLayout from "../components/layout/ChefLayout";
 import ChefDashboard from "../pages/chef/Dashboard";
-import PendingOrders from "../pages/chef/PendingOrders";
-import CookingOrders from "../pages/chef/CookingOrders";
-import ReadyOrders from "../pages/chef/ReadyOrders";
 
 // ================= CASHIER =================
 import CashierLayout from "../components/layout/CashierLayout";
@@ -87,7 +84,7 @@ const AppRoutes = () => {
           <Route path="history" element={<OrderHistory />} />
         </Route>
 
-        {/* ================= CHEF ================= */}
+        {/* ================= CHEF PANEL ================= */}
         <Route
           path="/chef"
           element={
@@ -96,10 +93,12 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         >
+          {/* Default page setup */}
           <Route index element={<ChefDashboard />} />
-          <Route path="pending" element={<PendingOrders />} />
-          <Route path="cooking" element={<CookingOrders />} />
-          <Route path="ready" element={<ReadyOrders />} />
+          
+          {/* Wildcard Fallback: Safely captures dead sub-routes (like /chef/pending) 
+              and redirects them to /chef instead of throwing errors */}
+          <Route path="*" element={<Navigate to="/chef" replace />} />
         </Route>
 
         {/* ================= CASHIER ================= */}

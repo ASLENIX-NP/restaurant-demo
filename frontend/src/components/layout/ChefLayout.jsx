@@ -1,32 +1,14 @@
 import { Outlet } from "react-router-dom";
-
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
 const ChefLayout = () => {
+  // Cleaned to keep only the Dashboard link
   const links = [
     {
       path: "/chef",
       label: "Dashboard",
       icon: "📊",
-    },
-
-    {
-      path: "/chef/pending",
-      label: "Pending",
-      icon: "🕒",
-    },
-
-    {
-      path: "/chef/cooking",
-      label: "Cooking",
-      icon: "🔥",
-    },
-
-    {
-      path: "/chef/ready",
-      label: "Ready",
-      icon: "✅",
     },
   ];
 

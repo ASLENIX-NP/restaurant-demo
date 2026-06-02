@@ -6,6 +6,8 @@ import {
   Wallet,
   Receipt,
   CheckCircle,
+  Percent,
+  Coins
 } from "lucide-react";
 
 const pendingBillsData = [
@@ -53,14 +55,37 @@ const pendingBillsData = [
 export default function PendingBillsPage() {
   const [selectedInvoice, setSelectedInvoice] = useState(pendingBillsData[0]);
   const [paymentMethod, setPaymentMethod] = useState("Cash");
+  
+  // Dynamic Discount Tracking Hooks
+  const [discountType, setDiscountType] = useState("percentage"); // "percentage" | "flat"
+  const [discountValue, setDiscountValue] = useState(0);
 
+  // 1. Calculate Base Item Subtotal
   const subtotal = selectedInvoice.items.reduce(
     (acc, item) => acc + item.qty * item.price,
     0
   );
-  const vat = subtotal * 0.13;
+
+  // 2. Compute discount dynamic reductions sequence safely
+  let discountAmount = 0;
+  if (discountType === "percentage") {
+    const safePercent = Math.min(Math.max(discountValue, 0), 100);
+    discountAmount = subtotal * (safePercent / 100);
+  } else if (discountType === "flat") {
+    discountAmount = Math.min(Math.max(discountValue, 0), subtotal);
+  }
+
+  // 3. Compute subsequent conditional Taxable Base, VAT and final Grand Total
+  const taxableAmount = subtotal - discountAmount;
+  const vat = taxableAmount * 0.13; // 13% standard VAT calculated post-discount
   const serviceCharge = 50;
-  const total = subtotal + vat + serviceCharge;
+  const total = taxableAmount + vat + serviceCharge;
+
+  // Reset local discount tracking inputs whenever active selected layout targets switch
+  const handleSelectInvoice = (bill) => {
+    setSelectedInvoice(bill);
+    setDiscountValue(0);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
@@ -134,7 +159,7 @@ export default function PendingBillsPage() {
                 return (
                   <div
                     key={bill.id}
-                    onClick={() => setSelectedInvoice(bill)}
+                    onClick={() => handleSelectInvoice(bill)}
                     className={`border rounded-2xl p-4 transition-all cursor-pointer ${
                       isSelected
                         ? "border-purple-500 bg-purple-50/20 shadow-sm"
@@ -227,31 +252,78 @@ export default function PendingBillsPage() {
             <div className="grid grid-cols-12 gap-6">
               
               {/* CHANNELS GATEWAY BUTTONS GRID */}
-              <div className="col-span-6">
-                <h3 className="text-sm font-bold text-slate-900 mb-3">Payment Method</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { name: "Cash", icon: <Wallet size={16} /> },
-                    { name: "Card", icon: <CreditCard size={16} /> },
-                    { name: "eSewa", icon: <Receipt size={16} /> },
-                    { name: "Khalti", icon: <Wallet size={16} /> },
-                  ].map((method) => {
-                    const isActive = paymentMethod === method.name;
-                    return (
-                      <button
-                        key={method.name}
-                        onClick={() => setPaymentMethod(method.name)}
-                        className={`border rounded-xl p-3.5 flex items-center justify-center gap-2 font-semibold text-xs transition-all ${
-                          isActive
-                            ? "bg-purple-600 border-purple-600 text-white shadow-sm shadow-purple-100"
-                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-                        }`}
-                      >
-                        {method.icon}
-                        {method.name}
-                      </button>
-                    );
-                  })}
+              <div className="col-span-6 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 mb-3">Payment Method</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { name: "Cash", icon: <Wallet size={16} /> },
+                      { name: "Card", icon: <CreditCard size={16} /> },
+                      { name: "eSewa", icon: <Receipt size={16} /> },
+                      { name: "Khalti", icon: <Wallet size={16} /> },
+                    ].map((method) => {
+                      const isActive = paymentMethod === method.name;
+                      return (
+                        <button
+                          key={method.name}
+                          onClick={() => setPaymentMethod(method.name)}
+                          className={`border rounded-xl p-3.5 flex items-center justify-center gap-2 font-semibold text-xs transition-all ${
+                            isActive
+                              ? "bg-purple-600 border-purple-600 text-white shadow-sm shadow-purple-100"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                          }`}
+                        >
+                          {method.icon}
+                          {method.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* DYNAMIC DISCOUNT INPUT BLOCK */}
+                <div className="mt-6 pt-4 border-t border-slate-100">
+                  <h3 className="text-sm font-bold text-slate-900 mb-3">Apply Bill Discount</h3>
+                  
+                  {/* Selector Tabs for Rate Options */}
+                  <div className="flex gap-2 mb-3">
+                    <button
+                      onClick={() => { setDiscountType("percentage"); setDiscountValue(0); }}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold border transition ${
+                        discountType === "percentage" 
+                          ? "bg-purple-50 border-purple-200 text-purple-700" 
+                          : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+                      }`}
+                    >
+                      <Percent size={13} /> Percentage (%)
+                    </button>
+                    <button
+                      onClick={() => { setDiscountType("flat"); setDiscountValue(0); }}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold border transition ${
+                        discountType === "flat" 
+                          ? "bg-purple-50 border-purple-200 text-purple-700" 
+                          : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+                      }`}
+                    >
+                      <Coins size={13} /> Flat Rate (Rs.)
+                    </button>
+                  </div>
+
+                  {/* Operational Input Box */}
+                  <div className="relative flex items-center">
+                    <input
+                      type="number"
+                      min="0"
+                      max={discountType === "percentage" ? 100 : subtotal}
+                      value={discountValue || ""}
+                      onChange={(e) => setDiscountValue(parseFloat(e.target.value) || 0)}
+                      placeholder={discountType === "percentage" ? "Enter percentage (e.g. 10)" : "Enter amount (e.g. 150)"}
+                      className="w-full bg-white border border-slate-200 text-sm px-3 py-2.5 rounded-xl outline-none focus:border-purple-400 shadow-sm placeholder:text-slate-400"
+                    />
+                    <span className="absolute right-4 text-xs font-bold text-slate-400 pointer-events-none">
+                      {discountType === "percentage" ? "%" : "Rs."}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -266,14 +338,28 @@ export default function PendingBillsPage() {
                       <span>Subtotal</span>
                       <span className="text-slate-900 font-semibold">Rs. {subtotal}</span>
                     </div>
+
+                    {/* Live Recalculating Discount Row */}
+                    <div className="flex justify-between text-red-500">
+                      <span>Discount ({discountType === "percentage" ? `${Math.min(Math.max(discountValue, 0), 100)}%` : "Flat"})</span>
+                      <span className="font-semibold">- Rs. {discountAmount.toFixed(2)}</span>
+                    </div>
+
+                    <div className="flex justify-between text-slate-400 text-[11px] italic">
+                      <span>Taxable Amount</span>
+                      <span>Rs. {taxableAmount.toFixed(2)}</span>
+                    </div>
+
                     <div className="flex justify-between">
                       <span>VAT (13%)</span>
                       <span className="text-slate-900 font-semibold">Rs. {vat.toFixed(2)}</span>
                     </div>
+                    
                     <div className="flex justify-between pb-3 border-b border-slate-200/60">
                       <span>Service Charge</span>
                       <span className="text-slate-900 font-semibold">Rs. {serviceCharge}</span>
                     </div>
+                    
                     <div className="pt-2.5 flex justify-between items-baseline text-purple-600">
                       <span className="font-bold text-sm">Total</span>
                       <span className="text-xl font-extrabold">Rs. {total.toFixed(2)}</span>

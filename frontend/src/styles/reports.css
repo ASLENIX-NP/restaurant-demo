@@ -1,262 +1,533 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
+:root {
+    --surface-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border-light: #f1f5f9;
+    --border-medium: #e2e8f0;
+    --slate-heading: #0f172a;
+    --slate-body: #475569;
+    --slate-muted: #94a3b8;
+    --accent-purple: #8b5cf6;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
+    font-family: "Poppins", ui-sans-serif, system-ui, sans-serif;
 }
 
 .report-page {
     min-height: 100vh;
-    background: #f5f6fa;
-    padding: 35px;
+    background-color: var(--surface-bg);
+    padding: 2rem;
+    color: var(--slate-body);
+}
+
+.report-container {
+    max-width: 1600px;
+    margin: 0 auto;
 }
 
 
-/* HEADER */
+/* ==========================================================================
+   HEADER SECTION
+   ========================================================================== */
 
 .report-header {
-    display: flex;
+    display: flex !important;
+    flex-direction: row !important;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 1.75rem;
 }
 
 .report-header h1 {
-    font-size: 42px;
-    color: #111827;
-    font-weight: 800;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--slate-heading);
+    letter-spacing: -0.025em;
+    margin: 0;
 }
 
-.report-header p {
-    margin-top: 8px;
-    color: #6b7280;
+.breadcrumb {
+    font-size: 0.815rem;
+    color: var(--slate-muted);
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.breadcrumb span {
+    padding: 0 0.25rem;
+    font-size: 0.75rem;
 }
 
 .export-report-btn {
+    background-color: var(--slate-heading);
+    color: #ffffff;
     border: none;
-    background: #111827;
-    color: white;
-    padding: 15px 22px;
-    border-radius: 14px;
-    cursor: pointer;
+    border-radius: 0.75rem;
+    padding: 0.625rem 1.125rem;
+    font-size: 0.815rem;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.export-report-btn:hover {
+    opacity: 0.9;
 }
 
 
-/* TABS */
+/* ==========================================================================
+   NAVIGATION TABS CONTROLLER
+   ========================================================================== */
 
 .report-tabs {
-    display: flex;
-    gap: 16px;
+    display: flex !important;
+    flex-direction: row !important;
     flex-wrap: wrap;
-    margin-bottom: 28px;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 0.75rem;
 }
 
 .report-tabs button {
-    border: none;
-    background: white;
-    padding: 14px 20px;
-    border-radius: 14px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-medium);
+    color: var(--slate-body);
+    font-size: 0.815rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.625rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     cursor: pointer;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
 }
 
-.active-tab {
-    background: #111827 !important;
-    color: white;
+.report-tabs button:hover {
+    background-color: var(--border-light);
+}
+
+.report-tabs button.active-tab {
+    background-color: var(--slate-heading) !important;
+    border-color: var(--slate-heading);
+    color: #ffffff;
 }
 
 
-/* FILTER */
+/* ==========================================================================
+   FILTERS
+   ========================================================================== */
 
 .report-filter {
-    margin-bottom: 30px;
+    margin-bottom: 1.75rem;
 }
 
 .date-box {
-    background: white;
-    width: max-content;
-    padding: 16px 20px;
-    border-radius: 14px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-medium);
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.625rem;
+    font-size: 0.815rem;
+    font-weight: 500;
+    color: var(--slate-body);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 
-/* STATS */
+/* ==========================================================================
+   KPI METRIC CARDS GRID
+   ========================================================================== */
 
 .report-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 24px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
 }
 
 .report-stat-card {
-    background: white;
-    border-radius: 24px;
-    padding: 28px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 1rem;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     display: flex;
-    gap: 18px;
     align-items: center;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    gap: 1.25rem;
 }
 
-.report-icon {
-    width: 70px;
-    height: 70px;
-    border-radius: 20px;
-    background: #f3f4f6;
+.report-icon-wrapper {
+    background-color: var(--border-light);
+    color: var(--slate-body);
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 32px;
+    flex-shrink: 0;
 }
 
-.report-stat-card h3 {
-    color: #6b7280;
-    margin-bottom: 6px;
+.stat-content h3 {
+    font-size: 0.75rem;
+    color: var(--slate-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+    font-weight: 600;
 }
 
-.report-stat-card h1 {
-    font-size: 34px;
-    color: #111827;
+.stat-content h1 {
+    font-size: 1.5rem;
+    color: var(--slate-heading);
+    font-weight: 700;
+    margin: 0.25rem 0 0 0;
+    letter-spacing: -0.02em;
 }
 
-.report-stat-card p {
-    color: #16a34a;
-    margin-top: 6px;
+.stat-content p {
+    font-size: 0.75rem;
+    color: #10b981;
+    font-weight: 600;
+    margin: 0.125rem 0 0 0;
 }
 
 
-/* CHART GRID */
+/* ==========================================================================
+   VISUALIZATION DATA GRID (CHARTS)
+   ========================================================================== */
 
 .report-chart-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 28px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .chart-card {
-    background: white;
-    border-radius: 28px;
-    padding: 28px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-}
-
-.chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.chart-header button {
-    border: none;
-    background: #f3f4f6;
-    padding: 12px 18px;
-    border-radius: 12px;
-    cursor: pointer;
-}
-
-
-/* FAKE LINE */
-
-.fake-line-chart {
-    height: 320px;
-    display: flex;
-    align-items: flex-end;
-    gap: 18px;
-}
-
-.line-point {
-    flex: 1;
-    background: linear-gradient( 180deg, #111827, #6b7280);
-    border-radius: 16px 16px 0 0;
-}
-
-
-/* PIE */
-
-.fake-pie {
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    margin: 20px auto;
-    background: conic-gradient( #111827 0% 38%, #4b5563 38% 61%, #9ca3af 61% 78%, #d1d5db 78% 100%);
-}
-
-.pie-details {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-top: 20px;
+    justify-content: space-between;
+    min-height: 380px;
+}
+
+.chart-header-node {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.chart-header-node h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--slate-heading);
+    margin: 0;
+}
+
+.chart-header-node p {
+    font-size: 0.75rem;
+    color: var(--slate-muted);
+    margin: 0.125rem 0 0 0;
+}
+
+.chart-toggle-btn {
+    background-color: var(--surface-bg);
+    border: 1px solid var(--border-medium);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    color: var(--slate-body);
+}
+
+.chart-wrapper-canvas {
+    width: 100%;
+    height: 260px;
+    margin-top: auto;
 }
 
 
-/* TABLE */
+/* ==========================================================================
+   PIE / DOUGHNUT LEGEND LAYOUT MODULES
+   ========================================================================== */
+
+.pie-section-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    height: 100%;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.pie-canvas-container {
+    width: 170px;
+    height: 170px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.pie-center-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.pie-details-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    width: 100%;
+    max-width: 220px;
+}
+
+.legend-row-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.815rem;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 0.35rem;
+}
+
+.legend-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.color-indicator-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    display: block;
+}
+
+.legend-name-text {
+    color: var(--slate-body);
+}
+
+.legend-percentage-value {
+    color: var(--slate-heading);
+    font-weight: 700;
+}
+
+
+/* ==========================================================================
+   DATA PERFORMANCE TABLE
+   ========================================================================== */
 
 .top-items-card {
-    background: white;
-    border-radius: 28px;
-    padding: 28px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
-.top-items-card h2 {
-    margin-bottom: 24px;
+.table-title-node {
+    margin-bottom: 1.25rem;
+}
+
+.table-title-node h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--slate-heading);
+    margin: 0;
+}
+
+.table-title-node p {
+    font-size: 0.75rem;
+    color: var(--slate-muted);
+    margin: 0.125rem 0 0 0;
+}
+
+.report-table-wrapper {
+    overflow-x: auto;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-light);
 }
 
 .report-table {
     width: 100%;
     border-collapse: collapse;
+    text-align: left;
+    font-size: 0.815rem;
 }
 
 .report-table th {
-    text-align: left;
-    padding: 18px;
-    background: #f9fafb;
+    background-color: var(--surface-bg);
+    color: var(--slate-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .report-table td {
-    padding: 18px;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--slate-body);
+    vertical-align: middle;
+}
+
+.report-table tr:last-child td {
+    border-bottom: none;
+}
+
+.report-table tr:hover td {
+    background-color: rgba(248, 250, 252, 0.6);
+}
+
+.rank-index-cell {
+    font-weight: 600;
+    color: var(--slate-muted);
 }
 
 .item-info {
-    display: flex;
-    gap: 14px;
+    display: flex !important;
+    flex-direction: row !important;
     align-items: center;
+    gap: 0.875rem;
 }
 
 .item-info img {
-    width: 60px;
-    height: 60px;
-    border-radius: 14px;
+    width: 2.5rem;
+    height: 2.5rem;
     object-fit: cover;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-light);
+}
+
+.item-name-bold {
+    font-weight: 600;
+    color: var(--slate-heading);
+}
+
+.category-text-dim {
+    color: var(--slate-body);
+    font-weight: 500;
+}
+
+.qty-center-cell {
+    text-align: center;
+    color: var(--slate-body);
+    font-weight: 600;
+}
+
+.revenue-right-cell {
+    text-align: right;
+    font-weight: 700;
+    color: var(--slate-heading);
 }
 
 
-/* RESPONSIVE */
+/* ==========================================================================
+   RESPONSIVE DESIGN SYSTEM BREAKPOINTS
+   ========================================================================== */
 
-@media(max-width:1000px) {
-    .report-chart-grid {
-        grid-template-columns: 1fr;
+@media (min-width: 480px) {
+    .pie-section-wrapper {
+        flex-direction: row;
+        justify-content: space-around;
     }
 }
 
-@media(max-width:768px) {
+@media (min-width: 640px) {
+    .report-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .report-chart-grid {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+    .linear-graph-block {
+        grid-column: span 7;
+    }
+    .distribution-graph-block {
+        grid-column: span 5;
+    }
+}
+
+@media (min-width: 1200px) {
+    .report-stats-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
     .report-page {
-        padding: 18px;
+        padding: 1rem;
     }
     .report-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 20px;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem;
     }
     .report-header h1 {
-        font-size: 32px;
+        font-size: 1.5rem;
+    }
+}
+
+
+/* ==========================================================================
+   ZOOM ENGINE & PRINT MEDIA SCREEN INSURANCE
+   ========================================================================== */
+
+@media print {
+    .report-page {
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+    }
+    .report-stats-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 15px !important;
+    }
+    .report-chart-grid {
+        display: grid !important;
+        grid-template-columns: repeat(12, 1fr) !important;
+        gap: 20px !important;
+    }
+    .linear-graph-block {
+        grid-column: span 7 !important;
+    }
+    .distribution-graph-block {
+        grid-column: span 5 !important;
+    }
+    .chart-card {
+        min-height: 380px !important;
+        display: flex !important;
+        background: #ffffff !important;
+        break-inside: avoid;
     }
 }
