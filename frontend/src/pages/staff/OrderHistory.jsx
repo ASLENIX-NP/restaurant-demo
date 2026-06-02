@@ -1,11 +1,25 @@
-import React, { useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  CalendarDays,
+  CheckCircle2,
+  Download,
+  Eye,
+  FileText,
+  Receipt,
+  Search,
+  Table2,
+  User,
+  Wallet,
+  X,
+  XCircle,
+} from "lucide-react";
 import "../../styles/history.css";
 
 const initialOrders = [
   {
     id: "#1021",
     table: "Table 4",
-    amount: "Rs. 2400",
+    amount: 2400,
     status: "Completed",
     customer: "John Doe",
     customerType: "Regular Customer",
@@ -13,16 +27,17 @@ const initialOrders = [
     time: "7:30 PM",
     date: "2026-06-01",
     paymentMethod: "UPI / QR",
+    server: "Asha",
     breakdown: [
       { name: "Chicken Burger", qty: 2, price: 600 },
       { name: "French Fries", qty: 1, price: 400 },
-      { name: "Cold Coffee", qty: 1, price: 800 }
-    ]
+      { name: "Cold Coffee", qty: 1, price: 800 },
+    ],
   },
   {
     id: "#1022",
     table: "Table 2",
-    amount: "Rs. 1800",
+    amount: 1800,
     status: "Cancelled",
     customer: "Emily Smith",
     customerType: "New Customer",
@@ -30,14 +45,13 @@ const initialOrders = [
     time: "8:00 PM",
     date: "2026-06-01",
     paymentMethod: "N/A",
-    breakdown: [
-      { name: "Chowmein", qty: 2, price: 900 }
-    ]
+    server: "Nirmal",
+    breakdown: [{ name: "Chowmein", qty: 2, price: 900 }],
   },
   {
     id: "#1023",
     table: "Table 7",
-    amount: "Rs. 3200",
+    amount: 3200,
     status: "Completed",
     customer: "Michael Lee",
     customerType: "VIP Guest",
@@ -45,126 +59,137 @@ const initialOrders = [
     time: "9:15 PM",
     date: "2026-05-31",
     paymentMethod: "Credit Card",
+    server: "Maya",
     breakdown: [
       { name: "Pepperoni Pizza", qty: 1, price: 1400 },
       { name: "Chicken Momo", qty: 2, price: 1000 },
-      { name: "Cold Coffee", qty: 2, price: 800 }
-    ]
+      { name: "Cold Coffee", qty: 2, price: 800 },
+    ],
   },
 ];
 
-const avatarColors = ["#3b82f6", "#ec4899", "#8b5cf6"];
+const filters = ["All", "Completed", "Cancelled"];
+
+const avatarColors = ["blue", "violet", "green"];
 
 const History = () => {
   const [ordersList] = useState(initialOrders);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("All"); // "All" | "Completed" | "Cancelled"
+  const [activeTab, setActiveTab] = useState("All");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
 
-  // --- Search & Filter Logic ---
-  const filteredOrders = ordersList.filter((order) => {
-    const matchesSearch = 
-      order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.table.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesTab = activeTab === "All" || order.status === activeTab;
-    
-    return matchesSearch && matchesTab;
-  });
+  const filteredOrders = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
 
-  // --- Dynamic Stats Summary ---
-  const totalSales = ordersList
-    .filter(o => o.status === "Completed")
-    .reduce((sum, o) => sum + parseInt(o.amount.replace("Rs. ", ""), 10), 0);
+    return ordersList.filter((order) => {
+      const matchesSearch =
+        !term ||
+        order.customer.toLowerCase().includes(term) ||
+        order.id.toLowerCase().includes(term) ||
+        order.table.toLowerCase().includes(term) ||
+        order.paymentMethod.toLowerCase().includes(term);
+      const matchesTab = activeTab === "All" || order.status === activeTab;
 
-  const completedCount = ordersList.filter(o => o.status === "Completed").length;
-  const cancelledCount = ordersList.filter(o => o.status === "Cancelled").length;
+      return matchesSearch && matchesTab;
+    });
+  }, [activeTab, ordersList, searchTerm]);
 
-  // --- Export Simulator Action ---
+  const stats = useMemo(() => {
+    const completedOrders = ordersList.filter((order) => order.status === "Completed");
+    const cancelledOrders = ordersList.filter((order) => order.status === "Cancelled");
+    const totalSales = completedOrders.reduce((sum, order) => sum + order.amount, 0);
+
+    return {
+      totalSales,
+      completedCount: completedOrders.length,
+      cancelledCount: cancelledOrders.length,
+    };
+  }, [ordersList]);
+
   const handleExport = () => {
     setIsExporting(true);
-    setTimeout(() => {
-      setIsExporting(false);
-      alert("✅ Order log data successfully compiled and ready! CSV manifest document downloaded.");
-    }, 1200);
+    window.setTimeout(() => setIsExporting(false), 900);
   };
 
   return (
     <div className="history-page">
-      
-      {/* HEADER ROW */}
-      <div className="history-header">
+      <section className="history-hero">
         <div>
+          <span className="history-eyebrow">
+            <Receipt size={16} />
+            Staff Order Ledger
+          </span>
           <h1>Order History</h1>
-          <p>Track previous customer orders professionally</p>
+          <p>Track completed and cancelled restaurant orders with receipt-level detail.</p>
         </div>
 
-        <button 
-          className={`export-btn ${isExporting ? "loading" : ""}`} 
+        <button
+          className={`export-btn ${isExporting ? "loading" : ""}`}
           onClick={handleExport}
           disabled={isExporting}
+          type="button"
         >
-          {isExporting ? "Compiling..." : "📥 Export History"}
+          <Download size={16} />
+          {isExporting ? "Preparing..." : "Export History"}
         </button>
-      </div>
+      </section>
 
-      {/* DASHBOARD SUMMARY CARDS */}
-      <div className="history-summary-cards">
-        <div className="summary-card">
-          <span className="card-icon blue">💰</span>
+      <section className="history-summary-cards">
+        <div className="summary-card dark">
+          <span className="card-icon"><Wallet size={23} /></span>
           <div>
-            <h3>Rs. {totalSales}</h3>
+            <h3>Rs. {stats.totalSales.toLocaleString()}</h3>
             <p>Total Revenue Processed</p>
           </div>
         </div>
         <div className="summary-card">
-          <span className="card-icon green">✅</span>
+          <span className="card-icon green"><CheckCircle2 size={23} /></span>
           <div>
-            <h3>{completedCount} Orders</h3>
+            <h3>{stats.completedCount} Orders</h3>
             <p>Completed Manifests</p>
           </div>
         </div>
         <div className="summary-card">
-          <span className="card-icon red">❌</span>
+          <span className="card-icon red"><XCircle size={23} /></span>
           <div>
-            <h3>{cancelledCount} Orders</h3>
+            <h3>{stats.cancelledCount} Orders</h3>
             <p>Cancelled Invoices</p>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* FILTER CONTROLS BAR */}
-      <div className="history-toolbar">
+      <section className="history-toolbar">
         <div className="search-input-wrapper">
-          <span className="search-inside-icon">🔍</span>
+          <Search size={16} />
           <input
             type="text"
-            placeholder="Search ID, Customer, Table..."
+            placeholder="Search ID, customer, table, payment..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(event) => setSearchTerm(event.target.value)}
           />
         </div>
 
         <div className="filter-tabs">
-          {["All", "Completed", "Cancelled"].map((tab) => (
+          {filters.map((tab) => (
             <button
               key={tab}
-              className={`tab-btn ${activeTab === tab ? "active" : ""}`}
+              className={activeTab === tab ? "active" : ""}
               onClick={() => setActiveTab(tab)}
+              type="button"
             >
               {tab}
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* RENDER MASTER TABLE */}
-      <div className="history-table-wrapper">
+      <section className="history-table-wrapper">
         {filteredOrders.length === 0 ? (
           <div className="empty-search-state">
-            <p>No logged order profiles found matching your current parameters.</p>
+            <FileText size={30} />
+            <h2>No orders found</h2>
+            <p>Try another keyword or switch the status filter.</p>
           </div>
         ) : (
           <table className="history-table">
@@ -177,103 +202,103 @@ const History = () => {
                 <th>Timestamp</th>
                 <th>Gross Settlement</th>
                 <th>Workflow Status</th>
-                <th style={{ textAlign: "center" }}>Operations</th>
+                <th>Operations</th>
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.map((order, index) => {
-                const avatarStyle = { backgroundColor: avatarColors[index % avatarColors.length] };
-                return (
-                  <tr key={order.id} className="table-row-hover">
-                    <td className="order-id">{order.id}</td>
-                    
-                    <td>
-                      <div className="customer-box">
-                        <div className="customer-avatar" style={avatarStyle}>
-                          {order.customer.charAt(0)}
-                        </div>
-                        <div>
-                          <h4>{order.customer}</h4>
-                          <p>{order.customerType}</p>
-                        </div>
+              {filteredOrders.map((order, index) => (
+                <tr key={order.id}>
+                  <td className="order-id">{order.id}</td>
+                  <td>
+                    <div className="customer-box">
+                      <div className={`customer-avatar ${avatarColors[index % avatarColors.length]}`}>
+                        {order.customer.charAt(0)}
                       </div>
-                    </td>
-
-                    <td><span className="table-badge">{order.table}</span></td>
-                    <td>{order.itemsCount} Items</td>
-                    <td>{order.time}</td>
-                    <td className="amount">{order.amount}</td>
-                    
-                    <td>
-                      <span className={`status-badge-history ${order.status.toLowerCase()}`}>
-                        <span className="badge-dot"></span>
-                        {order.status}
-                      </span>
-                    </td>
-
-                    <td style={{ textAlign: "center" }}>
-                      <button 
-                        className="action-inspect-btn"
-                        onClick={() => setSelectedOrder(order)}
-                      >
-                        📄 Receipt
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                      <div>
+                        <h4>{order.customer}</h4>
+                        <p>{order.customerType}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span className="table-badge">
+                      <Table2 size={14} />
+                      {order.table}
+                    </span>
+                  </td>
+                  <td>{order.itemsCount} Items</td>
+                  <td>
+                    <span className="time-cell">
+                      <CalendarDays size={14} />
+                      {order.date}
+                    </span>
+                    <small>{order.time}</small>
+                  </td>
+                  <td className="amount">Rs. {order.amount.toLocaleString()}</td>
+                  <td>
+                    <span className={`status-badge-history ${order.status.toLowerCase()}`}>
+                      {order.status === "Completed" ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
+                      {order.status}
+                    </span>
+                  </td>
+                  <td>
+                    <button className="action-inspect-btn" onClick={() => setSelectedOrder(order)} type="button">
+                      <Eye size={14} />
+                      Receipt
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         )}
-      </div>
+      </section>
 
-      {/* INTERACTIVE DETAILS POPUP MODAL */}
       {selectedOrder && (
         <div className="modal-overlay" onClick={() => setSelectedOrder(null)}>
-          <div className="modal-content invoice-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="invoice-modal" onClick={(event) => event.stopPropagation()}>
             <div className="invoice-header">
               <div>
+                <span className="invoice-kicker">Receipt Preview</span>
                 <h2>Invoice Manifest</h2>
-                <p>ID: {selectedOrder.id} • {selectedOrder.date}</p>
+                <p>{selectedOrder.id} - {selectedOrder.date}</p>
               </div>
-              <button className="close-x-btn" onClick={() => setSelectedOrder(null)}>×</button>
+              <button className="close-x-btn" onClick={() => setSelectedOrder(null)} type="button">
+                <X size={18} />
+              </button>
             </div>
-            
-            <hr className="divider-line"/>
 
             <div className="invoice-meta-grid">
-              <p><strong>Customer:</strong> {selectedOrder.customer}</p>
-              <p><strong>Station ID:</strong> {selectedOrder.table}</p>
-              <p><strong>Timestamp:</strong> {selectedOrder.time}</p>
-              <p><strong>Channel:</strong> {selectedOrder.paymentMethod}</p>
+              <p><User size={14} /><span>Customer</span><strong>{selectedOrder.customer}</strong></p>
+              <p><Table2 size={14} /><span>Table</span><strong>{selectedOrder.table}</strong></p>
+              <p><CalendarDays size={14} /><span>Time</span><strong>{selectedOrder.time}</strong></p>
+              <p><Wallet size={14} /><span>Payment</span><strong>{selectedOrder.paymentMethod}</strong></p>
             </div>
 
-            <h4 className="section-title">Itemized Summary</h4>
+            <h4 className="modal-section-title">Itemized Summary</h4>
             <div className="invoice-items-list">
-              {selectedOrder.breakdown.map((item, i) => (
-                <div key={i} className="invoice-item-row">
+              {selectedOrder.breakdown.map((item) => (
+                <div key={item.name} className="invoice-item-row">
                   <span>{item.name} <strong>x{item.qty}</strong></span>
-                  <span>Rs. {item.price}</span>
+                  <span>Rs. {item.price.toLocaleString()}</span>
                 </div>
               ))}
             </div>
 
-            <hr className="divider-line" />
-            
             <div className="invoice-total-row">
               <h3>Grand Total</h3>
-              <h2>{selectedOrder.amount}</h2>
+              <h2>Rs. {selectedOrder.amount.toLocaleString()}</h2>
             </div>
 
             <div className="invoice-status-footer">
               <span className={`status-badge-history ${selectedOrder.status.toLowerCase()}`}>
+                {selectedOrder.status === "Completed" ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
                 Invoice State: {selectedOrder.status}
               </span>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };

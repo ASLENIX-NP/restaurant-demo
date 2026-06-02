@@ -1,24 +1,9 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
 const ChefLayout = () => {
-  // Cleaned to keep only the Dashboard link
-  const links = [
-    {
-      path: "/chef",
-      label: "Dashboard",
-      icon: "📊",
-    },
-  ];
-
   return (
-    <div className="dashboard-layout">
-      <Sidebar
-        links={links}
-        title="ASLENIX"
-      />
-
+    <div className="dashboard-layout chef-layout-full">
       <div className="main-content">
         <Navbar title="Kitchen Panel" />
 

@@ -1,5 +1,19 @@
 import React, { useState } from "react";
-import "../../styles/reservations.css";
+import { 
+  CalendarPlus, 
+  Utensils, 
+  Users, 
+  Clock, 
+  Phone, 
+  FileText, 
+  X, 
+  Star, 
+  CheckCircle2, 
+  Hourglass,
+  CalendarCheck
+} from "lucide-react";
+
+import "../../styles/reservations.css"; // Kept for any global custom overrides
 
 const reservationsData = [
   {
@@ -29,125 +43,248 @@ const reservationsData = [
     phone: "+977-9843210987",
     notes: "Regular guest. Prepare the standard complimentary welcome drink.",
   },
+  {
+    name: "Sarah Jenkins",
+    status: "Confirmed",
+    table: "Table 3",
+    guests: 6,
+    time: "7:00 PM",
+    phone: "+977-9801234567",
+    notes: "Anniversary dinner.",
+  },
 ];
 
-// Helper array to assign premium distinct gradient backdrops to avatars
-const avatarGradients = [
-  "linear-gradient(135deg, #3b82f6, #1d4ed8)", // Blue
-  "linear-gradient(135deg, #ec4899, #be185d)", // Pink/Berry
-  "linear-gradient(135deg, #8b5cf6, #6d28d9)", // Purple
-];
+// Helper to assign premium gradient backgrounds to avatars
+const getAvatarGradient = (index) => {
+  const gradients = [
+    "from-blue-500 to-indigo-600",
+    "from-pink-500 to-rose-600",
+    "from-violet-500 to-purple-600",
+    "from-emerald-400 to-teal-500",
+    "from-orange-400 to-amber-500"
+  ];
+  return gradients[index % gradients.length];
+};
+
+// Helper for status badge styling
+const getStatusBadge = (status) => {
+  switch (status) {
+    case "Confirmed": return "bg-emerald-50 text-emerald-600 border-emerald-200";
+    case "Pending": return "bg-amber-50 text-amber-600 border-amber-200";
+    case "VIP": return "bg-purple-50 text-purple-600 border-purple-200";
+    default: return "bg-slate-50 text-slate-600 border-slate-200";
+  }
+};
 
 const Reservations = () => {
   const [selectedReservation, setSelectedReservation] = useState(null);
 
+  // Quick stats calculations
+  const totalReservations = reservationsData.length;
+  const confirmedCount = reservationsData.filter(r => r.status === "Confirmed").length;
+  const pendingCount = reservationsData.filter(r => r.status === "Pending").length;
+  const vipCount = reservationsData.filter(r => r.status === "VIP").length;
+
   return (
-    <div className="reservations-page">
-      {/* HEADER SECTION */}
-      <div className="reservations-header">
-        <div>
-          <h1>Reservations</h1>
-          <p>Manage restaurant bookings professionally</p>
+    <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
+      <main className="max-w-[1600px] mx-auto pb-12">
+        
+        {/* HEADER SECTION */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">Reservations</h1>
+            <p className="text-slate-400 text-sm mt-0.5 font-medium">
+              Dashboard <span className="mx-1.5 text-slate-300">&gt;</span> Reservations
+            </p>
+          </div>
+          <button 
+            onClick={() => alert("Add Reservation coming soon!")}
+            className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
+          >
+            <CalendarPlus size={16} /> New Booking
+          </button>
         </div>
-      </div>
 
-      {/* CARDS GRID */}
-      <div className="reservations-grid">
-        {reservationsData.map((item, index) => {
-          const avatarStyle = {
-            background: avatarGradients[index % avatarGradients.length],
-          };
+        {/* METRICS & STATS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+              <CalendarCheck size={22} />
+            </div>
+            <div>
+              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Bookings</h4>
+              <h2 className="text-2xl font-black text-slate-900 mt-1">{totalReservations}</h2>
+            </div>
+          </div>
 
-          return (
-            <div className="reservation-card" key={index}>
-              <div className="reservation-top">
-                <div className="reservation-avatar" style={avatarStyle}>
-                  {item.name.charAt(0)}
-                </div>
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+              <CheckCircle2 size={22} />
+            </div>
+            <div>
+              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Confirmed</h4>
+              <h2 className="text-2xl font-black text-slate-900 mt-1">{confirmedCount}</h2>
+            </div>
+          </div>
 
-                <div className="reservation-user-meta">
-                  <h2>{item.name}</h2>
-                  <span className={`status-badge ${item.status.toLowerCase()}`}>
-                    <span className="status-dot"></span>
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+              <Hourglass size={22} />
+            </div>
+            <div>
+              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Pending</h4>
+              <h2 className="text-2xl font-black text-slate-900 mt-1">{pendingCount}</h2>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+              <Star size={22} />
+            </div>
+            <div>
+              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">VIP Guests</h4>
+              <h2 className="text-2xl font-black text-slate-900 mt-1">{vipCount}</h2>
+            </div>
+          </div>
+        </div>
+
+        {/* RESERVATIONS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          {reservationsData.map((item, index) => (
+            <div 
+              key={index} 
+              className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden"
+            >
+              {/* Card Top */}
+              <div className="p-6 pb-4 border-b border-slate-50">
+                <div className="flex justify-between items-start mb-5">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md bg-gradient-to-br ${getAvatarGradient(index)}`}>
+                    {item.name.charAt(0)}
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border ${getStatusBadge(item.status)}`}>
                     {item.status}
+                  </span>
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-slate-900">{item.name}</h2>
+                  <p className="text-xs font-semibold text-slate-400 mt-0.5">{item.phone}</p>
+                </div>
+              </div>
+
+              {/* Card Details */}
+              <div className="p-6 pt-4 flex-1 flex flex-col gap-3.5 bg-slate-50/30">
+                <div className="flex items-center gap-3 text-sm font-semibold text-slate-600">
+                  <div className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 shadow-sm">
+                    <Utensils size={14} />
+                  </div>
+                  {item.table}
+                </div>
+                <div className="flex items-center gap-3 text-sm font-semibold text-slate-600">
+                  <div className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 shadow-sm">
+                    <Users size={14} />
+                  </div>
+                  {item.guests} Guests
+                </div>
+                <div className="flex items-center gap-3 text-sm font-semibold text-slate-600">
+                  <div className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 shadow-sm">
+                    <Clock size={14} />
+                  </div>
+                  {item.time}
+                </div>
+              </div>
+
+              {/* Card Action */}
+              <div className="p-4 border-t border-slate-100">
+                <button 
+                  onClick={() => setSelectedReservation(item)}
+                  className="w-full bg-slate-50 hover:bg-slate-900 text-slate-700 hover:text-white font-bold py-2.5 rounded-xl transition-colors shadow-sm text-sm"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+
+      {/* AESTHETIC DETAIL MODAL */}
+      {selectedReservation && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity" onClick={() => setSelectedReservation(null)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in" onClick={(e) => e.stopPropagation()}>
+            
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
+              <div>
+                <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                  Reservation Details
+                </h2>
+                <span className={`mt-1.5 inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border ${getStatusBadge(selectedReservation.status)}`}>
+                  {selectedReservation.status} Booking
+                </span>
+              </div>
+              <button onClick={() => setSelectedReservation(null)} className="text-slate-400 hover:text-slate-600 bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm transition">
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              
+              <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Guest Name</span>
+                <span className="font-black text-slate-900">{selectedReservation.name}</span>
+              </div>
+
+              <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Contact</span>
+                <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                  <Phone size={14} className="text-slate-400"/> {selectedReservation.phone}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pb-3 border-b border-slate-100">
+                <div>
+                  <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Table</span>
+                  <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                    <Utensils size={14} className="text-slate-400"/> {selectedReservation.table}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Party Size</span>
+                  <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                    <Users size={14} className="text-slate-400"/> {selectedReservation.guests} Guests
                   </span>
                 </div>
               </div>
 
-              <div className="reservation-details">
-                <div className="detail-box">
-                  <span className="detail-icon">🍽️</span>
-                  <p>{item.table}</p>
-                </div>
-
-                <div className="detail-box">
-                  <span className="detail-icon">👥</span>
-                  <p>{item.guests} Guests</p>
-                </div>
-
-                <div className="detail-box">
-                  <span className="detail-icon">🕒</span>
-                  <p>{item.time}</p>
-                </div>
-              </div>
-
-              <button 
-                className="view-btn"
-                onClick={() => setSelectedReservation(item)}
-              >
-                View Details
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* AESTHETIC DETAIL MODAL DISPLAY */}
-      {selectedReservation && (
-        <div className="modal-overlay" onClick={() => setSelectedReservation(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Reservation Details</h2>
-              <button className="close-x" onClick={() => setSelectedReservation(null)}>×</button>
-            </div>
-            <hr />
-            
-            <div className="modal-body-details">
-              <div className="modal-row">
-                <strong>Guest Name:</strong>
-                <span>{selectedReservation.name}</span>
-              </div>
-              <div className="modal-row">
-                <strong>Status:</strong>
-                <span className={`status-badge ${selectedReservation.status.toLowerCase()}`}>
-                  {selectedReservation.status}
+              <div className="flex justify-between items-center pb-4">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Arrival Time</span>
+                <span className="font-black text-purple-600 bg-purple-50 px-3 py-1 rounded-lg border border-purple-100 flex items-center gap-1.5">
+                  <Clock size={14} /> {selectedReservation.time}
                 </span>
               </div>
-              <div className="modal-row">
-                <strong>Assigned Base:</strong>
-                <span>{selectedReservation.table}</span>
+
+              <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  <FileText size={14} /> Special Requests / Notes
+                </span>
+                <p className="text-sm font-medium text-slate-700 leading-relaxed">
+                  {selectedReservation.notes || "No special requests appended."}
+                </p>
               </div>
-              <div className="modal-row">
-                <strong>Party Size:</strong>
-                <span>{selectedReservation.guests} Persons</span>
-              </div>
-              <div className="modal-row">
-                <strong>Arrival Time:</strong>
-                <span>{selectedReservation.time}</span>
-              </div>
-              <div className="modal-row">
-                <strong>Contact Number:</strong>
-                <span>{selectedReservation.phone}</span>
-              </div>
-              <div className="modal-notes-section">
-                <strong>Special Requests / Notes:</strong>
-                <p>{selectedReservation.notes || "No special requests appended."}</p>
-              </div>
+
             </div>
 
-            <button className="modal-close-btn" onClick={() => setSelectedReservation(null)}>
-              Close View
-            </button>
+            {/* Modal Footer */}
+            <div className="p-5 border-t border-slate-100 bg-slate-50/50">
+              <button 
+                onClick={() => setSelectedReservation(null)}
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition-all shadow-md"
+              >
+                Close Window
+              </button>
+            </div>
+
           </div>
         </div>
       )}

@@ -1,202 +1,243 @@
-import "../../styles/kitchen.css";
+import React, { useState } from "react";
+import { 
+  MonitorPlay, 
+  RefreshCw, 
+  ClipboardList, 
+  ChefHat, 
+  CheckCircle2, 
+  Utensils,
+  Clock
+} from "lucide-react";
+
+import "../../styles/kitchen.css"; // Kept for any global custom overrides
+
+// Structured Mock Data for cleaner rendering
+const kitchenData = {
+  newOrders: [
+    {
+      id: "#TH1250",
+      time: "10:30 AM",
+      table: "Table 5",
+      type: "Dine In",
+      items: ["Grilled Chicken", "Alfredo Pasta"],
+      statusText: "Waiting for Kitchen",
+    }
+  ],
+  preparing: [
+    {
+      id: "#TH1248",
+      time: "10:15 AM",
+      table: "Table 3",
+      type: "Delivery",
+      items: ["Paneer Pizza", "Garlic Bread"],
+      statusText: "Preparing Food",
+    }
+  ],
+  ready: [
+    {
+      id: "#TH1245",
+      time: "10:05 AM",
+      table: "Table 7",
+      type: "Takeaway",
+      items: ["Margherita Pizza", "Ice Tea"],
+      statusText: "Ready For Service",
+    }
+  ],
+  completed: [
+    {
+      id: "#TH1242",
+      time: "09:58 AM",
+      table: "Table 2",
+      type: "Dine In",
+      items: ["Veg Sandwich", "Lemonade"],
+      statusText: "Completed",
+    }
+  ]
+};
 
 const Kitchen = () => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
+
   return (
-    <div className="kitchen-page">
+    <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
+      <main className="max-w-[1600px] mx-auto">
+        
+        {/* HEADER SECTION */}
+        <div className="flex justify-between items-end mb-8">
+          <div>
+            <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">
+              Kitchen Dashboard
+            </h1>
+            <p className="text-slate-400 text-sm mt-0.5 font-medium">
+              Manage and track kitchen orders in real-time
+            </p>
+          </div>
 
-      {/* HEADER */}
-
-      <div className="kitchen-header">
-
-        <div>
-          <h1>Kitchen Dashboard</h1>
-          <p>Manage and track kitchen orders in real-time</p>
+          <div className="flex items-center gap-3">
+            <button className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all">
+              <MonitorPlay size={16} />
+              Kitchen Display
+            </button>
+            <button 
+              onClick={handleRefresh}
+              className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
+            >
+              <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
+              Refresh
+            </button>
+          </div>
         </div>
 
-        <div className="kitchen-header-buttons">
-          <button className="kds-btn">
-            Kitchen Display
-          </button>
+        {/* METRICS & STATS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+          {/* New Orders Stat */}
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
+              <ClipboardList size={22} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">8</h2>
+              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">New Orders</h4>
+            </div>
+          </div>
 
-          <button className="refresh-btn">
-            Refresh
-          </button>
+          {/* Preparing Stat */}
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+              <ChefHat size={22} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">12</h2>
+              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">Preparing</h4>
+            </div>
+          </div>
+
+          {/* Ready Stat */}
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+              <Utensils size={22} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">15</h2>
+              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">Ready</h4>
+            </div>
+          </div>
+
+          {/* Completed Stat */}
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+              <CheckCircle2 size={22} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">128</h2>
+              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">Completed Today</h4>
+            </div>
+          </div>
         </div>
 
+        {/* KANBAN ORDER COLUMNS */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+
+          {/* COLUMN 1: NEW ORDERS */}
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center bg-orange-100/50 border border-orange-200/50 rounded-xl py-3 px-4">
+              <h3 className="font-bold text-orange-700 text-sm">New Orders</h3>
+              <span className="bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">8</span>
+            </div>
+            {kitchenData.newOrders.map((order, idx) => (
+              <OrderCard key={idx} order={order} colorTheme="orange" />
+            ))}
+          </div>
+
+          {/* COLUMN 2: PREPARING */}
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center bg-amber-100/50 border border-amber-200/50 rounded-xl py-3 px-4">
+              <h3 className="font-bold text-amber-700 text-sm">Preparing</h3>
+              <span className="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">12</span>
+            </div>
+            {kitchenData.preparing.map((order, idx) => (
+              <OrderCard key={idx} order={order} colorTheme="amber" />
+            ))}
+          </div>
+
+          {/* COLUMN 3: READY */}
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center bg-emerald-100/50 border border-emerald-200/50 rounded-xl py-3 px-4">
+              <h3 className="font-bold text-emerald-700 text-sm">Ready</h3>
+              <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">15</span>
+            </div>
+            {kitchenData.ready.map((order, idx) => (
+              <OrderCard key={idx} order={order} colorTheme="emerald" />
+            ))}
+          </div>
+
+          {/* COLUMN 4: COMPLETED */}
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center bg-slate-200/50 border border-slate-300/50 rounded-xl py-3 px-4">
+              <h3 className="font-bold text-slate-700 text-sm">Completed</h3>
+              <span className="bg-slate-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">128</span>
+            </div>
+            {kitchenData.completed.map((order, idx) => (
+              <OrderCard key={idx} order={order} colorTheme="slate" isCompleted />
+            ))}
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  );
+};
+
+/* REUSABLE KITCHEN ORDER CARD COMPONENT */
+const OrderCard = ({ order, colorTheme, isCompleted = false }) => {
+  
+  // Theme color maps for Tailwind utilities
+  const themeMap = {
+    orange: { bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200", topBorder: "border-t-orange-400" },
+    amber: { bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-200", topBorder: "border-t-amber-400" },
+    emerald: { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200", topBorder: "border-t-emerald-400" },
+    slate: { bg: "bg-slate-100", text: "text-slate-500", border: "border-slate-200", topBorder: "border-t-slate-400" }
+  };
+
+  const theme = themeMap[colorTheme];
+
+  return (
+    <div className={`bg-white rounded-xl shadow-sm border border-slate-100 p-4 border-t-4 ${theme.topBorder} transition-transform hover:-translate-y-1 ${isCompleted ? 'opacity-75' : ''}`}>
+      
+      {/* Top Details */}
+      <div className="flex justify-between items-start mb-3">
+        <h4 className="font-black text-slate-900 text-lg">{order.id}</h4>
+        <span className="flex items-center gap-1 text-[11px] font-bold text-slate-400">
+          <Clock size={12} /> {order.time}
+        </span>
       </div>
 
-      {/* STATS */}
+      {/* Meta Info */}
+      <p className="text-xs font-bold text-slate-500 mb-4 pb-3 border-b border-slate-100">
+        {order.table} <span className="mx-1 text-slate-300">•</span> {order.type}
+      </p>
 
-      <div className="kitchen-stats">
+      {/* Food Items */}
+      <ul className="space-y-2 mb-5">
+        {order.items.map((item, i) => (
+          <li key={i} className="flex items-start gap-2 text-sm font-semibold text-slate-700">
+            <span className={`mt-1.5 w-1.5 h-1.5 rounded-full ${theme.bg.replace('bg-', 'bg-').replace('-50', '-400')}`} />
+            {item}
+          </li>
+        ))}
+      </ul>
 
-        <div className="kitchen-stat-card new">
-          <div className="kitchen-stat-icon">📋</div>
-
-          <div>
-            <h2>8</h2>
-            <p>New Orders</p>
-          </div>
-        </div>
-
-        <div className="kitchen-stat-card preparing">
-          <div className="kitchen-stat-icon">⏳</div>
-
-          <div>
-            <h2>12</h2>
-            <p>Preparing</p>
-          </div>
-        </div>
-
-        <div className="kitchen-stat-card ready">
-          <div className="kitchen-stat-icon">🍽️</div>
-
-          <div>
-            <h2>15</h2>
-            <p>Ready</p>
-          </div>
-        </div>
-
-        <div className="kitchen-stat-card completed">
-          <div className="kitchen-stat-icon">✅</div>
-
-          <div>
-            <h2>128</h2>
-            <p>Completed Today</p>
-          </div>
-        </div>
-
+      {/* Status Badge */}
+      <div className={`text-center py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider border ${theme.bg} ${theme.text} ${theme.border}`}>
+        {order.statusText}
       </div>
-
-      {/* ORDER COLUMNS */}
-
-      <div className="kitchen-columns">
-
-        {/* NEW ORDERS */}
-
-        <div className="kitchen-column">
-
-          <div className="column-header orange">
-            <h3>New Orders</h3>
-            <span>8</span>
-          </div>
-
-          <div className="kitchen-order-card">
-
-            <div className="order-top">
-              <h4>#TH1250</h4>
-              <span>10:30 AM</span>
-            </div>
-
-            <p>Table 5 • Dine In</p>
-
-            <ul>
-              <li>Grilled Chicken</li>
-              <li>Alfredo Pasta</li>
-            </ul>
-
-            <div className="waiting-label">
-              Waiting for Kitchen
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* PREPARING */}
-
-        <div className="kitchen-column">
-
-          <div className="column-header yellow">
-            <h3>Preparing</h3>
-            <span>12</span>
-          </div>
-
-          <div className="kitchen-order-card">
-
-            <div className="order-top">
-              <h4>#TH1248</h4>
-              <span>10:15 AM</span>
-            </div>
-
-            <p>Table 3 • Delivery</p>
-
-            <ul>
-              <li>Paneer Pizza</li>
-              <li>Garlic Bread</li>
-            </ul>
-
-            <div className="preparing-label">
-              Preparing Food
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* READY */}
-
-        <div className="kitchen-column">
-
-          <div className="column-header green">
-            <h3>Ready</h3>
-            <span>15</span>
-          </div>
-
-          <div className="kitchen-order-card">
-
-            <div className="order-top">
-              <h4>#TH1245</h4>
-              <span>10:05 AM</span>
-            </div>
-
-            <p>Table 7 • Takeaway</p>
-
-            <ul>
-              <li>Margherita Pizza</li>
-              <li>Ice Tea</li>
-            </ul>
-
-            <div className="ready-label">
-              Ready For Service
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* COMPLETED */}
-
-        <div className="kitchen-column">
-
-          <div className="column-header dark">
-            <h3>Completed</h3>
-            <span>128</span>
-          </div>
-
-          <div className="kitchen-order-card completed-card">
-
-            <div className="order-top">
-              <h4>#TH1242</h4>
-              <span>09:58 AM</span>
-            </div>
-
-            <p>Table 2 • Dine In</p>
-
-            <ul>
-              <li>Veg Sandwich</li>
-              <li>Lemonade</li>
-            </ul>
-
-            <div className="done-label">
-              Completed
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
+      
     </div>
   );
 };

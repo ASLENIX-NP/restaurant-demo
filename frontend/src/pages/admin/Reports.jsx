@@ -22,7 +22,9 @@ import {
   Cell
 } from "recharts";
 
-// Cleaned premium Mock Matrices matching image_419ff3.png values safely
+// Links the stylesheet cleanly
+import "../../styles/reports.css";
+// Premium Mock Metrics matching your dashboard values safely
 const revenueTrendData = [
   { label: "05-05", revenue: 42000 },
   { label: "10-05", revenue: 58000 },
@@ -44,7 +46,7 @@ const topItems = [
     name: "Chicken Burger",
     category: "Fast Food",
     quantity: 120,
-    revenue: "Rs. 54,000", // Fixed: handled string parsing cleanly below
+    revenue: "Rs. 54,000",
     image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=120&auto=format&fit=crop",
   },
   {
@@ -67,7 +69,6 @@ export default function Reports() {
   const [activeTab, setActiveTab] = useState("Overview");
   const tabs = ["Overview", "Sales Report", "Orders", "Menu Report", "Customers"];
 
-  // Prevents layout breakdown during data extraction or view swapping
   const handlePrintExport = () => {
     window.print();
   };
@@ -250,7 +251,6 @@ export default function Reports() {
                     </td>
                     <td className="category-text-dim">{item.category}</td>
                     <td className="qty-center-cell">{item.quantity}</td>
-                    {/* Fixed double 'Rs.' expression notation bug here */}
                     <td className="revenue-right-cell">{item.revenue}</td>
                   </tr>
                 ))}

@@ -238,3 +238,107 @@
     background: #fee2e2;
     color: #dc2626;
 }
+
+
+/* ==========================================================================
+   DYNAMIC SIDEBAR CHECKOUT WORKSPACE LAYOUT SYSTEM
+   ========================================================================== */
+
+.bills-workspace-layout {
+    width: 100%;
+}
+
+.bills-grid-container {
+    flex: 1;
+    transition: all 0.3s ease;
+}
+
+
+/* Checkout Popout Pane */
+
+.checkout-popout-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(15, 23, 42, 0.28);
+    backdrop-filter: blur(2px);
+}
+
+.billing-checkout-pane {
+    width: min(420px, 100%);
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 1.25rem;
+    padding: 1.25rem;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
+}
+
+
+/* Header inside drawer pane */
+
+.pane-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.pane-header h2 {
+    font-size: 1.15rem;
+    margin: 0;
+    text-transform: capitalize;
+}
+
+.close-pane-icon {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.close-pane-icon:hover {
+    color: #475569;
+    background-color: #f1f5f9;
+}
+
+
+/* Ordered Food Items Table Layout */
+
+.pane-table-box {
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid #f1f5f9;
+    border-radius: 0.75rem;
+}
+
+.pane-table-box table td {
+    padding: 0.5rem 0.75rem;
+    vertical-align: middle;
+}
+
+.pane-table-box table th {
+    padding: 0.5rem 0.75rem;
+}
+
+
+@media (max-width: 640px) {
+    .checkout-popout-backdrop {
+        align-items: flex-end;
+        padding: 0.75rem;
+    }
+
+    .billing-checkout-pane {
+        max-height: calc(100vh - 1.5rem);
+        border-radius: 1rem;
+    }
+}

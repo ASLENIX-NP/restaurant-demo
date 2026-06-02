@@ -1,271 +1,715 @@
-/* src/styles/pendingBills.css */
-
-.pending-bills-page {
-    padding: 30px;
-    background: #f4f7fb;
+.pending-bills-modern {
     min-height: 100vh;
+    padding: 32px;
+    background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.10), transparent 34%),
+        linear-gradient(180deg, #f8fbff 0%, #f3f6fb 100%);
+    color: #0f172a;
 }
 
-.pending-header {
+.pending-shell {
+    width: min(1540px, 100%);
+    margin: 0 auto;
+}
+
+.pending-hero,
+.pending-toolbar,
+.pending-metric-card,
+.restaurant-bill-card,
+.empty-bill-state {
+    border: 1px solid #dbe4f0;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.06);
+}
+
+.pending-hero {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-}
-
-.pending-header h1 {
-    font-size: 38px;
-    font-weight: 700;
-}
-
-.pending-header p {
-    color: #6b7280;
-    margin-top: 8px;
-}
-
-.date-btn {
-    border: none;
-    background: white;
-    padding: 14px 22px;
-    border-radius: 14px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.pending-layout {
-    display: grid;
-    grid-template-columns: 360px 1fr;
+    justify-content: space-between;
     gap: 24px;
-}
-
-
-/* LEFT */
-
-.bills-list-card {
-    background: white;
-    border-radius: 24px;
-    padding: 24px;
-    height: fit-content;
-}
-
-.card-top {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.card-top input {
-    height: 46px;
-    border-radius: 12px;
-    border: 1px solid #dbe3f0;
-    padding: 0 16px;
-}
-
-.bills-list {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.bill-item {
-    background: #f8fafc;
-    padding: 18px;
-    border-radius: 18px;
-    display: flex;
-    justify-content: space-between;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.bill-item.active {
-    border: 2px solid #4f46e5;
-    background: #eef2ff;
-}
-
-.bill-item h3 {
-    margin-bottom: 6px;
-}
-
-.bill-item p {
-    color: #6b7280;
-}
-
-.bill-right {
-    text-align: right;
-}
-
-.bill-right strong {
-    display: block;
-    margin-bottom: 8px;
-}
-
-.unpaid,
-.partial {
-    padding: 6px 14px;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.unpaid {
-    background: #fee2e2;
-    color: #dc2626;
-}
-
-.partial {
-    background: #fef3c7;
-    color: #d97706;
-}
-
-
-/* RIGHT */
-
-.invoice-card {
-    background: white;
-    border-radius: 24px;
-    padding: 30px;
-}
-
-.invoice-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.print-btn {
-    border: none;
-    background: #eef2ff;
-    color: #4f46e5;
-    padding: 12px 18px;
-    border-radius: 12px;
-    cursor: pointer;
-}
-
-.invoice-info {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
-    margin-bottom: 30px;
-}
-
-.invoice-info div {
-    background: #f8fafc;
-    padding: 18px;
-    border-radius: 16px;
-}
-
-.invoice-info span {
-    display: block;
-    margin-bottom: 8px;
-    color: #6b7280;
-}
-
-.invoice-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 30px;
-}
-
-.invoice-table th,
-.invoice-table td {
-    padding: 16px;
-    border-bottom: 1px solid #eee;
-    text-align: left;
-}
-
-.bill-summary {
-    margin-bottom: 30px;
-}
-
-.bill-summary div {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 14px;
-}
-
-.grand-total {
-    font-size: 24px;
-    font-weight: 700;
-    color: #4f46e5;
-}
-
-.payment-methods h3 {
+    padding: 28px;
+    border-radius: 8px;
     margin-bottom: 18px;
 }
 
-.methods-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 30px;
+.pending-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
-.methods-grid button {
-    height: 52px;
-    border: 2px solid #dbe3f0;
-    border-radius: 14px;
-    background: white;
-    cursor: pointer;
-    font-weight: 600;
+.pending-hero h1 {
+    margin: 8px 0 5px;
+    font-size: clamp(30px, 4vw, 48px);
+    line-height: 1;
+    font-weight: 950;
+    letter-spacing: 0;
 }
 
-.methods-grid button.active {
-    background: #4f46e5;
-    color: white;
-    border-color: #4f46e5;
+.pending-hero p {
+    margin: 0;
+    color: #64748b;
+    font-size: 15px;
 }
 
-.payment-actions {
+.pending-hero-actions {
     display: flex;
-    gap: 18px;
+    align-items: center;
+    gap: 12px;
 }
 
-.partial-btn,
-.pay-btn {
-    flex: 1;
-    height: 56px;
-    border: none;
-    border-radius: 16px;
-    font-size: 16px;
-    font-weight: 600;
+.pending-search {
+    width: min(360px, 42vw);
+    height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 15px;
+    background: #ffffff;
+    border: 1px solid #cfd9e8;
+    border-radius: 8px;
+    color: #64748b;
+}
+
+.pending-search input {
+    width: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.pending-date-btn {
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 8px;
+    color: #ffffff;
+    background: #111827;
+    font-weight: 850;
     cursor: pointer;
 }
 
-.partial-btn {
-    background: #fef3c7;
+.pending-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.pending-metric-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-height: 104px;
+    padding: 18px;
+    border-radius: 8px;
+}
+
+.pending-metric-card.dark {
+    color: #ffffff;
+    background: linear-gradient(135deg, #111827, #243044);
+    border-color: #111827;
+}
+
+.pending-metric-card p {
+    margin: 0 0 6px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 850;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.pending-metric-card.dark p {
+    color: #cbd5e1;
+}
+
+.pending-metric-card strong {
+    display: block;
+    font-size: 25px;
+    line-height: 1;
+    font-weight: 950;
+}
+
+.metric-icon {
+    width: 54px;
+    height: 54px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 54px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+.metric-icon.red {
+    color: #ef4444;
+    background: #fff1f2;
+}
+
+.metric-icon.amber {
     color: #d97706;
+    background: #fffbeb;
 }
 
-.pay-btn {
-    background: linear-gradient( 135deg, #4f46e5, #7c3aed);
-    color: white;
+.metric-icon.green {
+    color: #16a34a;
+    background: #ecfdf5;
 }
 
+.pending-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+}
 
-/* RESPONSIVE */
+.filter-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.pending-tabs {
+    display: inline-grid;
+    grid-template-columns: repeat(3, minmax(82px, 1fr));
+    gap: 6px;
+    padding: 4px;
+    border-radius: 8px;
+    background: #eef3f8;
+}
+
+.pending-tabs button {
+    height: 34px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.pending-tabs button.active {
+    color: #2563eb;
+    background: #ffffff;
+    box-shadow: 0 1px 6px rgba(15, 23, 42, 0.08);
+}
+
+.bill-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.restaurant-bill-card {
+    min-height: 258px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 18px;
+    border-radius: 8px;
+    border-top: 4px solid #ef4444;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.restaurant-bill-card.status-partial {
+    border-top-color: #d97706;
+}
+
+.restaurant-bill-card:hover,
+.restaurant-bill-card.selected {
+    transform: translateY(-3px);
+    border-color: #2563eb;
+    box-shadow: 0 20px 46px rgba(37, 99, 235, 0.12);
+}
+
+.bill-card-top,
+.bill-card-bottom,
+.table-focus,
+.bill-meta-grid span {
+    display: flex;
+    align-items: center;
+}
+
+.bill-card-top,
+.bill-card-bottom {
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.invoice-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 6px;
+    color: #2563eb;
+    background: #eff6ff;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.bill-status {
+    min-height: 26px;
+    padding: 0 9px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    color: #dc2626;
+    background: #fff1f2;
+    font-size: 11px;
+    font-weight: 950;
+    text-transform: uppercase;
+}
+
+.restaurant-bill-card.status-partial .bill-status {
+    color: #b45309;
+    background: #fffbeb;
+}
+
+.table-focus {
+    gap: 12px;
+    margin: 18px 0;
+}
+
+.table-icon {
+    width: 50px;
+    height: 50px;
+    flex: 0 0 50px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #ffffff;
+    background: #111827;
+}
+
+.table-focus h2 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 24px;
+    font-weight: 950;
+}
+
+.table-focus p {
+    margin: 3px 0 0;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.bill-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    padding: 12px 0;
+    border-top: 1px dashed #dbe4f0;
+    border-bottom: 1px dashed #dbe4f0;
+}
+
+.bill-meta-grid span {
+    gap: 6px;
+    min-width: 0;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.bill-card-bottom {
+    margin-top: 16px;
+}
+
+.priority-copy {
+    display: block;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.bill-card-bottom strong {
+    display: block;
+    margin-top: 4px;
+    color: #0f172a;
+    font-size: 20px;
+    font-weight: 950;
+}
+
+.checkout-cta {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    border-radius: 8px;
+    color: #ffffff;
+    background: #2563eb;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.empty-bill-state {
+    margin-top: 18px;
+    padding: 44px 18px;
+    border-radius: 8px;
+    text-align: center;
+    color: #64748b;
+}
+
+.empty-bill-state h2 {
+    margin: 12px 0 4px;
+    color: #0f172a;
+    font-size: 20px;
+}
+
+.empty-bill-state p {
+    margin: 0;
+}
+
+.checkout-popout-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(15, 23, 42, 0.38);
+    backdrop-filter: blur(4px);
+}
+
+.billing-checkout-pane {
+    width: min(460px, 100%);
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    padding: 22px;
+    border: 1px solid #dbe4f0;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 28px 90px rgba(15, 23, 42, 0.30);
+}
+
+.pane-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.checkout-kicker {
+    display: block;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pane-header h2 {
+    margin: 5px 0 3px;
+    color: #0f172a;
+    font-size: 24px;
+    font-weight: 950;
+}
+
+.pane-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.close-pane-icon {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    background: #f1f5f9;
+    cursor: pointer;
+}
+
+.close-pane-icon:hover {
+    color: #0f172a;
+    background: #e2e8f0;
+}
+
+.checkout-info-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.checkout-info-strip span {
+    padding: 10px;
+    border: 1px solid #e8eef6;
+    border-radius: 8px;
+    color: #64748b;
+    background: #f8fafc;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.checkout-info-strip strong {
+    display: block;
+    margin-top: 3px;
+    color: #0f172a;
+}
+
+.pane-table-box {
+    max-height: 210px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    border: 1px solid #e8eef6;
+    border-radius: 8px;
+}
+
+.pane-table-box table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.pane-table-box th {
+    padding: 10px 12px;
+    color: #64748b;
+    background: #f8fafc;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 950;
+    text-transform: uppercase;
+}
+
+.pane-table-box th:nth-child(2),
+.pane-table-box td:nth-child(2) {
+    text-align: center;
+}
+
+.pane-table-box th:last-child,
+.pane-table-box td:last-child {
+    text-align: right;
+}
+
+.pane-table-box td {
+    padding: 12px;
+    border-top: 1px solid #e8eef6;
+    color: #0f172a;
+    font-weight: 850;
+}
+
+.pane-table-box td span {
+    display: block;
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.checkout-section {
+    padding-top: 14px;
+    margin-top: 14px;
+    border-top: 1px solid #e8eef6;
+}
+
+.checkout-section h3 {
+    margin: 0 0 10px;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 950;
+}
+
+.payment-method-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.payment-method-grid button,
+.discount-switch button {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid #dbe4f0;
+    border-radius: 8px;
+    color: #334155;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.payment-method-grid button.active,
+.discount-switch button.active {
+    color: #ffffff;
+    border-color: #2563eb;
+    background: #2563eb;
+}
+
+.discount-switch {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.discount-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #dbe4f0;
+    border-radius: 8px;
+    outline: none;
+    color: #0f172a;
+    font-size: 13px;
+}
+
+.discount-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.checkout-summary {
+    margin-top: 16px;
+    padding: 14px;
+    border: 1px solid #e8eef6;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.checkout-summary div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.checkout-summary div + div {
+    margin-top: 9px;
+}
+
+.checkout-summary strong {
+    color: #0f172a;
+    font-weight: 950;
+}
+
+.checkout-summary .discount-row,
+.checkout-summary .discount-row strong {
+    color: #ef4444;
+}
+
+.checkout-summary .grand-total {
+    padding-top: 12px;
+    margin-top: 12px;
+    border-top: 1px solid #dbe4f0;
+    color: #2563eb;
+    font-size: 15px;
+}
+
+.checkout-summary .grand-total strong {
+    color: #2563eb;
+    font-size: 21px;
+}
+
+.complete-payment-btn-modern {
+    width: 100%;
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    border: 0;
+    border-radius: 8px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #2563eb, #0891b2);
+    font-size: 13px;
+    font-weight: 950;
+    cursor: pointer;
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.22);
+}
 
 @media (max-width: 1100px) {
-    .pending-layout {
-        grid-template-columns: 1fr;
-    }
-    .invoice-info {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .methods-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .pending-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
-@media (max-width: 768px) {
-    .invoice-info {
-        grid-template-columns: 1fr;
+@media (max-width: 780px) {
+    .pending-bills-modern {
+        padding: 18px;
     }
-    .methods-grid {
-        grid-template-columns: 1fr;
-    }
-    .payment-actions {
+
+    .pending-hero,
+    .pending-toolbar {
         flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pending-hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pending-search {
+        width: 100%;
+    }
+
+    .pending-tabs,
+    .pending-metrics,
+    .checkout-info-strip,
+    .payment-method-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .checkout-popout-backdrop {
+        align-items: flex-end;
+        padding: 12px;
+    }
+
+    .billing-checkout-pane {
+        max-height: calc(100vh - 24px);
+        border-radius: 10px;
+    }
+}
+
+@media (max-width: 520px) {
+    .bill-card-grid,
+    .bill-meta-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pending-hero,
+    .pending-metric-card,
+    .restaurant-bill-card {
+        padding: 16px;
     }
 }
