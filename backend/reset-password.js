@@ -5,13 +5,19 @@ const bcrypt = require("bcryptjs");
 
 const run = async () => {
   await connectDB();
-  const user = await User.findOne({ username: 'admin' });
+  const user = await User.findOne({ username: "admin" });
   if (user) {
     user.password = "admin123";
     await user.save();
     console.log("Admin password reset to 'admin123'");
   } else {
-    console.log("Admin user not found");
+    const newUser = new User({
+      username: "admin",
+      password: "admin123",
+      role: "Admin",
+    });
+    await newUser.save();
+    console.log("Admin user created with password 'admin123'");
   }
   process.exit(0);
 };
