@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Search, 
@@ -12,62 +12,22 @@ import {
   X,
   CalendarCheck
 } from "lucide-react";
+import { registerUser, getUsers } from "../../services/authService";
 
 import "../../styles/employees.css"; // Kept for any global custom overrides
-
-const initialEmployees = [
-  {
-    name: "John Doe",
-    role: "Manager",
-    shift: "Morning",
-    email: "john@gmail.com",
-    phone: "+977 9812345678",
-    status: "Active",
-    salary: "Rs. 55,000",
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
-  },
-  {
-    name: "Sarah Wilson",
-    role: "Chef",
-    shift: "Day",
-    email: "sarah@gmail.com",
-    phone: "+977 9800000001",
-    status: "Active",
-    salary: "Rs. 45,000",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    name: "Michael Brown",
-    role: "Cashier",
-    shift: "Evening",
-    email: "michael@gmail.com",
-    phone: "+977 9800000002",
-    status: "Inactive",
-    salary: "Rs. 32,000",
-    image: "https://randomuser.me/api/portraits/men/55.jpg",
-  },
-  {
-    name: "Emily Davis",
-    role: "Waiter",
-    shift: "Night",
-    email: "emily@gmail.com",
-    phone: "+977 9800000003",
-    status: "Active",
-    salary: "Rs. 25,000",
-    image: "https://randomuser.me/api/portraits/women/68.jpg",
-  },
-];
 
 const Employees = () => {
   const navigate = useNavigate();
 
-  const [employees, setEmployees] = useState(initialEmployees);
+  const [employees, setEmployees] = useState([]);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [showModal, setShowModal] = useState(false);
 
   const [newEmployee, setNewEmployee] = useState({
+    username: "",
+    password: "",
     name: "",
     role: "",
     shift: "",
@@ -78,32 +38,55 @@ const Employees = () => {
     image: "https://randomuser.me/api/portraits/men/1.jpg",
   });
 
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  const fetchEmployees = async () => {
+    try {
+      const data = await getUsers();
+      setEmployees(data || []);
+    } catch (error) {
+      console.error("Failed to fetch users", error);
+    }
+  };
+
   const handleDelete = (index) => {
-    if (window.confirm("Are you sure you want to remove this employee?")) {
+    if (window.confirm("Delete functionality not fully implemented on backend yet. Remove locally?")) {
       const updated = employees.filter((_, i) => i !== index);
       setEmployees(updated);
     }
   };
 
-  const handleAddEmployee = (e) => {
+  const handleAddEmployee = async (e) => {
     e.preventDefault();
-    if (!newEmployee.name || !newEmployee.role || !newEmployee.email) {
-      alert("Please fill required fields");
+    if (!newEmployee.username || !newEmployee.password || !newEmployee.role) {
+      alert("Username, password, and role are required");
       return;
     }
 
-    setEmployees([...employees, newEmployee]);
-    setShowModal(false);
-    setNewEmployee({
-      name: "",
-      role: "",
-      shift: "",
-      email: "",
-      phone: "",
-      salary: "",
-      status: "Active",
-      image: "https://randomuser.me/api/portraits/men/1.jpg",
-    });
+    try {
+      const response = await registerUser(newEmployee);
+      alert("Employee registered successfully!");
+      setEmployees([...employees, response.user || newEmployee]);
+      setShowModal(false);
+      setNewEmployee({
+        username: "",
+        password: "",
+        name: "",
+        role: "",
+        shift: "",
+        email: "",
+        phone: "",
+        salary: "",
+        status: "Active",
+        image: "https://randomuser.me/api/portraits/men/1.jpg",
+      });
+      fetchEmployees();
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert(error.response?.data?.message || "Failed to register employee");
+    }
   };
 
   const filteredEmployees = employees.filter((employee) => {
@@ -338,10 +321,34 @@ const Employees = () => {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name *</label>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Username *</label>
                   <input 
                     type="text" 
                     required 
+                    value={newEmployee.username} 
+                    onChange={(e) => setNewEmployee({ ...newEmployee, username: e.target.value })} 
+                    className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
+                    placeholder="e.g. janedoe"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password *</label>
+                  <input 
+                    type="password" 
+                    required 
+                    value={newEmployee.password} 
+                    onChange={(e) => setNewEmployee({ ...newEmployee, password: e.target.value })} 
+                    className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
+                  <input 
+                    type="text" 
                     value={newEmployee.name} 
                     onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} 
                     className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
@@ -349,10 +356,9 @@ const Employees = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email *</label>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email</label>
                   <input 
                     type="email" 
-                    required 
                     value={newEmployee.email} 
                     onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })} 
                     className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"

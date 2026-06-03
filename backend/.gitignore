@@ -1,0 +1,24 @@
+# Dependency directories
+node_modules/
+
+# Environment variables (Crucial: Prevents leaking your MongoDB URI and JWT Secret)
+.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# macOS system files
+.DS_Store
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
