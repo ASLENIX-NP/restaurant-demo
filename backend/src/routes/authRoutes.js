@@ -9,9 +9,14 @@ const { protect, authorize } = require("../middleware/authMiddleware");
 router.post("/login", authController.login);
 
 // @route   POST /api/auth/register
-// @desc    Register a new user (You might want to restrict this to Admins later)
-// @access  Public (for now, to help with setup)
-router.post("/register", authController.register);
+// @desc    Register a new user (Restricted to Admin)
+// @access  Private
+router.post("/register", protect, authorize("Admin"), authController.register);
+
+// @route   GET /api/auth/users
+// @desc    Get all users
+// @access  Private
+router.get("/users", protect, authorize("Admin"), authController.getUsers);
 
 // --- TEST ROUTES FOR MIDDLEWARE ---
 

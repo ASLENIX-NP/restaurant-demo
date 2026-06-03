@@ -25,16 +25,8 @@ export const AuthProvider = ({
     });
 
   // LOGIN
-  const login = (
-    role
-  ) => {
-
-    const userData = {
-      role,
-    };
-
+  const login = (userData) => {
     setUser(userData);
-
     localStorage.setItem(
       "restaurant_user",
       JSON.stringify(userData)

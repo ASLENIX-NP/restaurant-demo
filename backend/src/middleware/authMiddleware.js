@@ -21,17 +21,13 @@ exports.protect = (req, res, next) => {
 
       // Attach user info to request object
       req.user = decoded;
-      
-      next();
+      return next();
     } catch (error) {
       console.error("Token verification failed:", error);
-      res.status(401).json({ message: "Not authorized, token failed" });
+      return res.status(401).json({ message: "Not authorized, token failed" });
     }
   }
-
-  if (!token) {
-    res.status(401).json({ message: "Not authorized, no token provided" });
-  }
+  return res.status(401).json({ message: "Not authorized, no token provided" });
 };
 
 // Middleware to authorize specific roles
@@ -39,7 +35,9 @@ exports.authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
-        message: `User role '${req.user ? req.user.role : "Unknown"}' is not authorized to access this route`,
+        message: `User role '${
+          req.user ? req.user.role : "Unknown"
+        }' is not authorized to access this route`,
       });
     }
     next();

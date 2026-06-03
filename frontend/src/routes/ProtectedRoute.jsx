@@ -24,7 +24,7 @@ const ProtectedRoute = ({
 
   // WRONG ROLE
   if (
-    user.role !== role
+    user.role?.toLowerCase() !== role?.toLowerCase()
   ) {
 
     return (

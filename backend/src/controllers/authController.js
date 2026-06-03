@@ -45,7 +45,7 @@ exports.login = async (req, res) => {
 // User Registration (useful for initial setup or Admin to create users)
 exports.register = async (req, res) => {
   try {
-    const { username, password, role } = req.body;
+    const { username, password, role, name, email, phone, shift, salary, status, image } = req.body;
 
     // Validate inputs
     if (!username || !password) {
@@ -61,10 +61,10 @@ exports.register = async (req, res) => {
     // Normalize and validate role if provided
     let normalizedRole = "Staff";
     if (role) {
-      // Capitalize first letter, lowercase the rest (e.g., "chef" -> "Chef")
+      // Capitalize first letter, lowercase the rest
       normalizedRole = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
       
-      const validRoles = ["Admin", "Chef", "Cashier", "Staff"];
+      const validRoles = ["Admin", "Chef", "Cashier", "Staff", "Manager", "Waiter"];
       if (!validRoles.includes(normalizedRole)) {
         return res.status(400).json({ message: "Invalid role specified" });
       }
@@ -74,7 +74,14 @@ exports.register = async (req, res) => {
     const user = new User({
       username,
       password, // Password hashing is handled by the pre-save hook in User model
-      role: normalizedRole
+      role: normalizedRole,
+      name,
+      email,
+      phone,
+      shift,
+      salary,
+      status: status || "Active",
+      image
     });
 
     await user.save();
@@ -91,5 +98,16 @@ exports.register = async (req, res) => {
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ message: "Server error during registration" });
+  }
+};
+
+// Get all users
+exports.getUsers = async (req, res) => {
+  try {
+    const users = await User.find({}).select("-password");
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Get users error:", error);
+    res.status(500).json({ message: "Server error fetching users" });
   }
 };
