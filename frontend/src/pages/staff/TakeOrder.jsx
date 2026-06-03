@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Plus, Minus, Trash2, CheckCircle2, UtensilsCrossed } from "lucide-react";
 import "../../styles/takeorders.css"; // Kept for any global custom overrides
+import { useOrders } from "../../context/OrderContext";
+import { useAuth } from "../../context/AuthContext";
+import { useTables } from "../../context/TableContext";
 
 const categories = [
   "All Categories",
@@ -69,6 +72,9 @@ const menuItems = [
 ];
 
 export default function TakeOrder() {
+  const { addOrder } = useOrders();
+  const { user } = useAuth();
+  const { updateTableStatus } = useTables();
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedTable, setSelectedTable] = useState("Table 5");
   const [cart, setCart] = useState([
@@ -117,7 +123,13 @@ export default function TakeOrder() {
 
     const orderData = {
       table: selectedTable,
-      items: cart.map(({ id, name, qty, price }) => ({ id, name, qty, price })),
+      server: user?.name || "Staff Member",
+      channel: selectedTable === "Pickup" ? "Takeaway" : "Dine In",
+      priority: "Normal",
+      station: "Hot Line",
+      notes: "",
+      elapsedMinutes: 0,
+      items: cart.map(({ id, name, qty, price, category }) => ({ id, name, qty, price, category: category || "Mains", station: "Hot Line" })),
       subtotal,
       vat: parseFloat(vat.toFixed(2)),
       total: parseFloat(total.toFixed(2)),
@@ -125,6 +137,14 @@ export default function TakeOrder() {
       date: orderDate,
       timestamp: new Date().toISOString(),
     };
+
+    addOrder(orderData);
+
+    // Mark the table as Occupied globally
+    const match = selectedTable.match(/\d+/);
+    if (match) {
+      updateTableStatus(parseInt(match[0], 10), "Occupied", "Dining In");
+    }
 
     console.log("Sending enriched order to kitchen API...", orderData);
     alert(`Order for ${selectedTable} successfully sent to the kitchen at ${orderTime}!`);

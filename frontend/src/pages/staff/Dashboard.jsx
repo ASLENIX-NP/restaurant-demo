@@ -15,8 +15,10 @@ import {
   Edit2,
   Receipt
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import "../../styles/staff.css"; // Kept for any global custom overrides
+import { useOrders } from "../../context/OrderContext";
 
 const initialTables = [
   { 
@@ -70,15 +72,9 @@ const initialTables = [
   },
 ];
 
-const initialOrders = [
-  { id: "#ORD-1025", table: "Table 6", itemsCount: 3, status: "Preparing" },
-  { id: "#ORD-1026", table: "Table 5", itemsCount: 2, status: "Ready" },
-  { id: "#ORD-1027", table: "Table 1", itemsCount: 5, status: "Cooking" },
-];
-
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [tablesList, setTablesList] = useState(initialTables);
-  const [ordersList, setOrdersList] = useState(initialOrders);
   const [searchQuery, setSearchQuery] = useState("");
   
   // Modal tracking states
@@ -90,6 +86,8 @@ const Dashboard = () => {
   const [editCustomer, setEditCustomer] = useState("");
   const [editSeats, setEditSeats] = useState(2);
   const [editTime, setEditTime] = useState("");
+
+  const { orders } = useOrders();
 
   // Filter tables list automatically
   const filteredTables = tablesList.filter((table) =>
@@ -134,19 +132,6 @@ const Dashboard = () => {
     setEditingTable(null);
   };
 
-  const handleOrderStatusCycle = (id) => {
-    setOrdersList(prevOrders => 
-      prevOrders.map(order => {
-        if (order.id === id) {
-          if (order.status === "Cooking") return { ...order, status: "Preparing" };
-          if (order.status === "Preparing") return { ...order, status: "Ready" };
-          return { ...order, status: "Cooking" };
-        }
-        return order;
-      })
-    );
-  };
-
   // UI Helpers
   const getTableStatusStyles = (status) => {
     switch(status) {
@@ -158,8 +143,9 @@ const Dashboard = () => {
 
   const getOrderStatusStyles = (status) => {
     switch(status) {
-      case "Preparing": return "bg-blue-50 text-blue-600 border-blue-200";
+      case "Cooking": return "bg-blue-50 text-blue-600 border-blue-200";
       case "Ready": return "bg-emerald-50 text-emerald-600 border-emerald-200";
+      case "Completed": return "bg-slate-50 text-slate-600 border-slate-200";
       default: return "bg-orange-50 text-orange-600 border-orange-200";
     }
   };
@@ -174,7 +160,10 @@ const Dashboard = () => {
             <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">Welcome Back 👋</h1>
             <p className="text-slate-400 text-sm mt-0.5 font-medium">Manage restaurant tables and live orders beautifully</p>
           </div>
-          <button className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all">
+          <button 
+            onClick={() => navigate('/staff/take-order')}
+            className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
+          >
             <Plus size={16} /> Take New Order
           </button>
         </div>
@@ -197,7 +186,9 @@ const Dashboard = () => {
             </div>
             <div>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Pending Orders</h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">8</h2>
+              <h2 className="text-2xl font-black text-slate-900 mt-1">
+                {orders.filter(o => o.status === "Pending" || o.status === "Cooking").length}
+              </h2>
             </div>
           </div>
 
@@ -207,7 +198,9 @@ const Dashboard = () => {
             </div>
             <div>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Completed Orders</h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">42</h2>
+              <h2 className="text-2xl font-black text-slate-900 mt-1">
+                {orders.filter(o => o.status === "Completed").length}
+              </h2>
             </div>
           </div>
 
@@ -295,16 +288,16 @@ const Dashboard = () => {
           <div className="lg:col-span-4 xl:col-span-3 bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sticky top-6">
             <div className="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
               <h2 className="text-base font-black text-slate-900">Live Orders</h2>
-              <button className="text-[11px] font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-md transition-colors">
+              <button onClick={() => navigate('/staff/ready-orders')} className="text-[11px] font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-md transition-colors">
                 View All
               </button>
             </div>
 
             <div className="space-y-3">
-              {ordersList.map((order) => (
+              {orders.filter(o => o.status !== "Completed").slice(0, 6).map((order) => (
                 <div 
                   key={order.id} 
-                  onClick={() => handleOrderStatusCycle(order.id)}
+                  onClick={() => order.status === "Ready" && navigate('/staff/ready-orders')}
                   className="group flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-purple-200 hover:shadow-sm transition-all cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
@@ -312,8 +305,10 @@ const Dashboard = () => {
                       {order.id}
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-900 text-sm">{order.table}</h3>
-                      <p className="text-[10px] font-medium text-slate-400">{order.itemsCount} items loaded</p>
+                      <h3 className="font-bold text-slate-900 text-sm">{order.table || "Queue"}</h3>
+                      <p className="text-[10px] font-medium text-slate-400">
+                        {(order.items || []).reduce((acc, item) => acc + item.qty, 0)} items loaded
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -324,6 +319,11 @@ const Dashboard = () => {
                   </div>
                 </div>
               ))}
+              {orders.filter(o => o.status !== "Completed").length === 0 && (
+                <div className="text-center py-6 text-slate-400 text-sm font-medium">
+                  No active orders right now.
+                </div>
+              )}
             </div>
           </div>
 

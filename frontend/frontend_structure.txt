@@ -1,0 +1,41 @@
+res_demo/
+└── frontend/
+    ├── README.md
+    ├── index.html
+    ├── package.json
+    ├── vite.config.js
+    └── src/
+        ├── App.jsx                  # Main App Routing Component
+        ├── main.jsx                 # React Application Entry Point
+        ├── components/
+        │   └── layout/              # UI Wrappers
+        │       ├── AdminLayout.jsx
+        │       ├── CashierLayout.jsx
+        │       ├── ChefLayout.jsx
+        │       └── StaffLayout.jsx
+        ├── context/                 # Global React Contexts
+        │   ├── AuthContext.jsx
+        │   ├── OrderContext.jsx
+        │   └── TableContext.jsx
+        ├── pages/                   # Application Views
+        │   ├── admin/
+        │   │   ├── Employees.jsx
+        │   │   ├── Orders.jsx
+        │   │   ├── Settings.jsx
+        │   │   └── TableManagement.jsx
+        │   ├── chef/
+        │   │   └── Dashboard.jsx
+        │   └── staff/
+        │       ├── Reservations.jsx
+        │       └── TakeOrder.jsx
+        ├── routes/                  # Route configurations
+        │   ├── AppRoutes.jsx
+        │   └── ProtectedRoute.jsx
+        └── styles/                  # Custom Stylesheets
+            ├── adminTables.css
+            ├── chef.css
+            ├── employees.css
+            ├── orders.css
+            ├── reservations.css
+            ├── settings.css
+            └── takeorders.css

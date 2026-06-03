@@ -1,101 +1,36 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { createContext, useContext, useState } from 'react';
 
-const TableContext =
-  createContext();
+const TableContext = createContext();
 
-export const TableProvider = ({
-  children,
-}) => {
+export const useTables = () => useContext(TableContext);
 
-  // LOAD TABLES
-  const [tables, setTables] =
-    useState(() => {
+export const TableProvider = ({ children }) => {
+  const [tables, setTables] = useState([
+    { id: 1, name: 'Table 1', seats: 4, status: 'Available', currentCustomer: 'No Customer' },
+    { id: 2, name: 'Table 2', seats: 2, status: 'Occupied', currentCustomer: 'John Doe' },
+    { id: 3, name: 'Table 3', seats: 6, status: 'Reserved', currentCustomer: 'Smith Family' },
+    { id: 4, name: 'Table 4', seats: 4, status: 'Available', currentCustomer: 'No Customer' },
+    { id: 5, name: 'Table 5', seats: 8, status: 'Cleaning', currentCustomer: 'No Customer' },
+    { id: 6, name: 'Table 6', seats: 2, status: 'Available', currentCustomer: 'No Customer' },
+  ]);
 
-      const savedTables =
-        localStorage.getItem(
-          "restaurant_tables"
-        );
-
-      return savedTables
-        ? JSON.parse(savedTables)
-        : [
-            {
-              id: 1,
-              status:
-                "Available",
-            },
-
-            {
-              id: 2,
-              status:
-                "Occupied",
-            },
-
-            {
-              id: 3,
-              status:
-                "Reserved",
-            },
-          ];
-    });
-
-  // SAVE TABLES
-  useEffect(() => {
-
-    localStorage.setItem(
-      "restaurant_tables",
-      JSON.stringify(tables)
-    );
-
-  }, [tables]);
-
-  // ADD TABLE
-  const addTable = () => {
-
-    const newTable = {
-      id:
-        tables.length + 1,
-
-      status:
-        "Available",
-    };
-
-    setTables((prev) => [
-      ...prev,
-      newTable,
-    ]);
+  const updateTableStatus = (id, newStatus, customerName = 'No Customer') => {
+    setTables(prevTables => prevTables.map(table => 
+      table.id === id ? { ...table, status: newStatus, currentCustomer: customerName } : table
+    ));
   };
 
-  // REMOVE TABLE
-  const removeTable = (
-    id
-  ) => {
+  const addTable = (newTable) => {
+    setTables(prev => [...prev, { ...newTable, id: Date.now() }]);
+  };
 
-    setTables((prev) =>
-      prev.filter(
-        (table) =>
-          table.id !== id
-      )
-    );
+  const deleteTable = (id) => {
+    setTables(prev => prev.filter(table => table.id !== id));
   };
 
   return (
-    <TableContext.Provider
-      value={{
-        tables,
-        addTable,
-        removeTable,
-      }}
-    >
+    <TableContext.Provider value={{ tables, setTables, updateTableStatus, addTable, deleteTable }}>
       {children}
     </TableContext.Provider>
   );
 };
-
-export const useTables = () =>
-  useContext(TableContext);

@@ -17,24 +17,32 @@ import {
   Trash2,
   CheckCircle
 } from "lucide-react";
-
-// Mock Data Array
-const INITIAL_INVOICES = [
-  { id: "INV-10024", date: "May 15, 2024", customer: "Walk-in Customer", amount: "Rs. 2,250.00", status: "Paid", method: "Cash", items: [{ name: "Burger", qty: 3, price: 350 }, { name: "Pizza", qty: 1, price: 700 }, { name: "Coke", qty: 4, price: 100 }] },
-  { id: "INV-10023", date: "May 15, 2024", customer: "Arman Sharma", amount: "Rs. 1,350.00", status: "Paid", method: "Card", items: [{ name: "Fried Chicken", qty: 2, price: 500 }, { name: "Momo", qty: 1, price: 350 }] },
-  { id: "INV-10022", date: "May 15, 2024", customer: "Neha Verma", amount: "Rs. 880.00", status: "Paid", method: "Khalti", items: [{ name: "Veg Biryani", qty: 4, price: 220 }] },
-  { id: "INV-10021", date: "May 15, 2024", customer: "Sita Thapa", amount: "Rs. 1,080.00", status: "Pending", method: "eSewa", items: [{ name: "Paneer Tikka", qty: 2, price: 400 }, { name: "Naan", qty: 4, price: 70 }] },
-  { id: "INV-10020", date: "May 14, 2024", customer: "Rohan Das", amount: "Rs. 3,300.00", status: "Paid", method: "Card", items: [{ name: "Platter Meal", qty: 3, price: 1100 }] },
-  { id: "INV-10019", date: "May 14, 2024", customer: "Walk-in Customer", amount: "Rs. 2,150.00", status: "Paid", method: "Cash", items: [{ name: "Pizza Special", qty: 2, price: 900 }, { name: "Ice Tea", qty: 5, price: 70 }] },
-  { id: "INV-10018", date: "May 14, 2024", customer: "Amit Kumar", amount: "Rs. 1,750.00", status: "Cancelled", method: "Card", items: [{ name: "Pasta Bolognese", qty: 2, price: 875 }] },
-  { id: "INV-10017", date: "May 13, 2024", customer: "Priya Patel", amount: "Rs. 950.00", status: "Paid", method: "Khalti", items: [{ name: "Chowmein", qty: 3, price: 250 }, { name: "Lemonade", qty: 2, price: 100 }] },
-];
+import { useOrders } from "../../context/OrderContext";
 
 const ITEMS_PER_PAGE = 5;
 
 const Invoices = () => {
-  // Collection core state Management
-  const [invoices, setInvoices] = useState(INITIAL_INVOICES);
+  const { orders = [], completeOrder } = useOrders() || {};
+
+  // Dynamically map global orders into the standard Invoice format
+  const invoices = useMemo(() => {
+    return orders.map((order) => {
+      const subtotal = (order.items || []).reduce((sum, item) => sum + item.qty * item.price, 0);
+      const total = subtotal + (subtotal * 0.13) + (subtotal > 0 ? 50 : 0); // Include VAT & Service Charge
+
+      return {
+        id: order.id,
+        date: order.date || new Date().toLocaleDateString(),
+        customer: order.customer || "Walk-in Customer",
+        amount: `Rs. ${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        status: order.status === "Completed" ? "Paid" : (order.status === "Cancelled" ? "Cancelled" : "Pending"),
+        method: order.paymentMethod || "Cash/Card",
+        items: order.items || [],
+      };
+    }).reverse(); // Reverse so newest invoices appear at the top
+  }, [orders]);
+
+  // Filter state
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
@@ -59,8 +67,8 @@ const Invoices = () => {
   const filteredInvoices = useMemo(() => {
     return invoices.filter((invoice) => {
       const matchesSearch =
-        invoice.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        invoice.customer.toLowerCase().includes(searchTerm.toLowerCase());
+        String(invoice.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(invoice.customer || "").toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === "All" || invoice.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
@@ -92,7 +100,9 @@ const Invoices = () => {
   };
 
   const handleUpdateStatus = (id, newStatus) => {
-    setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, status: newStatus } : inv));
+    if (newStatus === "Paid" && completeOrder) {
+      completeOrder(id); // Use the global context to mark the order as paid!
+    }
     setActiveDropdownId(null);
   };
 
@@ -116,7 +126,7 @@ const Invoices = () => {
           <div className="card-icon blue"><FileText size={20} /></div>
           <div>
             <h4>Total Invoices</h4>
-            <h2>128</h2>
+            <h2>{invoices.length}</h2>
             <span className="green">&uarr; 15.2% vs yesterday</span>
           </div>
         </div>
@@ -124,7 +134,7 @@ const Invoices = () => {
           <div className="card-icon green-bg"><DollarSign size={20} /></div>
           <div>
             <h4>Paid Invoices</h4>
-            <h2>98</h2>
+            <h2>{invoices.filter((i) => i.status === "Paid").length}</h2>
             <span className="green">&uarr; 12.5% vs yesterday</span>
           </div>
         </div>
@@ -132,7 +142,7 @@ const Invoices = () => {
           <div className="card-icon orange-bg"><Clock size={20} /></div>
           <div>
             <h4>Pending Invoices</h4>
-            <h2>20</h2>
+            <h2>{invoices.filter((i) => i.status === "Pending").length}</h2>
             <span className="green">&uarr; 8.3% vs yesterday</span>
           </div>
         </div>
@@ -140,7 +150,7 @@ const Invoices = () => {
           <div className="card-icon red-bg"><XCircle size={20} /></div>
           <div>
             <h4>Cancelled Invoices</h4>
-            <h2>10</h2>
+            <h2>{invoices.filter((i) => i.status === "Cancelled").length}</h2>
             <span className="red">&darr; 4.1% vs yesterday</span>
           </div>
         </div>

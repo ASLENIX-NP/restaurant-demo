@@ -9,71 +9,25 @@ import {
   FaDownload,
   FaChevronRight,
 } from "react-icons/fa";
-
-const salesData = [
-  {
-    time: "10:34 AM",
-    id: "#TXN-10048",
-    customer: "Walk-in Customer",
-    items: "Burger x1, Pizza x1, Coke x1",
-    payment: "Cash",
-    invoice: "INV-10024",
-    amount: "Rs. 250.00",
-    status: "Completed",
-  },
-  {
-    time: "10:15 AM",
-    id: "#TXN-10047",
-    customer: "Arman Sharma",
-    items: "Burger x2, Pizza x1, Coke x1",
-    payment: "Card",
-    invoice: "INV-10023",
-    amount: "Rs. 350.00",
-    status: "Completed",
-  },
-  {
-    time: "10:04 AM",
-    id: "#TXN-10046",
-    customer: "Neha Verma",
-    items: "Pizza x1, Coke x1",
-    payment: "eSewa",
-    invoice: "INV-10022",
-    amount: "Rs. 180.00",
-    status: "Completed",
-  },
-  {
-    time: "09:56 AM",
-    id: "#TXN-10045",
-    customer: "Rohan Das",
-    items: "Burger x1, Coke x1",
-    payment: "Khalti",
-    invoice: "INV-10021",
-    amount: "Rs. 120.00",
-    status: "Completed",
-  },
-  {
-    time: "09:42 AM",
-    id: "#TXN-10044",
-    customer: "Walk-in Customer",
-    items: "Coke x1",
-    payment: "Cash",
-    invoice: "INV-10020",
-    amount: "Rs. 200.00",
-    status: "Completed",
-  },
-  {
-    time: "09:30 AM",
-    id: "#TXN-10043",
-    customer: "Priya Patel",
-    items: "Burger x2, Pizza x1, Coke x2",
-    payment: "Card",
-    invoice: "INV-10019",
-    amount: "Rs. 500.00",
-    status: "Refunded",
-  },
-];
+import { useOrders } from "../../context/OrderContext";
 
 const SalesHistory = () => {
+  // Provide a safe fallback array in case context is still initializing
+  const { orders = [] } = useOrders() || {};
+
+  // Get all completed orders from the global context
+  const completedSales = orders.filter((order) => order.status === "Completed");
+
+  // Calculate real metrics based on the completed orders
+  const totalSalesAmount = completedSales.reduce((acc, order) => {
+    const subtotal = (order.items || []).reduce((sum, item) => sum + item.qty * item.price, 0);
+    return acc + subtotal + (subtotal * 0.13) + (subtotal > 0 ? 50 : 0);
+  }, 0);
+
+  const totalItemsSold = completedSales.reduce((acc, order) => {
+    return acc + (order.items || []).reduce((sum, item) => sum + item.qty, 0);
+  }, 0);
+
   return (
     <div className="sales-history-page">
 
@@ -109,7 +63,7 @@ const SalesHistory = () => {
 
           <div>
             <h4>Total Sales</h4>
-            <h2>Rs. 2,45,000.00</h2>
+            <h2>Rs. {totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
             <span>↑ 12.5% vs yesterday</span>
           </div>
         </div>
@@ -119,7 +73,7 @@ const SalesHistory = () => {
 
           <div>
             <h4>Total Orders</h4>
-            <h2>48</h2>
+            <h2>{completedSales.length}</h2>
             <span>↑ 5 vs yesterday</span>
           </div>
         </div>
@@ -129,7 +83,7 @@ const SalesHistory = () => {
 
           <div>
             <h4>Total Items Sold</h4>
-            <h2>132</h2>
+            <h2>{totalItemsSold}</h2>
             <span>↑ 10.6% vs yesterday</span>
           </div>
         </div>
@@ -139,7 +93,7 @@ const SalesHistory = () => {
 
           <div>
             <h4>Average Order Value</h4>
-            <h2>Rs. 5,104.17</h2>
+            <h2>Rs. {completedSales.length > 0 ? (totalSalesAmount / completedSales.length).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</h2>
             <span>↑ 8.3% vs yesterday</span>
           </div>
         </div>
@@ -184,59 +138,46 @@ const SalesHistory = () => {
               Today - May 15, 2024
             </div>
 
-            {salesData.map((sale, index) => (
-              <div className="sales-row" key={index}>
+            {completedSales.length > 0 ? (
+              completedSales.map((sale, index) => {
+                const subtotal = (sale.items || []).reduce((sum, item) => sum + item.qty * item.price, 0);
+                const total = subtotal + (subtotal * 0.13) + (subtotal > 0 ? 50 : 0);
+                const itemCount = (sale.items || []).reduce((sum, item) => sum + item.qty, 0);
+                const itemNames = (sale.items || []).map(i => `${i.name} x${i.qty}`).join(", ");
 
-                <div className="sales-time">
-                  {sale.time}
-                </div>
-
-                <div className="sales-info">
-
-                  <div className="sales-id">
-                    <h4>{sale.id}</h4>
-                    <p>{sale.customer}</p>
-                    <span>Main Counter</span>
+                return (
+                  <div className="sales-row" key={index}>
+                    <div className="sales-time">{sale.time || "N/A"}</div>
+                    <div className="sales-info">
+                      <div className="sales-id">
+                        <h4>{sale.id}</h4>
+                        <p>{sale.customer || "Walk-in Customer"}</p>
+                        <span>{sale.channel || "Dining"}</span>
+                      </div>
+                      <div className="sales-items">
+                        <h4>{itemCount} Items</h4>
+                        <p className="truncate w-32" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"}}>{itemNames}</p>
+                      </div>
+                      <div className="sales-payment">
+                        <h4>Cash/Card</h4>
+                        {/* Safely check if ID exists, and ensure it is treated as a String before using .replace() */}
+                        <p>INV-{sale.id ? String(sale.id).replace(/\D/g, '') : "N/A"}</p>
+                      </div>
+                      <div className="sales-amount">Rs. {total.toFixed(2)}</div>
+                      <div>
+                        <span className="sale-status completed">Completed</span>
+                      </div>
+                      <button className="details-btn">View Details</button>
+                      <FaChevronRight className="arrow-icon" />
+                    </div>
                   </div>
-
-                  <div className="sales-items">
-                    <h4>
-                      {sale.items.includes("x2") ? "4 Items" : "2 Items"}
-                    </h4>
-
-                    <p>{sale.items}</p>
-                  </div>
-
-                  <div className="sales-payment">
-                    <h4>{sale.payment}</h4>
-                    <p>{sale.invoice}</p>
-                  </div>
-
-                  <div className="sales-amount">
-                    {sale.amount}
-                  </div>
-
-                  <div>
-                    <span
-                      className={`sale-status ${
-                        sale.status === "Completed"
-                          ? "completed"
-                          : "refunded"
-                      }`}
-                    >
-                      {sale.status}
-                    </span>
-                  </div>
-
-                  <button className="details-btn">
-                    View Details
-                  </button>
-
-                  <FaChevronRight className="arrow-icon" />
-
-                </div>
+                );
+              })
+            ) : (
+              <div className="p-8 text-center text-slate-500 font-medium">
+                No completed sales today. Settle a bill to see it here!
               </div>
-            ))}
+            )}
 
             <div className="load-more">
               Load More History

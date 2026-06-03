@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/auth/Login";
 import ProtectedRoute from "./ProtectedRoute";
 
+// ================= CONTEXT =================
+import { TableProvider } from "../context/TableContext";
+
 // ================= ADMIN =================
 import AdminLayout from "../components/layout/AdminLayout";
 import Dashboard from "../pages/admin/Dashboard";
@@ -15,6 +18,7 @@ import Reports from "../pages/admin/Reports";
 import TableManagement from "../pages/admin/TableManagement";
 import Employees from "../pages/admin/Employees";
 import Settings from "../pages/admin/Settings";
+import QRMenuManager from "../pages/admin/QRMenuManager"; // <-- 1. IMPORT ADDED HERE
 
 // ================= STAFF =================
 import StaffLayout from "../components/layout/StaffLayout";
@@ -23,8 +27,9 @@ import TakeOrder from "../pages/staff/TakeOrder";
 import Tables from "../pages/staff/Tables";
 import Reservations from "../pages/staff/Reservations";
 import OrderHistory from "../pages/staff/OrderHistory";
+import ReadyOrders from "../pages/staff/ReadyOrders";
 
-// ================= CHEF (Cleaned to Dashboard Only) =================
+// ================= CHEF =================
 import ChefLayout from "../components/layout/ChefLayout";
 import ChefDashboard from "../pages/chef/Dashboard";
 
@@ -35,10 +40,13 @@ import Payments from "../pages/cashier/Payments";
 import PendingBills from "../pages/cashier/PendingBills";
 import Invoices from "../pages/cashier/Invoices";
 import SalesHistory from "../pages/cashier/SalesHistory";
+import POS from "../pages/cashier/POS";
+import ShiftManagement from "../pages/cashier/ShiftManagement";
 
 const AppRoutes = () => {
   return (
     <BrowserRouter>
+      <TableProvider>
       <Routes>
 
         {/* LOGIN */}
@@ -58,6 +66,7 @@ const AppRoutes = () => {
         >
           <Route index element={<Dashboard />} />
           <Route path="menu" element={<MenuManagement />} />
+          <Route path="qr-menu" element={<QRMenuManager />} /> {/* <-- 2. ROUTE ADDED HERE */}
           <Route path="orders" element={<Orders />} />
           <Route path="kitchen" element={<KitchenMonitoring />} />
           <Route path="billing" element={<Billing />} />
@@ -82,6 +91,7 @@ const AppRoutes = () => {
           <Route path="tables" element={<Tables />} />
           <Route path="reservations" element={<Reservations />} />
           <Route path="history" element={<OrderHistory />} />
+          <Route path="ready-orders" element={<ReadyOrders />} />
         </Route>
 
         {/* ================= CHEF PANEL ================= */}
@@ -93,11 +103,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         >
-          {/* Default page setup */}
           <Route index element={<ChefDashboard />} />
-          
-          {/* Wildcard Fallback: Safely captures dead sub-routes (like /chef/pending) 
-              and redirects them to /chef instead of throwing errors */}
           <Route path="*" element={<Navigate to="/chef" replace />} />
         </Route>
 
@@ -111,13 +117,19 @@ const AppRoutes = () => {
           }
         >
           <Route index element={<CashierDashboard />} />
+          <Route path="pos" element={<POS />} />
+          <Route path="menu" element={<MenuManagement />} />
+          <Route path="qr-menu" element={<QRMenuManager />} />
+          <Route path="tables" element={<TableManagement />} />
           <Route path="payments" element={<Payments />} />
           <Route path="pending-bills" element={<PendingBills />} />
           <Route path="invoices" element={<Invoices />} />
           <Route path="sales" element={<SalesHistory />} />
+          <Route path="shift" element={<ShiftManagement />} />
         </Route>
 
       </Routes>
+      </TableProvider>
     </BrowserRouter>
   );
 };

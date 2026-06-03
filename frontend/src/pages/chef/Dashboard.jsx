@@ -15,69 +15,7 @@ import {
   UtensilsCrossed,
 } from "lucide-react";
 import "../../styles/chef.css";
-
-const liveOrders = [
-  {
-    id: "#TH1250",
-    channel: "Dine In",
-    table: "Table 4",
-    time: "10:30 AM",
-    status: "Cooking",
-    priority: "High",
-    station: "Hot Line",
-    notes: "Extra spicy, no onions",
-    items: [
-      { name: "Grilled Chicken", qty: 2, category: "Mains", station: "Hot Line" },
-      { name: "Butter Naan", qty: 3, category: "Bread", station: "Oven" },
-    ],
-    elapsedMinutes: 14,
-  },
-  {
-    id: "#TH1249",
-    channel: "Takeaway",
-    table: "Pickup",
-    time: "10:42 AM",
-    status: "Pending",
-    priority: "Normal",
-    station: "Cold Prep",
-    notes: "Pack items separately",
-    items: [
-      { name: "Veg Biryani", qty: 1, category: "Mains", station: "Hot Line" },
-      { name: "Raita", qty: 1, category: "Sides", station: "Cold Prep" },
-    ],
-    elapsedMinutes: 4,
-  },
-  {
-    id: "#TH1248",
-    channel: "Delivery",
-    table: "Driver Queue",
-    time: "10:15 AM",
-    status: "Ready",
-    priority: "Critical",
-    station: "Oven",
-    notes: "Peanut allergy. Keep prep area separate.",
-    items: [
-      { name: "Margherita Pizza", qty: 1, category: "Mains", station: "Oven" },
-      { name: "Garlic Bread", qty: 1, category: "Sides", station: "Oven" },
-    ],
-    elapsedMinutes: 22,
-  },
-  {
-    id: "#TH1247",
-    channel: "Dine In",
-    table: "Table 9",
-    time: "10:47 AM",
-    status: "Cooking",
-    priority: "Normal",
-    station: "Hot Line",
-    notes: "",
-    items: [
-      { name: "Chicken Chowmein", qty: 2, category: "Mains", station: "Hot Line" },
-      { name: "Masala Tea", qty: 2, category: "Drinks", station: "Cold Prep" },
-    ],
-    elapsedMinutes: 8,
-  },
-];
+import { useOrders } from "../../context/OrderContext";
 
 const completedHistory = [
   { id: "#TH1245", channel: "Dine In", itemsCount: 4, clearedAt: "10:22 AM" },
@@ -99,6 +37,8 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const { orders, startCooking, markReady } = useOrders();
+
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -112,41 +52,52 @@ const Dashboard = () => {
   };
 
   const metrics = useMemo(() => {
-    const pending = liveOrders.filter((order) => order.status === "Pending").length;
-    const cooking = liveOrders.filter((order) => order.status === "Cooking").length;
-    const ready = liveOrders.filter((order) => order.status === "Ready").length;
-    const delayed = liveOrders.filter((order) => order.elapsedMinutes >= 15).length;
+    const pending = orders.filter((order) => order.status === "Pending").length;
+    const cooking = orders.filter((order) => order.status === "Cooking").length;
+    const ready = orders.filter((order) => order.status === "Ready").length;
+    const delayed = orders.filter((order) => (order.elapsedMinutes || 0) >= 15 && order.status !== "Ready").length;
 
     const prepMap = {};
-    liveOrders
+    orders
       .filter((order) => order.status !== "Ready")
       .forEach((order) => {
-        order.items.forEach((item) => {
+        (order.items || []).forEach((item) => {
           prepMap[item.name] = (prepMap[item.name] || 0) + item.qty;
         });
       });
 
     return {
-      totalActive: liveOrders.length,
+      totalActive: orders.length,
       pending,
       cooking,
       ready,
       delayed,
       prepList: Object.entries(prepMap).map(([name, qty]) => ({ name, qty })),
     };
-  }, []);
+  }, [orders]);
 
   const filteredOrders = useMemo(() => {
-    return liveOrders.filter((order) => {
-      const stationMatches =
-        activeStation === "All Stations" ||
-        order.station === activeStation ||
-        order.items.some((item) => item.station === activeStation);
-      const statusMatches = statusFilter === "All" || order.status === statusFilter;
+    return orders
+      .filter((order) => {
+        const stationMatches =
+          activeStation === "All Stations" ||
+          order.station === activeStation ||
+          (order.items || []).some((item) => item.station === activeStation);
+        const statusMatches = statusFilter === "All" || order.status === statusFilter;
 
-      return stationMatches && statusMatches;
-    });
-  }, [activeStation, statusFilter]);
+        return stationMatches && statusMatches;
+      })
+      .sort((a, b) => {
+        // 1. Push orders marked as "Ready" to the bottom of the list
+        if (a.status === "Ready" && b.status !== "Ready") return 1;
+        if (a.status !== "Ready" && b.status === "Ready") return -1;
+        
+        // 2. Put newest incoming active orders at the top of the queue
+        const timeA = new Date(a.timestamp || 0).getTime();
+        const timeB = new Date(b.timestamp || 0).getTime();
+        return timeB - timeA;
+      });
+  }, [activeStation, orders, statusFilter]);
 
   return (
     <div className="chef-dashboard-container">
@@ -244,7 +195,7 @@ const Dashboard = () => {
           <span className="stat-icon ready"><PackageCheck size={22} /></span>
           <span className="stat-info">
             <strong>{metrics.ready}</strong>
-            <small>At Expo Window</small>
+            <small>Ready / Takeaway</small>
           </span>
         </button>
       </section>
@@ -264,20 +215,20 @@ const Dashboard = () => {
               const StatusIcon = statusIcons[order.status];
 
               return (
-                <article key={order.id} className={`order-neon-card priority-${order.priority.toLowerCase()}`}>
+                <article key={order.id} className={`order-neon-card priority-${(order.priority || 'normal').toLowerCase()}`}>
                   <div className="card-top">
                     <div>
                       <span className="order-id">{order.id}</span>
-                      <span className="table-assignment">{order.channel} - {order.table}</span>
+                      <span className="table-assignment">{order.channel || 'System'} - {order.table || 'Queue'} • Server: {order.server || 'System'}</span>
                     </div>
-                    <span className={`status-badge state-${order.status.toLowerCase()}`}>
-                      <StatusIcon size={13} />
+                    <span className={`status-badge state-${(order.status || 'Pending').toLowerCase()}`}>
+                      {StatusIcon && <StatusIcon size={13} />}
                       {order.status}
                     </span>
                   </div>
 
                   <ul className="items-list-advanced">
-                    {order.items.map((item) => (
+                    {(order.items || []).map((item) => (
                       <li key={`${order.id}-${item.name}`}>
                         <span className="item-count-bubble">{item.qty}x</span>
                         <div className="item-text-details">
@@ -295,10 +246,41 @@ const Dashboard = () => {
                     </div>
                   )}
 
+                  <div className="ticket-action-row">
+                    {order.status === "Pending" && (
+                      <button
+                        className="ticket-action-btn start"
+                        type="button"
+                        onClick={() => startCooking(order.id)}
+                      >
+                        <Flame size={15} />
+                        Start Cooking
+                      </button>
+                    )}
+
+                    {order.status === "Cooking" && (
+                      <button
+                        className="ticket-action-btn ready"
+                        type="button"
+                        onClick={() => markReady(order.id)}
+                      >
+                        <CheckCircle2 size={15} />
+                        Mark Ready
+                      </button>
+                    )}
+
+                    {order.status === "Ready" && (
+                      <div className="ticket-ready-state">
+                        <PackageCheck size={15} />
+                        Ready for expo pickup
+                      </div>
+                    )}
+                  </div>
+
                   <div className="card-bottom">
-                    <div className={`timer-ticker ${order.elapsedMinutes >= 15 ? "delayed" : ""}`}>
+                    <div className={`timer-ticker ${(order.elapsedMinutes || 0) >= 15 ? "delayed" : ""}`}>
                       <Timer size={14} />
-                      {order.elapsedMinutes} mins
+                      {order.elapsedMinutes || 0} mins
                     </div>
                     <span className="order-timestamp-tag">Placed {order.time}</span>
                   </div>

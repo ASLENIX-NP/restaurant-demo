@@ -60,6 +60,15 @@ const AdminLayout = () => {
             🍔 Menu
           </NavLink>
 
+          {/* QR MENU (NEW) */}
+
+          <NavLink
+            to="/admin/qr-menu"
+            className="menu-item"
+          >
+            📱 QR Menu
+          </NavLink>
+
           {/* ORDERS */}
 
           <NavLink

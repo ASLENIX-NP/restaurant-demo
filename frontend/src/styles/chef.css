@@ -464,6 +464,51 @@
     margin-top: 1px;
 }
 
+.ticket-action-row {
+    margin-top: 14px;
+}
+
+.ticket-action-btn,
+.ticket-ready-state {
+    width: 100%;
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.ticket-action-btn {
+    border: 0;
+    cursor: pointer;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+
+.ticket-action-btn:hover {
+    transform: translateY(-1px);
+}
+
+.ticket-action-btn.start {
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--kds-orange), #dc2626);
+    box-shadow: 0 12px 24px rgba(249, 115, 22, 0.22);
+}
+
+.ticket-action-btn.ready {
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--kds-green), var(--kds-cyan));
+    box-shadow: 0 12px 24px rgba(22, 163, 74, 0.20);
+}
+
+.ticket-ready-state {
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    background: #ecfdf5;
+}
+
 .card-bottom {
     display: flex;
     align-items: center;

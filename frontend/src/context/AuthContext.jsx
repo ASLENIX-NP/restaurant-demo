@@ -29,8 +29,12 @@ export const AuthProvider = ({
     role
   ) => {
 
+    const mockNames = { admin: "Admin User", staff: "Alex", chef: "Chef Gordon", cashier: "Sarah" };
+    const name = mockNames[role] || "System User";
+
     const userData = {
       role,
+      name,
     };
 
     setUser(userData);

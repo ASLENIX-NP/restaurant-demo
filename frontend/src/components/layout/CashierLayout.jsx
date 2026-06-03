@@ -29,15 +29,6 @@ const CashierLayout = () => {
             📊 Dashboard
           </NavLink>
 
-          {/* PAYMENTS */}
-
-          <NavLink
-            to="/cashier/payments"
-            className="menu-item"
-          >
-            💳 Payments
-          </NavLink>
-
           {/* PENDING BILLS */}
 
           <NavLink
@@ -45,6 +36,51 @@ const CashierLayout = () => {
             className="menu-item"
           >
             🧾 Pending Bills
+          </NavLink>
+
+          {/* POS */}
+
+          <NavLink
+            to="/cashier/pos"
+            className="menu-item"
+          >
+            🛒 POS Screen
+          </NavLink>
+
+          {/* MENU */}
+
+          <NavLink
+            to="/cashier/menu"
+            className="menu-item"
+          >
+            🍔 Menu
+          </NavLink>
+
+          {/* QR MENU */}
+
+          <NavLink
+            to="/cashier/qr-menu"
+            className="menu-item"
+          >
+            📱 QR Menu
+          </NavLink>
+
+          {/* TABLES */}
+
+          <NavLink
+            to="/cashier/tables"
+            className="menu-item"
+          >
+            🍽️ Tables
+          </NavLink>
+
+          {/* PAYMENTS */}
+
+          <NavLink
+            to="/cashier/payments"
+            className="menu-item"
+          >
+            💳 Payments
           </NavLink>
 
           {/* INVOICES */}
@@ -63,6 +99,15 @@ const CashierLayout = () => {
             className="menu-item"
           >
             📈 Sales
+          </NavLink>
+
+          {/* SHIFT */}
+
+          <NavLink
+            to="/cashier/shift"
+            className="menu-item"
+          >
+            🏦 Shift & Drawer
           </NavLink>
 
         </nav>

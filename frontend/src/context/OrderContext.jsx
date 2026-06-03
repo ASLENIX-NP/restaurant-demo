@@ -36,13 +36,40 @@ export const OrderProvider = ({
 
   }, [orders]);
 
+  // SYNC ACROSS TABS (CRUCIAL FOR MULTI-DEVICE SIMULATION)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "restaurant_orders") {
+        setOrders(e.newValue ? JSON.parse(e.newValue) : []);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  // AUTO-INCREMENT ELAPSED TIME
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setOrders((prevOrders) => 
+        prevOrders.map((order) => {
+          // Only increment timer for active kitchen orders
+          if (order.status === "Pending" || order.status === "Cooking") {
+            return { ...order, elapsedMinutes: (order.elapsedMinutes || 0) + 1 };
+          }
+          return order;
+        })
+      );
+    }, 60000); // Runs every 60,000ms (1 minute)
+    return () => clearInterval(timer);
+  }, []);
+
   // ADD ORDER
   const addOrder = (
     order
   ) => {
 
     const newOrder = {
-      id: Date.now(),
+      id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
 
       ...order,
 

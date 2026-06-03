@@ -18,76 +18,8 @@ import {
   X,
 } from "lucide-react";
 import "../../styles/pendingBills.css";
-
-const pendingBillsData = [
-  {
-    id: "INV-1025",
-    table: "Table 2",
-    customer: "Walk-in Customer",
-    server: "Asha",
-    amount: 1150,
-    status: "Unpaid",
-    priority: "Due now",
-    guests: 3,
-    time: "7:45 PM",
-    date: "2026/05/27",
-    section: "Dining",
-    items: [
-      { name: "Burger", qty: 1, price: 350, station: "Grill" },
-      { name: "Pizza", qty: 1, price: 700, station: "Oven" },
-      { name: "Coke", qty: 1, price: 100, station: "Beverage" },
-    ],
-  },
-  {
-    id: "INV-1026",
-    table: "Table 5",
-    customer: "John Doe",
-    server: "Nirmal",
-    amount: 600,
-    status: "Partial",
-    priority: "Awaiting split",
-    guests: 2,
-    time: "8:10 PM",
-    date: "2026/05/27",
-    section: "Patio",
-    items: [{ name: "Pizza", qty: 1, price: 600, station: "Oven" }],
-  },
-  {
-    id: "INV-1027",
-    table: "Table 1",
-    customer: "Emily Smith",
-    server: "Maya",
-    amount: 800,
-    status: "Unpaid",
-    priority: "Due now",
-    guests: 2,
-    time: "8:25 PM",
-    date: "2026/05/27",
-    section: "Window",
-    items: [
-      { name: "Burger", qty: 2, price: 350, station: "Grill" },
-      { name: "Coke", qty: 1, price: 100, station: "Beverage" },
-    ],
-  },
-  {
-    id: "INV-1028",
-    table: "Table 8",
-    customer: "Reservation Guest",
-    server: "Prabin",
-    amount: 2250,
-    status: "Unpaid",
-    priority: "Large table",
-    guests: 6,
-    time: "8:40 PM",
-    date: "2026/05/27",
-    section: "Family",
-    items: [
-      { name: "Grilled Chicken", qty: 2, price: 650, station: "Grill" },
-      { name: "Butter Naan", qty: 4, price: 150, station: "Tandoor" },
-      { name: "Lassi", qty: 2, price: 175, station: "Beverage" },
-    ],
-  },
-];
+import { useOrders } from "../../context/OrderContext";
+import { useTables } from "../../context/TableContext";
 
 const paymentMethods = [
   { name: "Cash", icon: Banknote },
@@ -99,6 +31,32 @@ const paymentMethods = [
 const filters = ["All", "Unpaid", "Partial"];
 
 export default function PendingBillsPage() {
+  const { orders, completeOrder } = useOrders();
+  const { updateTableStatus } = useTables();
+
+  // Dynamically generate pending bills from live global orders
+  const pendingBillsData = useMemo(() => {
+    return orders
+      .filter((order) => order.status !== "Completed") // Only show unpaid orders
+      .map((order) => {
+        const subtotal = (order.items || []).reduce((acc, item) => acc + item.qty * item.price, 0);
+        return {
+          id: order.id,
+          table: order.table || "Walk-in",
+          customer: order.customer || "Guest",
+          server: order.server || "System",
+          amount: subtotal + (subtotal * 0.13) + (subtotal > 0 ? 50 : 0), // Subtotal + VAT + Service Charge
+          status: "Unpaid",
+          priority: order.priority || "Normal",
+          guests: order.guests || 1,
+          time: order.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          date: order.date || new Date().toLocaleDateString(),
+          section: order.channel || "Dining",
+          items: order.items || [],
+        };
+      });
+  }, [orders]);
+
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [discountType, setDiscountType] = useState("percentage");
@@ -388,7 +346,22 @@ export default function PendingBillsPage() {
                 <div className="grand-total"><span>Grand Total</span><strong>Rs. {total.toFixed(2)}</strong></div>
               </div>
 
-              <button className="complete-payment-btn-modern" type="button">
+              <button 
+                className="complete-payment-btn-modern" 
+                type="button"
+                onClick={() => {
+                  // 1. Free up the table globally if it was a dine-in order
+                  const match = selectedInvoice.table.match(/\d+/);
+                  if (match) {
+                    updateTableStatus(parseInt(match[0]), "Available", "No Customer");
+                  }
+                  
+                  // 2. Mark the order as completed to remove it from Pending Bills
+                  completeOrder(selectedInvoice.id); // Triggers global context update
+                  setSelectedInvoiceId(null); // Closes the modal
+                  alert(`Payment of Rs. ${total.toFixed(2)} completed! Table is now free.`);
+                }}
+              >
                 <CheckCircle size={16} />
                 Complete Payment
               </button>
