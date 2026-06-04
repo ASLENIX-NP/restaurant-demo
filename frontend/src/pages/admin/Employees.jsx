@@ -10,8 +10,14 @@ import {
   Edit2,
   Trash2,
   X,
-  CalendarCheck,
   AlertTriangle,
+  Mail,
+  Phone,
+  Clock,
+  Banknote,
+  LayoutGrid,
+  List,
+  Filter,
 } from "lucide-react";
 
 import "../../styles/employees.css"; // Kept for any global custom overrides
@@ -26,7 +32,7 @@ const Employees = () => {
       name: "John Doe",
       role: "Manager",
       shift: "Morning",
-      email: "john@example.com",
+      email: "john.doe@example.com",
       phone: "+977 9812345678",
       salary: "Rs. 45,000",
       status: "Active",
@@ -38,7 +44,7 @@ const Employees = () => {
       name: "Sarah Smith",
       role: "Chef",
       shift: "Evening",
-      email: "sarah@example.com",
+      email: "sarah.smith@example.com",
       phone: "+977 9823456789",
       salary: "Rs. 60,000",
       status: "Active",
@@ -50,7 +56,7 @@ const Employees = () => {
       name: "Mike Jones",
       role: "Waiter",
       shift: "Day",
-      email: "mike@example.com",
+      email: "mike.jones@example.com",
       phone: "+977 9834567890",
       salary: "Rs. 25,000",
       status: "Inactive",
@@ -62,16 +68,19 @@ const Employees = () => {
       name: "Emily Davis",
       role: "Cashier",
       shift: "Morning",
-      email: "emily@example.com",
+      email: "emily.davis@example.com",
       phone: "+977 9845678901",
       salary: "Rs. 30,000",
       status: "Active",
       image: "https://randomuser.me/api/portraits/women/4.jpg",
     },
   ]);
+
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
+
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -97,7 +106,6 @@ const Employees = () => {
   };
 
   const handleConfirmDelete = async () => {
-    // 1. Pure Frontend Update (Instantly removes from UI)
     const updated = employees.filter(
       (emp) => (emp._id || emp.id || emp.tempId) !== employeeToDelete
     );
@@ -129,7 +137,7 @@ const Employees = () => {
     setEditingId(employee._id || employee.id || employee.tempId);
     setNewEmployee({
       username: employee.username || "",
-      password: "", // Leave blank for security unless they type a new one
+      password: "",
       name: employee.name || "",
       role: employee.role || "",
       shift: employee.shift || "",
@@ -146,12 +154,11 @@ const Employees = () => {
     e.preventDefault();
 
     if (isEditing) {
-      // Pure Frontend Edit (Fixes filter index bugs)
       const updatedList = employees.map((emp) => {
         if ((emp._id || emp.id || emp.tempId) === editingId) {
           const updatedEmp = { ...emp, ...newEmployee };
           if (!newEmployee.password) {
-            updatedEmp.password = emp.password; // Keep old if empty
+            updatedEmp.password = emp.password;
           }
           return updatedEmp;
         }
@@ -164,15 +171,12 @@ const Employees = () => {
         alert("Username, password, and role are required");
         return;
       }
-
-      // 1. Pure Frontend Add
       const newEmpWithId = { ...newEmployee, tempId: `temp-${Date.now()}` };
       setEmployees([...employees, newEmpWithId]);
       setShowModal(false);
     }
   };
 
-  // ✅ THE FIX: Safely handling the search filter using optional chaining and fallback strings
   const filteredEmployees = employees.filter((employee) => {
     const safeName = employee?.name || "";
     const safeEmail = employee?.email || "";
@@ -203,7 +207,7 @@ const Employees = () => {
     <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
       <main className="max-w-[1600px] mx-auto">
         {/* HEADER SECTION */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">
               Employees
@@ -215,12 +219,20 @@ const Employees = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate("/admin/attendance")}
-              className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
-            >
-              <CalendarCheck size={16} /> Attendance
+            <button className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all">
+              <Filter size={16} /> Filter
             </button>
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              className="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2.5 outline-none font-semibold shadow-sm cursor-pointer"
+            >
+              <option value="All">All Departments</option>
+              <option value="Manager">Management</option>
+              <option value="Chef">Kitchen</option>
+              <option value="Cashier">Front of House</option>
+              <option value="Waiter">Waitstaff</option>
+            </select>
             <button
               onClick={handleOpenAdd}
               className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
@@ -232,210 +244,333 @@ const Employees = () => {
 
         {/* METRICS & STATS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
-          {/* Total Employees */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-              <Users size={22} />
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+              <Users size={24} />
             </div>
             <div>
-              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-0.5">
                 Total Employees
               </h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">
+              <h2 className="text-2xl font-black text-slate-900 leading-none">
                 {totalEmployees}
               </h2>
+              <p className="text-xs font-medium text-slate-400 mt-1">
+                All departments
+              </p>
             </div>
           </div>
 
-          {/* Active Staff */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
-              <CheckCircle2 size={22} />
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+              <CheckCircle2 size={24} />
             </div>
             <div>
-              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-0.5">
                 Active Staff
               </h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">
+              <h2 className="text-2xl font-black text-slate-900 leading-none">
                 {activeEmployees}
               </h2>
+              <p className="text-xs font-medium text-slate-400 mt-1">
+                Currently working
+              </p>
             </div>
           </div>
 
-          {/* Kitchen Staff */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
-              <ChefHat size={22} />
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+              <ChefHat size={24} />
             </div>
             <div>
-              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-0.5">
                 Kitchen Staff
               </h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">
+              <h2 className="text-2xl font-black text-slate-900 leading-none">
                 {kitchenStaff}
               </h2>
+              <p className="text-xs font-medium text-slate-400 mt-1">
+                In kitchen
+              </p>
             </div>
           </div>
 
-          {/* Inactive Staff */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
-              <XCircle size={22} />
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div className="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
+              <XCircle size={24} />
             </div>
             <div>
-              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
-                Inactive
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-0.5">
+                Inactive Staff
               </h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">
+              <h2 className="text-2xl font-black text-slate-900 leading-none">
                 {inactiveEmployees}
               </h2>
+              <p className="text-xs font-medium text-slate-400 mt-1">
+                Not active
+              </p>
             </div>
           </div>
         </div>
 
-        {/* MAIN DATA TABLE SECTION */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-          {/* Controls & Filters Bar */}
-          <div className="p-4 border-b border-slate-100 flex flex-wrap gap-4 items-center justify-between bg-slate-50/50">
-            <div className="relative w-full sm:max-w-md">
-              <Search
-                size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-              />
-              <input
-                type="text"
-                placeholder="Search by name, email, or role..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 transition-all placeholder:text-slate-400 shadow-sm"
-              />
-            </div>
-
-            <div className="flex gap-3 w-full sm:w-auto">
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-400 font-medium shadow-sm flex-1 sm:flex-none cursor-pointer"
-              >
-                <option value="All">All Roles</option>
-                <option value="Manager">Manager</option>
-                <option value="Chef">Chef</option>
-                <option value="Cashier">Cashier</option>
-                <option value="Waiter">Waiter</option>
-              </select>
-
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-400 font-medium shadow-sm flex-1 sm:flex-none cursor-pointer"
-              >
-                <option value="All">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-            </div>
+        {/* CONTROLS BAR (Search, Sort, Layout Toggles) */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+          <div className="relative w-full md:max-w-md">
+            <Search
+              size={18}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              type="text"
+              placeholder="Search by name, role or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-400 transition-all placeholder:text-slate-400 shadow-sm font-medium"
+            />
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-white text-slate-400 text-[11px] uppercase tracking-wider font-bold border-b border-slate-100">
-                <tr>
-                  <th className="p-4 pl-6">Employee</th>
-                  <th className="p-4">Role</th>
-                  <th className="p-4">Shift</th>
-                  <th className="p-4">Contact</th>
-                  <th className="p-4">Salary</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4 pr-6 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-sm">
-                {filteredEmployees.length === 0 ? (
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-slate-500">
+                Sort By
+              </span>
+              <select className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2 outline-none font-medium shadow-sm cursor-pointer">
+                <option>Name (A - Z)</option>
+                <option>Name (Z - A)</option>
+                <option>Newest First</option>
+              </select>
+            </div>
+
+            <div className="flex items-center bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-1.5 rounded-md transition-colors ${
+                  viewMode === "grid"
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                <LayoutGrid size={18} />
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-1.5 rounded-md transition-colors ${
+                  viewMode === "list"
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                <List size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* MAIN CONTENT AREA */}
+        {viewMode === "grid" ? (
+          // --- GRID VIEW (New UI) ---
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredEmployees.map((employee) => (
+              <div
+                key={employee._id || employee.tempId}
+                className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm relative group hover:shadow-md transition-all"
+              >
+                {/* Status Badge */}
+                <span
+                  className={`absolute top-5 left-5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                    employee.status === "Active"
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "bg-rose-50 text-rose-600"
+                  }`}
+                >
+                  {employee.status}
+                </span>
+
+                {/* Header (Image + Name + Role) */}
+                <div className="flex items-center gap-4 mt-8 mb-6">
+                  <img
+                    src={employee.image}
+                    alt={employee.name}
+                    className="w-14 h-14 rounded-2xl object-cover border border-slate-100 shadow-sm"
+                  />
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-lg leading-tight">
+                      {employee.name}
+                    </h3>
+                    <p className="text-blue-600 font-bold text-sm mt-0.5">
+                      {employee.role}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Details List */}
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center gap-3 text-slate-500 text-sm font-medium">
+                    <Mail size={16} className="text-slate-400" />
+                    <span className="truncate">{employee.email}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-slate-500 text-sm font-medium">
+                    <Phone size={16} className="text-slate-400" />
+                    <span>{employee.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-slate-500 text-sm font-medium">
+                    <Clock size={16} className="text-slate-400" />
+                    <span>{employee.shift} Shift</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-slate-500 text-sm font-medium">
+                    <Banknote size={16} className="text-slate-400" />
+                    <span>{employee.salary}</span>
+                  </div>
+                </div>
+
+                {/* Footer Actions */}
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                  <button
+                    onClick={() => handleOpenEdit(employee)}
+                    className="flex items-center gap-2 text-slate-600 font-bold text-xs uppercase tracking-wide hover:text-blue-600 transition-colors bg-white px-4 py-2 rounded-lg border border-slate-200 hover:border-blue-200 hover:bg-blue-50 shadow-sm"
+                  >
+                    <Edit2 size={14} /> Edit
+                  </button>
+                  <button
+                    onClick={() =>
+                      handleDeleteClick(
+                        employee._id || employee.id || employee.tempId
+                      )
+                    }
+                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 shadow-sm transition-colors"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          // --- LIST VIEW (Old Table UI) ---
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-slate-50 text-slate-400 text-[11px] uppercase tracking-wider font-bold border-b border-slate-100">
                   <tr>
-                    <td
-                      colSpan="7"
-                      className="text-center py-12 text-slate-400 font-medium"
-                    >
-                      No employees match your search criteria.
-                    </td>
+                    <th className="p-4 pl-6">Employee</th>
+                    <th className="p-4">Role</th>
+                    <th className="p-4">Shift</th>
+                    <th className="p-4">Contact</th>
+                    <th className="p-4">Salary</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4 pr-6 text-right">Actions</th>
                   </tr>
-                ) : (
-                  filteredEmployees.map((employee) => (
-                    <tr
-                      key={employee._id || employee.id || employee.tempId}
-                      className="hover:bg-slate-50/50 transition-colors group"
-                    >
-                      <td className="p-4 pl-6">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={employee.image}
-                            alt={employee.name}
-                            className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm"
-                          />
-                          <div>
-                            <h4 className="font-bold text-slate-900">
-                              {employee.name}
-                            </h4>
-                            <p className="text-xs text-slate-500 font-medium">
-                              {employee.email}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4 font-semibold text-slate-700">
-                        {employee.role}
-                      </td>
-                      <td className="p-4 font-medium text-slate-500">
-                        {employee.shift}
-                      </td>
-                      <td className="p-4 font-medium text-slate-500">
-                        {employee.phone}
-                      </td>
-                      <td className="p-4 font-bold text-slate-900">
-                        {employee.salary}
-                      </td>
-                      <td className="p-4">
-                        <span
-                          className={`px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wider border ${
-                            employee.status === "Active"
-                              ? "bg-emerald-50 text-emerald-600 border-emerald-200"
-                              : "bg-rose-50 text-rose-600 border-rose-200"
-                          }`}
-                        >
-                          {employee.status}
-                        </span>
-                      </td>
-                      <td className="p-4 pr-6">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => handleOpenEdit(employee)}
-                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleDeleteClick(
-                                employee._id || employee.id || employee.tempId
-                              )
-                            }
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-sm">
+                  {filteredEmployees.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan="7"
+                        className="text-center py-12 text-slate-400 font-medium"
+                      >
+                        No employees match your search criteria.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    filteredEmployees.map((employee) => (
+                      <tr
+                        key={employee._id || employee.tempId}
+                        className="hover:bg-slate-50/50 transition-colors group"
+                      >
+                        <td className="p-4 pl-6">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={employee.image}
+                              alt={employee.name}
+                              className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm"
+                            />
+                            <div>
+                              <h4 className="font-bold text-slate-900">
+                                {employee.name}
+                              </h4>
+                              <p className="text-xs text-slate-500 font-medium">
+                                {employee.email}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4 font-semibold text-blue-600">
+                          {employee.role}
+                        </td>
+                        <td className="p-4 font-medium text-slate-500">
+                          {employee.shift}
+                        </td>
+                        <td className="p-4 font-medium text-slate-500">
+                          {employee.phone}
+                        </td>
+                        <td className="p-4 font-bold text-slate-900">
+                          {employee.salary}
+                        </td>
+                        <td className="p-4">
+                          <span
+                            className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border ${
+                              employee.status === "Active"
+                                ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                                : "bg-rose-50 text-rose-600 border-rose-200"
+                            }`}
+                          >
+                            {employee.status}
+                          </span>
+                        </td>
+                        <td className="p-4 pr-6">
+                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => handleOpenEdit(employee)}
+                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDeleteClick(
+                                  employee._id || employee.tempId
+                                )
+                              }
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* PAGINATION FOOTER */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-8 text-sm text-slate-500 font-medium">
+          <p>
+            Showing 1 to {filteredEmployees.length} of {totalEmployees}{" "}
+            employees
+          </p>
+          <div className="flex items-center gap-1 mt-4 sm:mt-0">
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white font-bold shadow-sm shadow-blue-200">
+              1
+            </button>
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors">
+              2
+            </button>
+            <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors">
+              3
+            </button>
+            <span className="px-1">...</span>
+            <button className="px-3 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors font-semibold text-slate-700">
+              Next &gt;
+            </button>
           </div>
         </div>
       </main>
 
-      {/* ADD EMPLOYEE MODAL OVERLAY */}
+      {/* --- ADD / EDIT EMPLOYEE MODAL (Kept Exactly As Your Original) --- */}
       {showModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-slide-in">

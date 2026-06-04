@@ -19,7 +19,6 @@ import TableManagement from "../pages/admin/TableManagement";
 import Employees from "../pages/admin/Employees";
 import Settings from "../pages/admin/Settings";
 import QRMenuManager from "../pages/admin/QRMenuManager";
-import Attendance from "../pages/admin/Attendance";
 
 // <-- 1. IMPORT ADDED HERE
 
@@ -74,7 +73,6 @@ const AppRoutes = () => {
             <Route path="reports" element={<Reports />} />
             <Route path="tables" element={<TableManagement />} />
             <Route path="employees" element={<Employees />} />
-            <Route path="attendance" element={<Attendance />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 
