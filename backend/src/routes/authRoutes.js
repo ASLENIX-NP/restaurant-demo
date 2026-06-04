@@ -24,9 +24,9 @@ router.get("/users", protect, authorize("Admin"), authController.getUsers);
 // @desc    Test basic token protection
 // @access  Private (Any logged-in user)
 router.get("/test", protect, (req, res) => {
-  res.status(200).json({ 
-    message: "Success! You have a valid token.", 
-    user: req.user 
+  res.status(200).json({
+    message: "Success! You have a valid token.",
+    user: req.user,
   });
 });
 
@@ -34,9 +34,9 @@ router.get("/test", protect, (req, res) => {
 // @desc    Test role-based authorization
 // @access  Private (Admin only)
 router.get("/admin-only", protect, authorize("Admin"), (req, res) => {
-  res.status(200).json({ 
+  res.status(200).json({
     message: "Success! Welcome Admin, you have special access.",
-    user: req.user
+    user: req.user,
   });
 });
 
