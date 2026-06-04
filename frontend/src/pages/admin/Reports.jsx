@@ -26,44 +26,22 @@ import {
 import "../../styles/reports.css";
 // Premium Mock Metrics matching your dashboard values safely
 const revenueTrendData = [
-  { label: "05-05", revenue: 42000 },
-  { label: "10-05", revenue: 58000 },
-  { label: "15-05", revenue: 49000 },
-  { label: "20-05", revenue: 78000 },
-  { label: "25-05", revenue: 62000 },
-  { label: "31-05", revenue: 92000 },
+  { label: "05-05", revenue: 0 },
+  { label: "10-05", revenue: 0 },
+  { label: "15-05", revenue: 0 },
+  { label: "20-05", revenue: 0 },
+  { label: "25-05", revenue: 0 },
+  { label: "31-05", revenue: 0 },
 ];
 
 const categoryDistributionData = [
-  { name: "Pizza", value: 38, color: "#1e293b" },    /* Slate-800 */
-  { name: "Momo", value: 23, color: "#475569" },     /* Slate-600 */
-  { name: "Burger", value: 17, color: "#94a3b8" },   /* Slate-400 */
-  { name: "Beverage", value: 11, color: "#cbd5e1" }, /* Slate-300 */
+  { name: "Pizza", value: 0, color: "#1e293b" },    /* Slate-800 */
+  { name: "Momo", value: 0, color: "#475569" },     /* Slate-600 */
+  { name: "Burger", value: 0, color: "#94a3b8" },   /* Slate-400 */
+  { name: "Beverage", value: 0, color: "#cbd5e1" }, /* Slate-300 */
 ];
 
-const topItems = [
-  {
-    name: "Chicken Burger",
-    category: "Fast Food",
-    quantity: 120,
-    revenue: "Rs. 54,000",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=120&auto=format&fit=crop",
-  },
-  {
-    name: "Pepperoni Pizza",
-    category: "Italian",
-    quantity: 95,
-    revenue: "Rs. 85,500",
-    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=120&auto=format&fit=crop",
-  },
-  {
-    name: "Buff Momo",
-    category: "Nepali",
-    quantity: 160,
-    revenue: "Rs. 51,200",
-    image: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=120&auto=format&fit=crop",
-  },
-];
+const topItems = [];
 
 export default function Reports() {
   const [activeTab, setActiveTab] = useState("Overview");
@@ -120,10 +98,10 @@ export default function Reports() {
         {/* ANALYTIC KPI SUMMARY GRID */}
         <div className="report-stats-grid">
           {[
-            { title: "Total Revenue", value: "Rs. 4,50,000", change: "↑ 18.6% this month", icon: <DollarSign size={20} /> },
-            { title: "Total Orders", value: "540", change: "↑ 12.4% this month", icon: <ShoppingBag size={20} /> },
-            { title: "Avg Order Value", value: "Rs. 1,200", change: "↑ 6.7% this month", icon: <TrendingUp size={20} /> },
-            { title: "Customers", value: "482", change: "↑ 15.3% this month", icon: <Users size={20} /> },
+            { title: "Total Revenue", value: "Rs. 0", change: "0% this month", icon: <DollarSign size={20} /> },
+            { title: "Total Orders", value: "0", change: "0% this month", icon: <ShoppingBag size={20} /> },
+            { title: "Avg Order Value", value: "Rs. 0", change: "0% this month", icon: <TrendingUp size={20} /> },
+            { title: "Customers", value: "0", change: "0% this month", icon: <Users size={20} /> },
           ].map((stat, i) => (
             <div key={i} className="report-stat-card">
               <div className="report-icon-wrapper">
@@ -240,20 +218,28 @@ export default function Reports() {
                 </tr>
               </thead>
               <tbody>
-                {topItems.map((item, index) => (
-                  <tr key={index}>
-                    <td className="rank-index-cell">{index + 1}</td>
-                    <td>
-                      <div className="item-info">
-                        <img src={item.image} alt={item.name} />
-                        <span className="item-name-bold">{item.name}</span>
-                      </div>
+                {topItems.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="text-center py-8 text-slate-400 font-medium">
+                      No items sold yet.
                     </td>
-                    <td className="category-text-dim">{item.category}</td>
-                    <td className="qty-center-cell">{item.quantity}</td>
-                    <td className="revenue-right-cell">{item.revenue}</td>
                   </tr>
-                ))}
+                ) : (
+                  topItems.map((item, index) => (
+                    <tr key={index}>
+                      <td className="rank-index-cell">{index + 1}</td>
+                      <td>
+                        <div className="item-info">
+                          <img src={item.image} alt={item.name} />
+                          <span className="item-name-bold">{item.name}</span>
+                        </div>
+                      </td>
+                      <td className="category-text-dim">{item.category}</td>
+                      <td className="qty-center-cell">{item.quantity}</td>
+                      <td className="revenue-right-cell">{item.revenue}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

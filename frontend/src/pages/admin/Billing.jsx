@@ -12,55 +12,12 @@ import {
 import "../../styles/billing.css"; // Kept for any global custom overrides
 
 // Enhanced mock data to include nested items for the dynamic receipt view
-const billsData = [
-  {
-    billNo: "BIL-000128",
-    orderId: "#TH1250",
-    table: "Table 5",
-    amount: 2500,
-    payment: "Cash",
-    status: "Paid",
-    time: "10:30 AM",
-    items: [
-      { name: "Grilled Chicken", price: 1200 },
-      { name: "Alfredo Pasta", price: 950 },
-      { name: "Fresh Lime Soda", price: 350 },
-    ],
-  },
-  {
-    billNo: "BIL-000127",
-    orderId: "#TH1249",
-    table: "Table 3",
-    amount: 1800,
-    payment: "UPI",
-    status: "Paid",
-    time: "10:15 AM",
-    items: [
-      { name: "Paneer Butter Masala", price: 850 },
-      { name: "Garlic Naan (x2)", price: 400 },
-      { name: "Mango Lassi", price: 550 },
-    ],
-  },
-  {
-    billNo: "BIL-000126",
-    orderId: "#TH1248",
-    table: "Table 1",
-    amount: 3200,
-    payment: "Card",
-    status: "Paid",
-    time: "10:05 AM",
-    items: [
-      { name: "Family Pizza Combo", price: 2400 },
-      { name: "Spicy Chicken Wings", price: 600 },
-      { name: "Coke (x2)", price: 200 },
-    ],
-  },
-];
+const billsData = [];
 
 const Billing = () => {
   const [activeTab, setActiveTab] = useState("All Bills");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedBillId, setSelectedBillId] = useState(billsData[0].billNo);
+  const [selectedBillId, setSelectedBillId] = useState(null);
 
   // Filter bills based on search input
   const filteredBills = billsData.filter((bill) => 
@@ -70,7 +27,7 @@ const Billing = () => {
   );
 
   // Get active selected bill details
-  const activeBill = billsData.find((b) => b.billNo === selectedBillId) || billsData[0];
+  const activeBill = billsData.find((b) => b.billNo === selectedBillId) || null;
 
   // Helper function for Payment Method badge styling
   const getPaymentBadgeColor = (method) => {
@@ -107,9 +64,9 @@ const Billing = () => {
             <div>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Today's Revenue</h4>
               <div className="flex items-end gap-2">
-                <h2 className="text-2xl font-black text-slate-900">Rs. 2,85,000</h2>
+                <h2 className="text-2xl font-black text-slate-900">Rs. 0</h2>
               </div>
-              <p className="text-xs font-bold text-emerald-500 mt-1">↑ 18.6% vs Yesterday</p>
+              <p className="text-xs font-bold text-slate-400 mt-1">0% vs Yesterday</p>
             </div>
           </div>
 
@@ -121,9 +78,9 @@ const Billing = () => {
             <div>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Total Bills</h4>
               <div className="flex items-end gap-2">
-                <h2 className="text-2xl font-black text-slate-900">128</h2>
+                <h2 className="text-2xl font-black text-slate-900">0</h2>
               </div>
-              <p className="text-xs font-bold text-emerald-500 mt-1">↑ 12.4% vs Yesterday</p>
+              <p className="text-xs font-bold text-slate-400 mt-1">0% vs Yesterday</p>
             </div>
           </div>
 
@@ -135,9 +92,9 @@ const Billing = () => {
             <div>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-0.5">Average Bill</h4>
               <div className="flex items-end gap-2">
-                <h2 className="text-2xl font-black text-slate-900">Rs. 1,250</h2>
+                <h2 className="text-2xl font-black text-slate-900">Rs. 0</h2>
               </div>
-              <p className="text-xs font-bold text-emerald-500 mt-1">↑ 6.8% vs Yesterday</p>
+              <p className="text-xs font-bold text-slate-400 mt-1">0% vs Yesterday</p>
             </div>
           </div>
 
@@ -194,33 +151,41 @@ const Billing = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
-                  {filteredBills.map((bill) => (
-                    <tr 
-                      key={bill.billNo} 
-                      onClick={() => setSelectedBillId(bill.billNo)}
-                      className={`transition-colors cursor-pointer ${
-                        selectedBillId === bill.billNo 
-                          ? "bg-purple-50/40" 
-                          : "hover:bg-slate-50/80"
-                      }`}
-                    >
-                      <td className="p-4 pl-6 font-bold text-slate-900">{bill.billNo}</td>
-                      <td className="p-4 font-semibold text-slate-500">{bill.orderId}</td>
-                      <td className="p-4 font-semibold text-slate-700">{bill.table}</td>
-                      <td className="p-4 font-black text-slate-900">Rs. {bill.amount.toLocaleString()}</td>
-                      <td className="p-4">
-                        <span className={`px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wider border ${getPaymentBadgeColor(bill.payment)}`}>
-                          {bill.payment}
-                        </span>
+                  {filteredBills.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className="text-center py-12 text-slate-400 font-medium">
+                        No bills found matching your criteria.
                       </td>
-                      <td className="p-4">
-                        <span className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px] uppercase tracking-wider bg-emerald-50 px-2.5 py-1 rounded-md w-fit">
-                          <CheckCircle2 size={12} /> {bill.status}
-                        </span>
-                      </td>
-                      <td className="p-4 pr-6 font-semibold text-slate-500">{bill.time}</td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredBills.map((bill) => (
+                      <tr 
+                        key={bill.billNo} 
+                        onClick={() => setSelectedBillId(bill.billNo)}
+                        className={`transition-colors cursor-pointer ${
+                          selectedBillId === bill.billNo 
+                            ? "bg-purple-50/40" 
+                            : "hover:bg-slate-50/80"
+                        }`}
+                      >
+                        <td className="p-4 pl-6 font-bold text-slate-900">{bill.billNo}</td>
+                        <td className="p-4 font-semibold text-slate-500">{bill.orderId}</td>
+                        <td className="p-4 font-semibold text-slate-700">{bill.table}</td>
+                        <td className="p-4 font-black text-slate-900">Rs. {bill.amount.toLocaleString()}</td>
+                        <td className="p-4">
+                          <span className={`px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wider border ${getPaymentBadgeColor(bill.payment)}`}>
+                            {bill.payment}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px] uppercase tracking-wider bg-emerald-50 px-2.5 py-1 rounded-md w-fit">
+                            <CheckCircle2 size={12} /> {bill.status}
+                          </span>
+                        </td>
+                        <td className="p-4 pr-6 font-semibold text-slate-500">{bill.time}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -232,54 +197,64 @@ const Billing = () => {
             {/* Top accent line */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-slate-900" />
             
-            <div className="flex justify-between items-start mb-6 pt-1">
-              <div>
-                <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                  <Receipt size={20} className="text-slate-400" /> Bill Details
-                </h2>
+            {!activeBill ? (
+              <div className="h-full flex flex-col items-center justify-center text-slate-400 py-12">
+                <Receipt size={48} className="mb-4 opacity-30" />
+                <p className="text-sm font-semibold">No bill selected</p>
+                <p className="text-xs text-center mt-1">Select a bill from the list to view its details.</p>
               </div>
-              <span className="bg-emerald-100 text-emerald-700 font-bold text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full">
-                {activeBill.status}
-              </span>
-            </div>
-
-            {/* Bill Meta Data */}
-            <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-100/80 space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Bill No.</span>
-                <span className="font-black text-slate-900">{activeBill.billNo}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Table</span>
-                <span className="font-bold text-slate-900">{activeBill.table}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-semibold">Payment</span>
-                <span className="font-bold text-slate-900">{activeBill.payment}</span>
-              </div>
-            </div>
-
-            {/* Dynamic Items List */}
-            <div className="mb-6 space-y-3 relative">
-              <div className="border-t-2 border-dashed border-slate-200 mb-4" />
-              
-              {activeBill.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center text-sm">
-                  <span className="font-semibold text-slate-700">{item.name}</span>
-                  <span className="font-bold text-slate-900">Rs. {item.price.toLocaleString()}</span>
+            ) : (
+              <>
+                <div className="flex justify-between items-start mb-6 pt-1">
+                  <div>
+                    <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                      <Receipt size={20} className="text-slate-400" /> Bill Details
+                    </h2>
+                  </div>
+                  <span className="bg-emerald-100 text-emerald-700 font-bold text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full">
+                    {activeBill.status}
+                  </span>
                 </div>
-              ))}
-              
-              <div className="border-t-2 border-dashed border-slate-200 mt-4 pt-4 flex justify-between items-end">
-                <span className="font-bold text-slate-500 text-sm">Total Amount</span>
-                <span className="text-2xl font-black text-purple-600">Rs. {activeBill.amount.toLocaleString()}</span>
-              </div>
-            </div>
 
-            {/* Download Invoice Button */}
-            <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md mt-2">
-              <Download size={16} /> Download Invoice
-            </button>
+                {/* Bill Meta Data */}
+                <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-100/80 space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-semibold">Bill No.</span>
+                    <span className="font-black text-slate-900">{activeBill.billNo}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-semibold">Table</span>
+                    <span className="font-bold text-slate-900">{activeBill.table}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-semibold">Payment</span>
+                    <span className="font-bold text-slate-900">{activeBill.payment}</span>
+                  </div>
+                </div>
+
+                {/* Dynamic Items List */}
+                <div className="mb-6 space-y-3 relative">
+                  <div className="border-t-2 border-dashed border-slate-200 mb-4" />
+                  
+                  {activeBill.items.map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center text-sm">
+                      <span className="font-semibold text-slate-700">{item.name}</span>
+                      <span className="font-bold text-slate-900">Rs. {item.price.toLocaleString()}</span>
+                    </div>
+                  ))}
+                  
+                  <div className="border-t-2 border-dashed border-slate-200 mt-4 pt-4 flex justify-between items-end">
+                    <span className="font-bold text-slate-500 text-sm">Total Amount</span>
+                    <span className="text-2xl font-black text-purple-600">Rs. {activeBill.amount.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                {/* Download Invoice Button */}
+                <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md mt-2">
+                  <Download size={16} /> Download Invoice
+                </button>
+              </>
+            )}
 
           </div>
 

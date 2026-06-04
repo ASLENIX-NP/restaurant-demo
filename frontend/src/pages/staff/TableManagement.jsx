@@ -13,29 +13,22 @@ const initialTables = [
   { 
     id: 2, 
     seats: 2, 
-    status: "Occupied", 
-    customer: "John Doe",
-    activeOrder: [
-      { id: 1, name: "Chicken Burger", qty: 1, delivered: true },
-      { id: 6, name: "French Fries", qty: 1, delivered: true },
-      { id: 4, name: "Cold Coffee", qty: 2, delivered: false }
-    ]
+    status: "Available", 
+    customer: "No Customer",
+    activeOrder: null 
   },
   { 
     id: 3, 
     seats: 6, 
-    status: "Reserved", 
-    customer: "Sarah",
-    activeOrder: [
-      { id: 3, name: "Chicken Momo", qty: 2, delivered: false },
-      { id: 4, name: "Cold Coffee", qty: 3, delivered: false }
-    ]
+    status: "Available", 
+    customer: "No Customer",
+    activeOrder: null 
   },
   { 
     id: 4, 
     seats: 8, 
-    status: "Cleaning", 
-    customer: "Cleaning Team",
+    status: "Available", 
+    customer: "No Customer",
     activeOrder: null 
   },
   { 
@@ -48,21 +41,16 @@ const initialTables = [
   { 
     id: 6, 
     seats: 5, 
-    status: "Occupied", 
-    customer: "Emily",
-    activeOrder: [
-      { id: 5, name: "Chowmein", qty: 2, delivered: true },
-      { id: 1, name: "Chicken Burger", qty: 1, delivered: false }
-    ]
+    status: "Available", 
+    customer: "No Customer",
+    activeOrder: null 
   },
   { 
     id: 7, 
     seats: 3, 
-    status: "Reserved", 
-    customer: "Michael",
-    activeOrder: [
-      { id: 2, name: "Pepperoni Pizza", qty: 1, delivered: false }
-    ]
+    status: "Available", 
+    customer: "No Customer",
+    activeOrder: null 
   },
   { 
     id: 8, 
@@ -82,6 +70,7 @@ const Tables = () => {
   const [formSeats, setFormSeats] = useState("");
   const [formStatus, setFormStatus] = useState("Available");
   const [formCustomer, setFormCustomer] = useState("");
+
 
   // Dynamic Dashboard Stats Counters
   const totalTables = tablesList.length;

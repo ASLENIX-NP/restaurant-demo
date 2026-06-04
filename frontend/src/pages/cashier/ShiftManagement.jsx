@@ -17,19 +17,19 @@ const ShiftManagement = () => {
         <div className="space-y-4">
           <div className="flex justify-between border-b border-slate-100 pb-3">
             <span className="text-slate-500 font-medium">Starting Cash Float</span>
-            <span className="font-bold text-slate-900">Rs. 5,000</span>
+            <span className="font-bold text-slate-900">Rs. 0</span>
           </div>
           <div className="flex justify-between border-b border-slate-100 pb-3">
             <span className="text-slate-500 font-medium">Cash Sales Today</span>
-            <span className="font-bold text-slate-900">Rs. 12,450</span>
+            <span className="font-bold text-slate-900">Rs. 0</span>
           </div>
           <div className="flex justify-between border-b border-slate-100 pb-3">
             <span className="text-slate-500 font-medium">Card/Digital Sales</span>
-            <span className="font-bold text-slate-900">Rs. 8,200</span>
+            <span className="font-bold text-slate-900">Rs. 0</span>
           </div>
           <div className="flex justify-between pt-3">
             <span className="text-lg font-black text-slate-900">Expected Cash in Drawer</span>
-            <span className="text-lg font-black text-emerald-600">Rs. 17,450</span>
+            <span className="text-lg font-black text-emerald-600">Rs. 0</span>
           </div>
         </div>
         <div className="mt-8 flex gap-4">

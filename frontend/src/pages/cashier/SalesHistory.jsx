@@ -64,7 +64,7 @@ const SalesHistory = () => {
           <div>
             <h4>Total Sales</h4>
             <h2>Rs. {totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
-            <span>↑ 12.5% vs yesterday</span>
+            <span>0% vs yesterday</span>
           </div>
         </div>
 
@@ -74,7 +74,7 @@ const SalesHistory = () => {
           <div>
             <h4>Total Orders</h4>
             <h2>{completedSales.length}</h2>
-            <span>↑ 5 vs yesterday</span>
+            <span>0 vs yesterday</span>
           </div>
         </div>
 
@@ -84,7 +84,7 @@ const SalesHistory = () => {
           <div>
             <h4>Total Items Sold</h4>
             <h2>{totalItemsSold}</h2>
-            <span>↑ 10.6% vs yesterday</span>
+            <span>0% vs yesterday</span>
           </div>
         </div>
 
@@ -94,7 +94,7 @@ const SalesHistory = () => {
           <div>
             <h4>Average Order Value</h4>
             <h2>Rs. {completedSales.length > 0 ? (totalSalesAmount / completedSales.length).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}</h2>
-            <span>↑ 8.3% vs yesterday</span>
+            <span>0% vs yesterday</span>
           </div>
         </div>
 
@@ -197,7 +197,7 @@ const SalesHistory = () => {
               <div className="circle-chart">
                 <div className="chart-center">
                   <h4>Total</h4>
-                  <p>Rs. 2,45,000</p>
+                  <p>Rs. 0</p>
                 </div>
               </div>
 
@@ -233,32 +233,32 @@ const SalesHistory = () => {
 
             <div className="summary-item">
               <span>Total Sales</span>
-              <strong>Rs. 2,45,000</strong>
+              <strong>Rs. 0</strong>
             </div>
 
             <div className="summary-item">
               <span>Total Orders</span>
-              <strong>48</strong>
+              <strong>0</strong>
             </div>
 
             <div className="summary-item">
               <span>Total Items Sold</span>
-              <strong>132</strong>
+              <strong>0</strong>
             </div>
 
             <div className="summary-item">
               <span>Average Order Value</span>
-              <strong>Rs. 5,104</strong>
+              <strong>Rs. 0</strong>
             </div>
 
             <div className="summary-item">
               <span>Highest Sale</span>
-              <strong>Rs. 12,500</strong>
+              <strong>Rs. 0</strong>
             </div>
 
             <div className="summary-item">
               <span>Lowest Sale</span>
-              <strong>Rs. 120</strong>
+              <strong>Rs. 0</strong>
             </div>
           </div>
 
