@@ -99,10 +99,10 @@ const Dashboard = () => {
         if (a.status === "Ready" && b.status !== "Ready") return 1;
         if (a.status !== "Ready" && b.status === "Ready") return -1;
 
-        // 2. Put newest incoming active orders at the top of the queue
+        // 2. Put oldest incoming active orders at the top of the queue (First Come First Serve)
         const timeA = new Date(a.timestamp || 0).getTime();
         const timeB = new Date(b.timestamp || 0).getTime();
-        return timeB - timeA;
+        return timeA - timeB;
       });
   }, [activeStation, orders, statusFilter]);
 
@@ -296,7 +296,7 @@ const Dashboard = () => {
             <span className="sync-timestamp">Auto-update: just now</span>
           </div>
 
-          <div className="order-grid">
+          <div className="order-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {filteredOrders.map((order) => {
               const StatusIcon = statusIcons[order.status];
 
