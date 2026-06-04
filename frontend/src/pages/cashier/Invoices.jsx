@@ -18,11 +18,13 @@ import {
   CheckCircle
 } from "lucide-react";
 import { useOrders } from "../../context/OrderContext";
+import { useTables } from "../../context/TableContext";
 
 const ITEMS_PER_PAGE = 5;
 
 const Invoices = () => {
   const { orders = [], completeOrder } = useOrders() || {};
+  const { updateTableStatus } = useTables() || {};
 
   // Dynamically map global orders into the standard Invoice format
   const invoices = useMemo(() => {
@@ -102,6 +104,15 @@ const Invoices = () => {
   const handleUpdateStatus = (id, newStatus) => {
     if (newStatus === "Paid" && completeOrder) {
       completeOrder(id); // Use the global context to mark the order as paid!
+
+      // Automatically free up the table globally for this order
+      const originalOrder = orders.find((o) => o.id === id);
+      if (originalOrder && originalOrder.table && updateTableStatus) {
+        const match = originalOrder.table.match(/\d+/);
+        if (match) {
+          updateTableStatus(parseInt(match[0], 10), "Available", "No Customer");
+        }
+      }
     }
     setActiveDropdownId(null);
   };
@@ -127,7 +138,7 @@ const Invoices = () => {
           <div>
             <h4>Total Invoices</h4>
             <h2>{invoices.length}</h2>
-            <span className="green">&uarr; 15.2% vs yesterday</span>
+            <span className="text-slate-400">0% vs yesterday</span>
           </div>
         </div>
         <div className="invoice-card">
@@ -135,7 +146,7 @@ const Invoices = () => {
           <div>
             <h4>Paid Invoices</h4>
             <h2>{invoices.filter((i) => i.status === "Paid").length}</h2>
-            <span className="green">&uarr; 12.5% vs yesterday</span>
+            <span className="text-slate-400">0% vs yesterday</span>
           </div>
         </div>
         <div className="invoice-card">
@@ -143,7 +154,7 @@ const Invoices = () => {
           <div>
             <h4>Pending Invoices</h4>
             <h2>{invoices.filter((i) => i.status === "Pending").length}</h2>
-            <span className="green">&uarr; 8.3% vs yesterday</span>
+            <span className="text-slate-400">0% vs yesterday</span>
           </div>
         </div>
         <div className="invoice-card">
@@ -151,7 +162,7 @@ const Invoices = () => {
           <div>
             <h4>Cancelled Invoices</h4>
             <h2>{invoices.filter((i) => i.status === "Cancelled").length}</h2>
-            <span className="red">&darr; 4.1% vs yesterday</span>
+            <span className="text-slate-400">0% vs yesterday</span>
           </div>
         </div>
       </div>

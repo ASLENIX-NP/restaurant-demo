@@ -14,48 +14,7 @@ const Orders = () => {
   const [activeFilter, setActiveFilter] = useState("All Orders");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const orders = [
-    {
-      id: "#TH1250",
-      customer: "John Doe",
-      phone: "+1 987 654 3210",
-      avatarColor: "bg-blue-600",
-      items: [
-        "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=120&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=120&auto=format&fit=crop",
-      ],
-      type: "Dine In",
-      amount: "Rs. 2,500",
-      status: "Completed",
-      time: "10:30 AM",
-    },
-    {
-      id: "#TH1249",
-      customer: "Sarah Wilson",
-      phone: "+1 912 345 6780",
-      avatarColor: "bg-purple-600",
-      items: [
-        "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=120&auto=format&fit=crop",
-      ],
-      type: "Takeaway",
-      amount: "Rs. 1,800",
-      status: "Preparing",
-      time: "10:15 AM",
-    },
-    {
-      id: "#TH1248",
-      customer: "Michael Brown",
-      phone: "+1 876 543 2109",
-      avatarColor: "bg-indigo-600",
-      items: [
-        "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=120&auto=format&fit=crop",
-      ],
-      type: "Delivery",
-      amount: "Rs. 3,200",
-      status: "Pending",
-      time: "09:45 AM",
-    },
-  ];
+  const orders = [];
 
   // Logic to filter the orders based on tabs and search box
   const filteredOrders = orders.filter((order) => {
@@ -99,7 +58,7 @@ const Orders = () => {
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Orders</h4>
               <div className="flex items-end gap-2 mt-1">
                 <h2 className="text-2xl font-black text-slate-900">{orders.length}</h2>
-                <span className="text-xs font-bold text-emerald-500 mb-1">↑ 12.4%</span>
+                <span className="text-xs font-bold text-slate-400 mb-1">0%</span>
               </div>
             </div>
           </div>
@@ -115,7 +74,7 @@ const Orders = () => {
                 <h2 className="text-2xl font-black text-slate-900">
                   {orders.filter((o) => o.status === "Completed").length}
                 </h2>
-                <span className="text-xs font-bold text-emerald-500 mb-1">↑ 14.2%</span>
+                <span className="text-xs font-bold text-slate-400 mb-1">0%</span>
               </div>
             </div>
           </div>
@@ -131,7 +90,7 @@ const Orders = () => {
                 <h2 className="text-2xl font-black text-slate-900">
                   {orders.filter((o) => o.status === "Pending").length}
                 </h2>
-                <span className="text-xs font-bold text-rose-500 mb-1">↓ 5.1%</span>
+                <span className="text-xs font-bold text-slate-400 mb-1">0%</span>
               </div>
             </div>
           </div>
@@ -147,7 +106,7 @@ const Orders = () => {
                 <h2 className="text-2xl font-black text-slate-900">
                   {orders.filter((o) => o.type === "Delivery").length}
                 </h2>
-                <span className="text-xs font-bold text-emerald-500 mb-1">↑ 8.3%</span>
+                <span className="text-xs font-bold text-slate-400 mb-1">0%</span>
               </div>
             </div>
           </div>

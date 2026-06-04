@@ -13,68 +13,17 @@ import {
   CalendarClock,
   X,
   Edit2,
-  Receipt
+  Receipt,
+  BellRing
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import "../../styles/staff.css"; // Kept for any global custom overrides
 import { useOrders } from "../../context/OrderContext";
-
-const initialTables = [
-  { 
-    number: 1, 
-    status: "Occupied", 
-    customer: "John Doe", 
-    seats: 4, 
-    label: "Customers Dining",
-    activeOrder: { id: "#ORD-1027", items: ["Chicken Momo x2", "Cold Coffee x3"], total: "Rs. 1390" }
-  },
-  { 
-    number: 2, 
-    status: "Available", 
-    customer: "No Customer", 
-    seats: 2, 
-    label: "Ready for New Guests",
-    activeOrder: null 
-  },
-  { 
-    number: 3, 
-    status: "Reserved", 
-    customer: "Sarah Jenkins", 
-    seats: 6, 
-    label: "Reserved for Guest",
-    reservationTime: "07:30 PM",
-    activeOrder: null
-  },
-  { 
-    number: 4, 
-    status: "Occupied", 
-    customer: "Alex Mercer", 
-    seats: 4, 
-    label: "Customers Dining",
-    activeOrder: { id: "#ORD-1022", items: ["Pepperoni Pizza x1", "French Fries x1"], total: "Rs. 1100" }
-  },
-  { 
-    number: 5, 
-    status: "Available", 
-    customer: "No Customer", 
-    seats: 2, 
-    label: "Ready for New Guests",
-    activeOrder: null 
-  },
-  { 
-    number: 6, 
-    status: "Occupied", 
-    customer: "Emily Watson", 
-    seats: 5, 
-    label: "Customers Dining",
-    activeOrder: { id: "#ORD-1025", items: ["Chicken Burger x2", "Chowmein x1"], total: "Rs. 1250" }
-  },
-];
+import { useTables } from "../../context/TableContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [tablesList, setTablesList] = useState(initialTables);
   const [searchQuery, setSearchQuery] = useState("");
   
   // Modal tracking states
@@ -87,7 +36,30 @@ const Dashboard = () => {
   const [editSeats, setEditSeats] = useState(2);
   const [editTime, setEditTime] = useState("");
 
-  const { orders } = useOrders();
+  const { orders, completeOrder } = useOrders();
+  const { tables, setTables } = useTables();
+
+  // Map global context data to Dashboard specific format
+  const tablesList = tables.map((t) => {
+    const tableOrders = orders.filter((o) => o.table === t.name && o.status !== "Completed");
+    
+    let activeOrder = null;
+    if (tableOrders.length > 0) {
+      activeOrder = {
+        id: tableOrders[0].id,
+        items: tableOrders.flatMap(o => o.items.map(i => i.name)),
+        total: `Rs. ${tableOrders.reduce((sum, o) => sum + (o.total || 0), 0)}`
+      };
+    }
+
+    return {
+      ...t,
+      number: t.id,
+      customer: t.currentCustomer,
+      label: t.status === "Occupied" ? "Customers Dining" : t.status === "Reserved" ? "Reserved for Guest" : "Ready for New Guests",
+      activeOrder
+    };
+  });
 
   // Filter tables list automatically
   const filteredTables = tablesList.filter((table) =>
@@ -108,23 +80,16 @@ const Dashboard = () => {
   // Process and save updated table data properties
   const handleSaveTableEdits = (e) => {
     e.preventDefault();
-    setTablesList(prev => prev.map(t => {
-      if (t.number === editingTable.number) {
-        let derivedLabel = "Ready for New Guests";
-        let finalCustomer = editCustomer.trim() || "No Customer";
-
-        if (editStatus === "Occupied") derivedLabel = "Customers Dining";
-        if (editStatus === "Reserved") derivedLabel = "Reserved for Guest";
-        if (editStatus === "Available") finalCustomer = "No Customer";
+    setTables((prev) => prev.map((t) => {
+      if (t.id === editingTable.number) {
+        let finalCustomer = editStatus === "Available" ? "No Customer" : (editCustomer.trim() || "No Customer");
 
         return {
           ...t,
           status: editStatus,
-          customer: finalCustomer,
+          currentCustomer: finalCustomer,
           seats: parseInt(editSeats, 10),
-          label: derivedLabel,
           reservationTime: editStatus === "Reserved" ? editTime : null,
-          activeOrder: editStatus === "Occupied" ? (t.activeOrder || { id: "#ORD-NEW", items: ["Custom Order Initialized"], total: "Rs. 0" }) : null
         };
       }
       return t;
@@ -240,7 +205,11 @@ const Dashboard = () => {
                 const styles = getTableStatusStyles(table.status);
                 
                 return (
-                  <div key={index} className={`bg-white rounded-2xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-all ${styles.border}`}>
+                  <div 
+                    key={index} 
+                    onClick={() => setSelectedTableDetails(table)}
+                    className={`bg-white rounded-2xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-all cursor-pointer ${styles.border}`}
+                  >
                     <div className="p-5">
                       <div className="flex justify-between items-start mb-4">
                         <h3 className="text-lg font-black text-slate-900">Table {table.number}</h3>
@@ -261,15 +230,12 @@ const Dashboard = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
+                    <div className="grid grid-cols-1 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
                       <button 
-                        onClick={() => setSelectedTableDetails(table)}
-                        className="py-3 text-xs font-bold text-slate-700 hover:bg-white hover:text-purple-600 transition flex items-center justify-center gap-1.5"
-                      >
-                        <Receipt size={14} /> View
-                      </button>
-                      <button 
-                        onClick={() => openEditModal(table)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditModal(table);
+                        }}
                         className="py-3 text-xs font-bold text-slate-600 hover:bg-white transition flex items-center justify-center gap-1.5"
                       >
                         <Edit2 size={14} /> Edit
@@ -284,24 +250,70 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* RIGHT: LIVE ORDERS QUEUE CONTAINER */}
-          <div className="lg:col-span-4 xl:col-span-3 bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sticky top-6">
-            <div className="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
-              <h2 className="text-base font-black text-slate-900">Live Orders</h2>
-              <button onClick={() => navigate('/staff/ready-orders')} className="text-[11px] font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-md transition-colors">
-                View All
-              </button>
-            </div>
+          {/* RIGHT: LIVE ORDERS QUEUE & ALERTS */}
+          <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 sticky top-6">
+            
+            {/* READY ORDERS ALERT SECTION */}
+            {orders.filter(o => o.status === "Ready").length > 0 && (
+              <div className="bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl shadow-lg shadow-emerald-200 p-5 text-white animate-slide-in">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-base font-black flex items-center gap-2">
+                    <BellRing size={20} className="animate-bounce" /> Ready to Serve
+                  </h2>
+                  <span className="bg-white text-emerald-600 text-xs font-black px-2 py-1 rounded-md shadow-sm">
+                    {orders.filter(o => o.status === "Ready").length} New
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {orders.filter(o => o.status === "Ready").slice(0, 3).map(order => (
+                    <div 
+                      key={order.id}
+                      className="bg-white/20 hover:bg-white/30 p-3 rounded-xl border border-white/20 flex items-center justify-between transition-all group backdrop-blur-sm"
+                    >
+                      <div className="cursor-pointer flex-1" onClick={() => navigate('/staff/ready-orders')}>
+                        <h3 className="font-bold text-white text-sm">{order.table || "Queue"}</h3>
+                        <p className="text-[11px] font-medium text-emerald-50 mt-0.5">{order.id}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => completeOrder(order.id)}
+                          className="bg-white text-emerald-600 hover:bg-emerald-50 px-2.5 py-1.5 rounded-lg text-[10px] font-black shadow-sm flex items-center gap-1 transition-all"
+                        >
+                          <CheckCircle2 size={14} /> Serve
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {orders.filter(o => o.status === "Ready").length > 3 && (
+                     <button onClick={() => navigate('/staff/ready-orders')} className="w-full text-center text-xs font-bold text-emerald-50 mt-2 hover:text-white underline transition-colors">
+                        View all ready orders...
+                     </button>
+                  )}
+                </div>
+              </div>
+            )}
 
-            <div className="space-y-3">
-              {orders.filter(o => o.status !== "Completed").slice(0, 6).map((order) => (
-                <div 
-                  key={order.id} 
-                  onClick={() => order.status === "Ready" && navigate('/staff/ready-orders')}
-                  className="group flex items-center justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-purple-200 hover:shadow-sm transition-all cursor-pointer"
-                >
+            {/* LIVE ORDERS QUEUE CONTAINER */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+              <div className="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
+                <h2 className="text-base font-black text-slate-900">Live Orders</h2>
+                <button onClick={() => navigate('/staff/ready-orders')} className="text-[11px] font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-md transition-colors">
+                  View All
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {orders.filter(o => o.status !== "Completed").slice(0, 6).map((order) => (
+                  <div 
+                    key={order.id} 
+                    className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
+                      order.status === "Ready" ? "bg-emerald-50/50 border-emerald-100" : "border-slate-100 bg-slate-50"
+                    }`}
+                  >
                   <div className="flex items-center gap-3">
-                    <div className="bg-white border border-slate-200 text-slate-600 font-bold text-[10px] px-2 py-1 rounded-md shadow-sm">
+                    <div className={`border font-bold text-[10px] px-2 py-1 rounded-md shadow-sm ${
+                      order.status === "Ready" ? "bg-emerald-500 text-white border-emerald-600" : "bg-white text-slate-600 border-slate-200"
+                    }`}>
                       {order.id}
                     </div>
                     <div>
@@ -315,7 +327,15 @@ const Dashboard = () => {
                     <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border ${getOrderStatusStyles(order.status)}`}>
                       {order.status}
                     </span>
-                    <ChevronRight size={14} className="text-slate-300 group-hover:text-purple-500 transition-colors" />
+                    {order.status === "Ready" && (
+                      <button 
+                        onClick={() => completeOrder(order.id)}
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white p-1 rounded-md shadow-sm transition-colors"
+                        title="Mark as Served"
+                      >
+                        <CheckCircle2 size={14} />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -324,6 +344,7 @@ const Dashboard = () => {
                   No active orders right now.
                 </div>
               )}
+            </div>
             </div>
           </div>
 

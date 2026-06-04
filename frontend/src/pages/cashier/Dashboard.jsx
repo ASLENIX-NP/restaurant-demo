@@ -22,8 +22,8 @@ const Dashboard = () => {
           <div className="stat-icon-wrapper green-light">💵</div>
           <div className="stat-info">
             <h4>Total Sales</h4>
-            <h2>Rs. 2,45,000.00</h2>
-            <span className="trend-text positive">↑ 12.5% vs yesterday</span>
+            <h2>Rs. 0.00</h2>
+            <span className="trend-text">0% vs yesterday</span>
           </div>
         </div>
 
@@ -31,8 +31,8 @@ const Dashboard = () => {
           <div className="stat-icon-wrapper blue-light">🛒</div>
           <div className="stat-info">
             <h4>Total Orders</h4>
-            <h2>48</h2>
-            <span className="trend-text positive">↑ 5 vs yesterday</span>
+            <h2>0</h2>
+            <span className="trend-text">0 vs yesterday</span>
           </div>
         </div>
 
@@ -40,8 +40,8 @@ const Dashboard = () => {
           <div className="stat-icon-wrapper orange-light">📦</div>
           <div className="stat-info">
             <h4>Total Items Sold</h4>
-            <h2>132</h2>
-            <span className="trend-text positive">↑ 10.6% vs yesterday</span>
+            <h2>0</h2>
+            <span className="trend-text">0% vs yesterday</span>
           </div>
         </div>
 
@@ -49,8 +49,8 @@ const Dashboard = () => {
           <div className="stat-icon-wrapper purple-light">💳</div>
           <div className="stat-info">
             <h4>Average Order Value</h4>
-            <h2>Rs. 5,104.17</h2>
-            <span className="trend-text positive">↑ 8.3% vs yesterday</span>
+            <h2>Rs. 0.00</h2>
+            <span className="trend-text">0% vs yesterday</span>
           </div>
         </div>
       </div>
@@ -71,23 +71,23 @@ const Dashboard = () => {
             <div className="overview-info-list">
               <div className="overview-item">
                 <span className="item-label">💳 Sales Amount</span>
-                <strong className="item-val">Rs. 2,45,000.00</strong>
+                <strong className="item-val">Rs. 0.00</strong>
               </div>
               <div className="overview-item">
                 <span className="item-label">🧾 Orders</span>
-                <strong className="item-val">48</strong>
+                <strong className="item-val">0</strong>
               </div>
               <div className="overview-item">
                 <span className="item-label">📦 Items Sold</span>
-                <strong className="item-val">132</strong>
+                <strong className="item-val">0</strong>
               </div>
               <div className="overview-item">
                 <span className="item-label">👥 Customers</span>
-                <strong className="item-val">36</strong>
+                <strong className="item-val">0</strong>
               </div>
               <div className="overview-item">
                 <span className="item-label">↩ Refunds</span>
-                <strong className="item-val">2</strong>
+                <strong className="item-val">0</strong>
               </div>
             </div>
 
@@ -149,7 +149,7 @@ const Dashboard = () => {
               </svg>
               <div className="donut-center-labels">
                 <span className="donut-title">Total</span>
-                <span className="donut-value">Rs. 2.45L</span>
+                <span className="donut-value">Rs. 0</span>
               </div>
             </div>
 
@@ -188,40 +188,9 @@ const Dashboard = () => {
               </thead>
               <tbody>
                 <tr>
-                  <td className="highlight-id">#TXN-10048</td>
-                  <td>Walk-in Customer</td>
-                  <td>3 Items</td>
-                  <td className="table-weight-text">Rs. 250.00</td>
-                  <td>Cash</td>
-                  <td><span className="badge-status success">Completed</span></td>
-                  <td className="table-time-text">10:34 AM</td>
-                </tr>
-                <tr>
-                  <td className="highlight-id">#TXN-10047</td>
-                  <td>Arman Sharma</td>
-                  <td>4 Items</td>
-                  <td className="table-weight-text">Rs. 350.00</td>
-                  <td>Card</td>
-                  <td><span className="badge-status success">Completed</span></td>
-                  <td className="table-time-text">10:15 AM</td>
-                </tr>
-                <tr>
-                  <td className="highlight-id">#TXN-10046</td>
-                  <td>Neha Verma</td>
-                  <td>2 Items</td>
-                  <td className="table-weight-text">Rs. 180.00</td>
-                  <td>eSewa</td>
-                  <td><span className="badge-status success">Completed</span></td>
-                  <td className="table-time-text">10:04 AM</td>
-                </tr>
-                <tr>
-                  <td className="highlight-id">#TXN-10045</td>
-                  <td>Rohan Das</td>
-                  <td>2 Items</td>
-                  <td className="table-weight-text">Rs. 120.00</td>
-                  <td>Khalti</td>
-                  <td><span className="badge-status success">Completed</span></td>
-                  <td className="table-time-text">09:56 AM</td>
+                  <td colSpan="7" style={{ textAlign: "center", padding: "2rem", color: "#94a3b8" }}>
+                    No recent transactions found.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -236,49 +205,14 @@ const Dashboard = () => {
           </div>
 
           <div className="sales-items-vertical-stack">
-            <div className="sale-row-entry">
-              <div className="sale-row-left">
-                <div className="item-thumbnail-box">
-                  <img src="https://cdn-icons-png.flaticon.com/512/1046/1046784.png" alt="Coke" />
-                </div>
-                <div className="item-meta-details">
-                  <h4>Coke</h4>
-                  <p>1 x Rs. 50.00</p>
-                </div>
-              </div>
-              <strong className="sale-amount-value">Rs. 50.00</strong>
-            </div>
-
-            <div className="sale-row-entry">
-              <div className="sale-row-left">
-                <div className="item-thumbnail-box">
-                  <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="Burger" />
-                </div>
-                <div className="item-meta-details">
-                  <h4>Burger</h4>
-                  <p>1 x Rs. 150.00</p>
-                </div>
-              </div>
-              <strong className="sale-amount-value">Rs. 150.00</strong>
-            </div>
-
-            <div className="sale-row-entry">
-              <div className="sale-row-left">
-                <div className="item-thumbnail-box">
-                  <img src="https://cdn-icons-png.flaticon.com/512/3132/3132693.png" alt="Pizza" />
-                </div>
-                <div className="item-meta-details">
-                  <h4>Pizza</h4>
-                  <p>1 x Rs. 300.00</p>
-                </div>
-              </div>
-              <strong className="sale-amount-value">Rs. 300.00</strong>
+            <div style={{ textAlign: "center", padding: "2rem", color: "#94a3b8" }}>
+              No recent sales.
             </div>
           </div>
 
           <div className="summary-total-footer-strip">
-            <span>Total (3 Items)</span>
-            <strong>Rs. 500.00</strong>
+            <span>Total (0 Items)</span>
+            <strong>Rs. 0.00</strong>
           </div>
         </div>
 

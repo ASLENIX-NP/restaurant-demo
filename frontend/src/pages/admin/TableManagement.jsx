@@ -21,15 +21,11 @@ const tablesMockData = [
   {
     id: 1,
     name: "Table 1",
-    customer: "John Doe",
-    status: "occupied",
-    amount: 4500,
-    time: "11:15 AM",
-    items: [
-      { name: "Chicken Burger", qty: 2, price: 450 },
-      { name: "Pepperoni Pizza", qty: 2, price: 900 },
-      { name: "Coke Premium", qty: 4, price: 200 },
-    ],
+    customer: "No Customer",
+    status: "available",
+    amount: 0,
+    time: "--",
+    items: [],
   },
   {
     id: 2,
@@ -43,27 +39,20 @@ const tablesMockData = [
   {
     id: 3,
     name: "Table 3",
-    customer: "Reserved Slot",
-    status: "reserved",
-    amount: 2200,
-    time: "02:30 PM",
-    items: [
-      { name: "Buff Momo", qty: 4, price: 300 },
-      { name: "Fresh Mint Lemonade", qty: 4, price: 250 },
-    ],
+    customer: "No Customer",
+    status: "available",
+    amount: 0,
+    time: "--",
+    items: [],
   },
   {
     id: 4,
     name: "VIP 1",
-    customer: "Emily",
-    status: "occupied",
-    amount: 8900,
-    time: "10:45 AM",
-    items: [
-      { name: "Premium Ribeye Steak", qty: 2, price: 2800 },
-      { name: "Red Wine Glaze Pasta", qty: 2, price: 1200 },
-      { name: "Avocado Salad", qty: 1, price: 900 },
-    ],
+    customer: "No Customer",
+    status: "available",
+    amount: 0,
+    time: "--",
+    items: [],
   },
   {
     id: 5,
@@ -77,14 +66,11 @@ const tablesMockData = [
   {
     id: 6,
     name: "Family Table",
-    customer: "Reserved Slot",
-    status: "reserved",
-    amount: 5000,
-    time: "07:00 PM",
-    items: [
-      { name: "Family Platter Fiesta", qty: 1, price: 4200 },
-      { name: "Chocolate Lava Cake", qty: 2, price: 400 },
-    ],
+    customer: "No Customer",
+    status: "available",
+    amount: 0,
+    time: "--",
+    items: [],
   },
 ];
 
@@ -229,7 +215,7 @@ const AdminTables = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
           {/* LEFT: GRID AND FILTERS */}
-          <div className={`${selectedTableId ? 'lg:col-span-8' : 'lg:col-span-12'} transition-all duration-300`}>
+          <div className="lg:col-span-12 transition-all duration-300">
             
             {/* Filter Bar */}
             <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
@@ -262,7 +248,7 @@ const AdminTables = () => {
             </div>
 
             {/* Table Cards Grid */}
-            <div className={`grid grid-cols-1 sm:grid-cols-2 ${selectedTableId ? 'xl:grid-cols-3' : 'lg:grid-cols-3 xl:grid-cols-4'} gap-5 transition-all`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 transition-all">
               {filteredTables.map((table) => {
                 const style = statusStyles[table.status];
                 const isSelected = selectedTableId === table.id;
@@ -270,7 +256,8 @@ const AdminTables = () => {
                 return (
                   <div
                     key={table.id}
-                    className={`bg-white rounded-2xl border-t-4 border-x border-b shadow-sm overflow-hidden flex flex-col justify-between transition-all ${style.border} ${
+                    onClick={() => setSelectedTableId(isSelected ? null : table.id)}
+                    className={`bg-white rounded-2xl border-t-4 border-x border-b shadow-sm overflow-hidden flex flex-col justify-between transition-all cursor-pointer ${style.border} ${
                       isSelected ? "ring-2 ring-purple-400 border-x-purple-100 border-b-purple-100 scale-[1.02]" : "border-x-slate-100 border-b-slate-100 hover:shadow-md"
                     }`}
                   >
@@ -298,21 +285,21 @@ const AdminTables = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
+                  <div className="grid grid-cols-2 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
                       <button 
-                        onClick={() => setSelectedTableId(isSelected ? null : table.id)}
-                        className="py-3 text-xs font-bold text-slate-700 hover:bg-white hover:text-purple-600 transition flex items-center justify-center gap-1.5"
-                      >
-                        <Receipt size={14} /> View
-                      </button>
-                      <button 
-                        onClick={() => alert(`Edit feature coming soon for ${table.name}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          alert(`Edit feature coming soon for ${table.name}`);
+                        }}
                         className="py-3 text-xs font-bold text-slate-600 hover:bg-white transition flex items-center justify-center gap-1.5"
                       >
                         <Edit2 size={14} /> Edit
                       </button>
                       <button 
-                        onClick={() => handleDeleteTable(table.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTable(table.id);
+                        }}
                         className="py-3 text-xs font-bold text-rose-600 hover:bg-rose-50 transition flex items-center justify-center gap-1.5"
                       >
                         <Trash2 size={14} /> Delete
@@ -330,85 +317,87 @@ const AdminTables = () => {
             )}
           </div>
 
-          {/* RIGHT: DYNAMIC DETAILS PANE */}
-          {selectedTableId && activeTable && (
-            <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 relative overflow-hidden sticky top-6 animate-slide-in">
-              
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h2 className="text-xl font-black text-slate-900">{activeTable.name} Details</h2>
-                  <p className="text-purple-600 font-bold text-xs mt-0.5">{activeTable.customer}</p>
-                </div>
-                <button 
-                  onClick={() => setSelectedTableId(null)}
-                  className="bg-white border border-slate-200 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg shadow-sm"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              {activeTable.items.length > 0 ? (
-                <>
-                  {/* Order Time Info */}
-                  <div className="flex items-center gap-2 mb-4 text-xs font-bold text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <Clock size={14} className="text-slate-400"/> Order started at: <span className="text-slate-900">{activeTable.time}</span>
-                  </div>
-
-                  {/* Items List */}
-                  <div className="max-h-[300px] overflow-y-auto pr-2 mb-6">
-                    <table className="w-full text-left text-sm border-collapse">
-                      <thead className="bg-slate-50/50 text-slate-400 text-[10px] uppercase tracking-wider font-bold border-b border-slate-100">
-                        <tr>
-                          <th className="py-2 pl-2">Item</th>
-                          <th className="py-2 text-center">Qty</th>
-                          <th className="py-2 pr-2 text-right">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {activeTable.items.map((item, idx) => (
-                          <tr key={idx}>
-                            <td className="py-3 pl-2 font-semibold text-slate-700">
-                              {item.name} <span className="block text-[10px] text-slate-400 font-medium">Rs. {item.price} each</span>
-                            </td>
-                            <td className="py-3 text-center font-bold text-slate-500">{item.qty}</td>
-                            <td className="py-3 pr-2 text-right font-black text-slate-900">Rs. {(item.qty * item.price).toLocaleString()}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Summary */}
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-medium text-slate-600 space-y-2">
-                    <div className="flex justify-between">
-                      <span>Subtotal</span>
-                      <span className="text-slate-900 font-bold">Rs. {activeTable.amount.toLocaleString()}</span>
-                    </div>
-                    <div className="pt-2 flex justify-between items-baseline text-purple-600 border-t border-slate-200/60 mt-2">
-                      <span className="font-extrabold text-sm">Running Total</span>
-                      <span className="text-xl font-black">Rs. {activeTable.amount.toLocaleString()}</span>
-                    </div>
-                  </div>
-                  
-                  <button className="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-md">
-                    Proceed to Checkout
-                  </button>
-                </>
-              ) : (
-                <div className="text-center py-12 flex flex-col items-center justify-center text-slate-400">
-                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
-                    <Utensils size={24} className="text-slate-300"/>
-                  </div>
-                  <p className="font-semibold text-sm">No active orders</p>
-                  <p className="text-xs mt-1">This table is currently empty.</p>
-                </div>
-              )}
-
-            </div>
-          )}
-
         </div>
       </main>
+
+      {/* TABLE DETAILS MODAL OVERLAY */}
+      {selectedTableId && activeTable && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in p-6 relative">
+            
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-xl font-black text-slate-900">{activeTable.name} Details</h2>
+                <p className="text-purple-600 font-bold text-xs mt-0.5">{activeTable.customer}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedTableId(null)}
+                className="bg-white border border-slate-200 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg shadow-sm"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {activeTable.items.length > 0 ? (
+              <>
+                {/* Order Time Info */}
+                <div className="flex items-center gap-2 mb-4 text-xs font-bold text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <Clock size={14} className="text-slate-400"/> Order started at: <span className="text-slate-900">{activeTable.time}</span>
+                </div>
+
+                {/* Items List */}
+                <div className="max-h-[300px] overflow-y-auto pr-2 mb-6">
+                  <table className="w-full text-left text-sm border-collapse">
+                    <thead className="bg-slate-50/50 text-slate-400 text-[10px] uppercase tracking-wider font-bold border-b border-slate-100">
+                      <tr>
+                        <th className="py-2 pl-2">Item</th>
+                        <th className="py-2 text-center">Qty</th>
+                        <th className="py-2 pr-2 text-right">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {activeTable.items.map((item, idx) => (
+                        <tr key={idx}>
+                          <td className="py-3 pl-2 font-semibold text-slate-700">
+                            {item.name} <span className="block text-[10px] text-slate-400 font-medium">Rs. {item.price} each</span>
+                          </td>
+                          <td className="py-3 text-center font-bold text-slate-500">{item.qty}</td>
+                          <td className="py-3 pr-2 text-right font-black text-slate-900">Rs. {(item.qty * item.price).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Summary */}
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-medium text-slate-600 space-y-2">
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span className="text-slate-900 font-bold">Rs. {activeTable.amount.toLocaleString()}</span>
+                  </div>
+                  <div className="pt-2 flex justify-between items-baseline text-purple-600 border-t border-slate-200/60 mt-2">
+                    <span className="font-extrabold text-sm">Running Total</span>
+                    <span className="text-xl font-black">Rs. {activeTable.amount.toLocaleString()}</span>
+                  </div>
+                </div>
+                
+                <button className="w-full mt-4 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-md">
+                  Proceed to Checkout
+                </button>
+              </>
+            ) : (
+              <div className="text-center py-12 flex flex-col items-center justify-center text-slate-400">
+                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                  <Utensils size={24} className="text-slate-300"/>
+                </div>
+                <p className="font-semibold text-sm">No active orders</p>
+                <p className="text-xs mt-1">This table is currently empty.</p>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
 
       {/* ADD NEW TABLE MODAL OVERLAY */}
       {showAddModal && (

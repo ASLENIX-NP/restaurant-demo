@@ -14,22 +14,11 @@ import {
 } from "lucide-react";
 
 import "../../styles/tables.css"; // Kept for any global custom overrides
-
-// Initial mock data array
-const initialTables = [
-  { id: 1, seats: 4, status: "Available", customer: "No Customer" },
-  { id: 2, seats: 2, status: "Occupied", customer: "John Doe" },
-  { id: 3, seats: 6, status: "Reserved", customer: "Sarah" },
-  { id: 4, seats: 8, status: "Cleaning", customer: "Cleaning Team" },
-  { id: 5, seats: 2, status: "Available", customer: "No Customer" },
-  { id: 6, seats: 5, status: "Occupied", customer: "Emily" },
-  { id: 7, seats: 3, status: "Reserved", customer: "Michael" },
-  { id: 8, seats: 6, status: "Available", customer: "No Customer" },
-];
+import { useTables } from "../../context/TableContext";
+import { useOrders } from "../../context/OrderContext";
 
 const Tables = () => {
   // --- UI & Data State Management ---
-  const [tablesList, setTablesList] = useState(initialTables);
   const [activeModal, setActiveModal] = useState(null); // 'add' | 'edit' | 'view' | null
   const [selectedTable, setSelectedTable] = useState(null);
 
@@ -37,6 +26,19 @@ const Tables = () => {
   const [formSeats, setFormSeats] = useState("");
   const [formStatus, setFormStatus] = useState("Available");
   const [formCustomer, setFormCustomer] = useState("");
+
+  const { tables, setTables } = useTables();
+  const { orders } = useOrders();
+
+  const tablesList = tables.map((t) => {
+    const tableOrders = orders.filter((o) => o.table === t.name && o.status !== "Completed");
+    const activeOrder = tableOrders.flatMap((o) => o.items.map((i) => ({ ...i })));
+    return {
+      ...t,
+      customer: t.currentCustomer,
+      activeOrder: activeOrder.length > 0 ? activeOrder : null,
+    };
+  });
 
   // --- Dynamic Dashboard Counters ---
   const totalTables = tablesList.length;
@@ -86,27 +88,29 @@ const Tables = () => {
     e.preventDefault();
     if (!formSeats || formSeats <= 0) return alert("Please enter valid seats.");
 
+    const newId = tables.length > 0 ? Math.max(...tables.map((t) => t.id)) + 1 : 1;
     const newTable = {
-      id: tablesList.length > 0 ? Math.max(...tablesList.map((t) => t.id)) + 1 : 1,
+      id: newId,
+      name: `Table ${newId}`,
       seats: parseInt(formSeats, 10),
       status: formStatus,
-      customer: formStatus === "Available" || formStatus === "Cleaning" ? "No Customer" : formCustomer || "Anonymous",
+      currentCustomer: formStatus === "Available" || formStatus === "Cleaning" ? "No Customer" : formCustomer || "Anonymous",
     };
 
-    setTablesList([...tablesList, newTable]);
+    setTables([...tables, newTable]);
     closeModal();
   };
 
   const saveEditTable = (e) => {
     e.preventDefault();
-    setTablesList(
-      tablesList.map((t) =>
+    setTables(
+      tables.map((t) =>
         t.id === selectedTable.id
           ? {
               ...t,
               seats: parseInt(formSeats, 10),
               status: formStatus,
-              customer: formStatus === "Available" || formStatus === "Cleaning" ? "No Customer" : formCustomer,
+              currentCustomer: formStatus === "Available" || formStatus === "Cleaning" ? "No Customer" : formCustomer,
             }
           : t
       )
@@ -180,7 +184,11 @@ const Tables = () => {
           {tablesList.map((table) => {
             const config = getStatusConfig(table.status);
             return (
-              <div key={table.id} className={`bg-white rounded-2xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-all ${config.border}`}>
+              <div 
+                key={table.id} 
+                onClick={() => handleOpenView(table)}
+                className={`bg-white rounded-2xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-all cursor-pointer ${config.border}`}
+              >
                 
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-4">
@@ -213,15 +221,12 @@ const Tables = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
+                <div className="grid grid-cols-1 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
                   <button 
-                    onClick={() => handleOpenView(table)}
-                    className="py-3 text-xs font-bold text-slate-700 hover:bg-white hover:text-purple-600 transition flex items-center justify-center gap-1.5"
-                  >
-                    <Eye size={14} /> View
-                  </button>
-                  <button 
-                    onClick={() => handleOpenEdit(table)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenEdit(table);
+                    }}
                     className="py-3 text-xs font-bold text-slate-600 hover:bg-white hover:text-blue-600 transition flex items-center justify-center gap-1.5"
                   >
                     <Edit2 size={14} /> Edit
@@ -266,6 +271,26 @@ const Tables = () => {
                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Current Customer</span>
                     <span className="text-base font-black text-slate-900">{selectedTable.customer}</span>
                   </div>
+
+                  {/* Active Orders List */}
+                  <h3 className="text-base font-black text-slate-900 mt-6 mb-2">Ordered Items Tracking</h3>
+                  <hr className="border-slate-100 mb-3" />
+                  
+                  <div className="max-h-[180px] overflow-y-auto flex flex-col gap-2 pr-2">
+                    {!selectedTable.activeOrder || selectedTable.activeOrder.length === 0 ? (
+                      <p className="text-slate-500 italic text-sm py-2">No active orders running for this table.</p>
+                    ) : (
+                      selectedTable.activeOrder.map((item, idx) => (
+                        <div className="flex justify-between items-center p-2.5 bg-slate-50 rounded-lg border-l-4 border-slate-300 shadow-sm" key={idx}>
+                          <div className="flex gap-2.5 text-sm text-slate-800">
+                            <span className="font-semibold">{item.name}</span>
+                            <strong className="text-slate-500">x{item.qty}</strong>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
                   <button onClick={closeModal} className="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition shadow-md">
                     Close Details
                   </button>

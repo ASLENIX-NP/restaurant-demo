@@ -30,13 +30,9 @@ const Customers = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-sm">
-            <tr className="hover:bg-slate-50 transition">
-              <td className="p-4 font-bold text-slate-900">Alex Johnson</td>
-              <td className="p-4 font-medium text-slate-600">+977 9812345678</td>
-              <td className="p-4 font-bold text-slate-900">12</td>
-              <td className="p-4 text-emerald-600 font-black">450 pts</td>
-              <td className="p-4">
-                <button className="text-blue-600 font-bold hover:underline">Redeem Points</button>
+            <tr>
+              <td colSpan="5" className="p-8 text-center text-slate-500 font-medium">
+                No customers found.
               </td>
             </tr>
           </tbody>

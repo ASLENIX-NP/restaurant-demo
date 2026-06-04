@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Minus, Trash2, CheckCircle2, UtensilsCrossed } from "lucide-react";
+import { Plus, Minus, Trash2, CheckCircle2, UtensilsCrossed, XCircle } from "lucide-react";
 import "../../styles/takeorders.css"; // Kept for any global custom overrides
 import { useOrders } from "../../context/OrderContext";
 import { useAuth } from "../../context/AuthContext";
@@ -82,6 +82,15 @@ export default function TakeOrder() {
     { ...menuItems[1], qty: 1 },
   ]);
 
+  // Custom Popup Notification State
+  const [notification, setNotification] = useState(null);
+  const showNotification = (message, type = "success") => {
+    setNotification({ message, type });
+    if (type === "success") {
+      setTimeout(() => setNotification(null), 4000); // Auto-close success after 4s
+    }
+  };
+
   const filteredItems =
     selectedCategory === "All Categories"
       ? menuItems
@@ -110,18 +119,20 @@ export default function TakeOrder() {
 
   const handleSendToKitchen = () => {
     if (cart.length === 0) {
-      alert("Your cart is empty! Please add items before sending to the kitchen.");
+      showNotification("Your cart is empty! Please add items before sending to the kitchen.", "error");
       return;
     }
     if (selectedTable === "All Tables") {
-      alert("Please select a valid table number.");
+      showNotification("Please select a valid table number.", "error");
       return;
     }
 
     const orderTime = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
     const orderDate = new Date().toISOString().split('T')[0]; 
+    const orderId = `#ORD-${Math.floor(1000 + Math.random() * 9000)}`; // Generate ID here
 
     const orderData = {
+      id: orderId,
       table: selectedTable,
       server: user?.name || "Staff Member",
       channel: selectedTable === "Pickup" ? "Takeaway" : "Dine In",
@@ -136,6 +147,7 @@ export default function TakeOrder() {
       time: orderTime,
       date: orderDate,
       timestamp: new Date().toISOString(),
+      status: "Pending",
     };
 
     addOrder(orderData);
@@ -147,7 +159,7 @@ export default function TakeOrder() {
     }
 
     console.log("Sending enriched order to kitchen API...", orderData);
-    alert(`Order for ${selectedTable} successfully sent to the kitchen at ${orderTime}!`);
+    showNotification(`Order for ${selectedTable} successfully sent to the kitchen at ${orderTime}!`, "success");
 
     setCart([]);
     setSelectedTable("All Tables"); 
@@ -159,6 +171,24 @@ export default function TakeOrder() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
+      {/* CENTERED NOTIFICATION MODAL */}
+      {notification && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[99999] flex justify-center items-center p-4 transition-opacity">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center flex flex-col items-center gap-4 animate-slide-in">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center ${notification.type === 'error' ? 'bg-rose-100 text-rose-500' : 'bg-emerald-100 text-emerald-500'}`}>
+              {notification.type === 'error' ? <XCircle size={32} /> : <CheckCircle2 size={32} />}
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-900">{notification.type === 'error' ? 'Action Required' : 'Order Sent!'}</h3>
+              <p className="text-sm font-medium text-slate-500 mt-2 leading-relaxed">{notification.message}</p>
+            </div>
+            <button onClick={() => setNotification(null)} className={`mt-3 w-full font-bold py-3.5 rounded-xl transition-all ${notification.type === 'error' ? 'bg-rose-500 hover:bg-rose-600 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white'}`}>
+              {notification.type === 'error' ? 'Got it' : 'Continue'}
+            </button>
+          </div>
+        </div>
+      )}
+
       <main className="max-w-[1600px] mx-auto">
         
         {/* TABLE SELECTION BAR */}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { 
   Save, 
   Store, 
@@ -24,6 +24,41 @@ import {
 import "../../styles/settings.css"; // Kept for any global custom overrides
 
 const Settings = () => {
+  // State for accepted payment methods toggles
+  const [paymentMethods, setPaymentMethods] = useState([
+    { name: "Cash", active: true },
+    { name: "Credit/Debit Card", active: true },
+    { name: "eSewa", active: true },
+    { name: "Khalti", active: true },
+    { name: "FonePay", active: false },
+    { name: "General QR", active: true }
+  ]);
+
+  // State for system preferences toggles
+  const [systemPreferences, setSystemPreferences] = useState([
+    { title: "Dark Mode Interface", desc: "Switch dashboard to dark appearance", active: false },
+    { title: "Push Notifications", desc: "Enable browser alerts for new orders", active: true },
+    { title: "Automated Daily Backups", desc: "Securely backup database at 3:00 AM", active: true },
+  ]);
+
+  // Handle toggling the payment method status
+  const togglePaymentMethod = (name) => {
+    setPaymentMethods((prevMethods) => 
+      prevMethods.map((method) => 
+        method.name === name ? { ...method, active: !method.active } : method
+      )
+    );
+  };
+
+  // Handle toggling the system preference status
+  const togglePreference = (title) => {
+    setSystemPreferences((prevPrefs) =>
+      prevPrefs.map((pref) =>
+        pref.title === title ? { ...pref, active: !pref.active } : pref
+      )
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
       <main className="max-w-[1600px] mx-auto pb-12">
@@ -155,20 +190,17 @@ const Settings = () => {
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {[
-                  { name: "Cash", active: true },
-                  { name: "Credit/Debit Card", active: true },
-                  { name: "eSewa", active: true },
-                  { name: "Khalti", active: true },
-                  { name: "FonePay", active: false },
-                  { name: "General QR", active: true }
-                ].map((method) => (
-                  <label key={method.name} className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${method.active ? 'border-purple-200 bg-purple-50/30' : 'border-slate-200 bg-white hover:bg-slate-50'}`}>
+                {paymentMethods.map((method) => (
+                  <div 
+                    key={method.name} 
+                    onClick={() => togglePaymentMethod(method.name)}
+                    className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${method.active ? 'border-purple-200 bg-purple-50/30' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+                  >
                     <span className={`text-sm font-bold ${method.active ? 'text-purple-900' : 'text-slate-600'}`}>{method.name}</span>
                     <div className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${method.active ? 'bg-purple-600' : 'bg-slate-200'}`}>
                       <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${method.active ? 'translate-x-4' : 'translate-x-1'}`} />
                     </div>
-                  </label>
+                  </div>
                 ))}
               </div>
             </div>
@@ -183,12 +215,12 @@ const Settings = () => {
               </div>
               
               <div className="space-y-3">
-                {[
-                  { title: "Dark Mode Interface", desc: "Switch dashboard to dark appearance", active: false },
-                  { title: "Push Notifications", desc: "Enable browser alerts for new orders", active: true },
-                  { title: "Automated Daily Backups", desc: "Securely backup database at 3:00 AM", active: true },
-                ].map((pref) => (
-                  <label key={pref.title} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100/60 cursor-pointer transition-all">
+                {systemPreferences.map((pref) => (
+                  <div 
+                    key={pref.title} 
+                    onClick={() => togglePreference(pref.title)}
+                    className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100/60 cursor-pointer transition-all"
+                  >
                     <div>
                       <h4 className="text-sm font-bold text-slate-900">{pref.title}</h4>
                       <p className="text-xs text-slate-500 font-medium mt-0.5">{pref.desc}</p>
@@ -196,7 +228,7 @@ const Settings = () => {
                     <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${pref.active ? 'bg-slate-900' : 'bg-slate-200'}`}>
                       <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${pref.active ? 'translate-x-6' : 'translate-x-1'}`} />
                     </div>
-                  </label>
+                  </div>
                 ))}
               </div>
             </div>

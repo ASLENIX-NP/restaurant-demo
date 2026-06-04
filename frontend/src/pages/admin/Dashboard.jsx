@@ -27,48 +27,25 @@ import {
 
 // Modern Interactive Chart Dataset Formats
 const revenueTrendData = [
-  { day: "Mon", revenue: 42000 },
-  { day: "Tue", revenue: 58000 },
-  { day: "Wed", revenue: 49000 },
-  { day: "Thu", revenue: 75000 },
-  { day: "Fri", revenue: 68000 },
-  { day: "Sat", revenue: 92000 },
-  { day: "Sun", revenue: 85500 },
+  { day: "Mon", revenue: 0 },
+  { day: "Tue", revenue: 0 },
+  { day: "Wed", revenue: 0 },
+  { day: "Thu", revenue: 0 },
+  { day: "Fri", revenue: 0 },
+  { day: "Sat", revenue: 0 },
+  { day: "Sun", revenue: 0 },
 ];
 
 const orderDistributionData = [
-  { name: "Dine In", value: 245, color: "#6366f1" },     // Indigo
-  { name: "Takeaway", value: 142, color: "#f97316" },    // Orange
-  { name: "Delivery", value: 118, color: "#10b981" },    // Emerald
-  { name: "Reservation", value: 35, color: "#a855f7" },  // Purple
+  { name: "Dine In", value: 0, color: "#6366f1" },     // Indigo
+  { name: "Takeaway", value: 0, color: "#f97316" },    // Orange
+  { name: "Delivery", value: 0, color: "#10b981" },    // Emerald
+  { name: "Reservation", value: 0, color: "#a855f7" },  // Purple
 ];
 
-const topItems = [
-  {
-    name: "Chicken Burger",
-    qty: 120,
-    revenue: "Rs. 54,000",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=120&auto=format&fit=crop",
-  },
-  {
-    name: "Pepperoni Pizza",
-    qty: 95,
-    revenue: "Rs. 85,500",
-    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=120&auto=format&fit=crop",
-  },
-  {
-    name: "Buff Momo",
-    qty: 160,
-    revenue: "Rs. 51,200",
-    image: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=120&auto=format&fit=crop",
-  },
-];
+const topItems = [];
 
-const recentOrders = [
-  { id: "#TH1250", customer: "John Doe", amount: "Rs. 2,500", status: "Completed" },
-  { id: "#TH1249", customer: "Sarah Wilson", amount: "Rs. 1,800", status: "Preparing" },
-  { id: "#TH1248", customer: "Michael Brown", amount: "Rs. 3,200", status: "Pending" },
-];
+const recentOrders = [];
 
 export default function AdminDashboard() {
   return (
@@ -95,10 +72,10 @@ export default function AdminDashboard() {
         {/* METRICS SUMMARY CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
           {[
-            { title: "Total Revenue", value: "Rs. 4,50,000", change: "↑ 18.6% this month", icon: <DollarSign size={22} />, color: "bg-purple-50 text-purple-600 border-purple-100/50" },
-            { title: "Total Orders", value: "540", change: "↑ 12.4% this month", icon: <ShoppingBag size={22} />, color: "bg-blue-50 text-blue-600 border-blue-100/50" },
-            { title: "Customers", value: "482", change: "↑ 15.3% this month", icon: <Users size={22} />, color: "bg-emerald-50 text-emerald-600 border-emerald-100/50" },
-            { title: "Avg Order Value", value: "Rs. 1,200", change: "↑ 6.7% this month", icon: <TrendingUp size={22} />, color: "bg-orange-50 text-orange-600 border-orange-100/50" },
+            { title: "Total Revenue", value: "Rs. 0", change: "0% this month", icon: <DollarSign size={22} />, color: "bg-purple-50 text-purple-600 border-purple-100/50" },
+            { title: "Total Orders", value: "0", change: "0% this month", icon: <ShoppingBag size={22} />, color: "bg-blue-50 text-blue-600 border-blue-100/50" },
+            { title: "Customers", value: "0", change: "0% this month", icon: <Users size={22} />, color: "bg-emerald-50 text-emerald-600 border-emerald-100/50" },
+            { title: "Avg Order Value", value: "Rs. 0", change: "0% this month", icon: <TrendingUp size={22} />, color: "bg-orange-50 text-orange-600 border-orange-100/50" },
           ].map((card) => (
             <div key={card.title} className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-start justify-between transition hover:shadow-md">
               <div>
@@ -186,7 +163,7 @@ export default function AdminDashboard() {
               {/* Absoluted Core Total Aggregate Visual Node */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none transform translate-y-[-4px]">
                 <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total</span>
-                <span className="text-2xl font-black text-slate-800">540</span>
+                <span className="text-2xl font-black text-slate-800">0</span>
               </div>
             </div>
 
@@ -223,18 +200,24 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
-                  {topItems.map((item) => (
-                    <tr key={item.name} className="hover:bg-slate-50/40 transition-colors">
-                      <td className="p-3 pl-4">
-                        <div className="flex items-center gap-3">
-                          <img src={item.image} alt={item.name} className="w-9 h-9 object-cover rounded-lg border border-slate-100" />
-                          <span className="font-semibold text-slate-900 shrink-0">{item.name}</span>
-                        </div>
-                      </td>
-                      <td className="p-3 text-center text-slate-500">{item.qty}</td>
-                      <td className="p-3 text-right pr-4 text-slate-900 font-bold">{item.revenue}</td>
+                  {topItems.length === 0 ? (
+                    <tr>
+                      <td colSpan="3" className="p-4 text-center text-slate-400 text-xs">No items sold yet.</td>
                     </tr>
-                  ))}
+                  ) : (
+                    topItems.map((item) => (
+                      <tr key={item.name} className="hover:bg-slate-50/40 transition-colors">
+                        <td className="p-3 pl-4">
+                          <div className="flex items-center gap-3">
+                            <img src={item.image} alt={item.name} className="w-9 h-9 object-cover rounded-lg border border-slate-100" />
+                            <span className="font-semibold text-slate-900 shrink-0">{item.name}</span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-center text-slate-500">{item.qty}</td>
+                        <td className="p-3 text-right pr-4 text-slate-900 font-bold">{item.revenue}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -258,22 +241,28 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
-                  {recentOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-slate-50/40 transition-colors">
-                      <td className="p-3.5 pl-4 font-bold text-purple-600">{order.id}</td>
-                      <td className="p-3.5 text-slate-900 font-semibold">{order.customer}</td>
-                      <td className="p-3.5 text-slate-600 font-medium">{order.amount}</td>
-                      <td className="p-3.5 text-right pr-4">
-                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full inline-block ${
-                          order.status === "Completed" ? "bg-emerald-50 text-emerald-600" :
-                          order.status === "Preparing" ? "bg-amber-50 text-amber-600" : 
-                          "bg-blue-50 text-blue-600"
-                        }`}>
-                          {order.status}
-                        </span>
-                      </td>
+                  {recentOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="p-4 text-center text-slate-400 text-xs">No recent orders found.</td>
                     </tr>
-                  ))}
+                  ) : (
+                    recentOrders.map((order) => (
+                      <tr key={order.id} className="hover:bg-slate-50/40 transition-colors">
+                        <td className="p-3.5 pl-4 font-bold text-purple-600">{order.id}</td>
+                        <td className="p-3.5 text-slate-900 font-semibold">{order.customer}</td>
+                        <td className="p-3.5 text-slate-600 font-medium">{order.amount}</td>
+                        <td className="p-3.5 text-right pr-4">
+                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full inline-block ${
+                            order.status === "Completed" ? "bg-emerald-50 text-emerald-600" :
+                            order.status === "Preparing" ? "bg-amber-50 text-amber-600" : 
+                            "bg-blue-50 text-blue-600"
+                          }`}>
+                            {order.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

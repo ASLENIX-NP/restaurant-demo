@@ -10,53 +10,29 @@ import {
 } from "lucide-react";
 
 import "../../styles/kitchen.css"; // Kept for any global custom overrides
-
-// Structured Mock Data for cleaner rendering
-const kitchenData = {
-  newOrders: [
-    {
-      id: "#TH1250",
-      time: "10:30 AM",
-      table: "Table 5",
-      type: "Dine In",
-      items: ["Grilled Chicken", "Alfredo Pasta"],
-      statusText: "Waiting for Kitchen",
-    }
-  ],
-  preparing: [
-    {
-      id: "#TH1248",
-      time: "10:15 AM",
-      table: "Table 3",
-      type: "Delivery",
-      items: ["Paneer Pizza", "Garlic Bread"],
-      statusText: "Preparing Food",
-    }
-  ],
-  ready: [
-    {
-      id: "#TH1245",
-      time: "10:05 AM",
-      table: "Table 7",
-      type: "Takeaway",
-      items: ["Margherita Pizza", "Ice Tea"],
-      statusText: "Ready For Service",
-    }
-  ],
-  completed: [
-    {
-      id: "#TH1242",
-      time: "09:58 AM",
-      table: "Table 2",
-      type: "Dine In",
-      items: ["Veg Sandwich", "Lemonade"],
-      statusText: "Completed",
-    }
-  ]
-};
+import { useOrders } from "../../context/OrderContext";
 
 const Kitchen = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { orders = [] } = useOrders();
+
+  const formatOrderForKitchen = (order) => ({
+    id: order.id,
+    time: order.time,
+    table: order.table,
+    type: order.channel || "Dine In",
+    items: (order.items || []).map(item => `${item.qty}x ${item.name}`),
+    statusText: order.status === "Pending" ? "Waiting for Kitchen" : 
+                order.status === "Cooking" ? "Preparing Food" : 
+                order.status === "Ready" ? "Ready For Service" : "Completed"
+  });
+
+  const kitchenData = {
+    newOrders: orders.filter(o => o.status === "Pending").map(formatOrderForKitchen),
+    preparing: orders.filter(o => o.status === "Cooking").map(formatOrderForKitchen),
+    ready: orders.filter(o => o.status === "Ready").map(formatOrderForKitchen),
+    completed: orders.filter(o => o.status === "Completed").map(formatOrderForKitchen)
+  };
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -101,7 +77,7 @@ const Kitchen = () => {
               <ClipboardList size={22} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">8</h2>
+              <h2 className="text-2xl font-black text-slate-900">{kitchenData.newOrders.length}</h2>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">New Orders</h4>
             </div>
           </div>
@@ -112,7 +88,7 @@ const Kitchen = () => {
               <ChefHat size={22} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">12</h2>
+              <h2 className="text-2xl font-black text-slate-900">{kitchenData.preparing.length}</h2>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">Preparing</h4>
             </div>
           </div>
@@ -123,7 +99,7 @@ const Kitchen = () => {
               <Utensils size={22} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">15</h2>
+              <h2 className="text-2xl font-black text-slate-900">{kitchenData.ready.length}</h2>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">Ready</h4>
             </div>
           </div>
@@ -134,7 +110,7 @@ const Kitchen = () => {
               <CheckCircle2 size={22} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">128</h2>
+              <h2 className="text-2xl font-black text-slate-900">{kitchenData.completed.length}</h2>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">Completed Today</h4>
             </div>
           </div>
@@ -147,7 +123,7 @@ const Kitchen = () => {
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center bg-orange-100/50 border border-orange-200/50 rounded-xl py-3 px-4">
               <h3 className="font-bold text-orange-700 text-sm">New Orders</h3>
-              <span className="bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">8</span>
+              <span className="bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{kitchenData.newOrders.length}</span>
             </div>
             {kitchenData.newOrders.map((order, idx) => (
               <OrderCard key={idx} order={order} colorTheme="orange" />
@@ -158,7 +134,7 @@ const Kitchen = () => {
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center bg-amber-100/50 border border-amber-200/50 rounded-xl py-3 px-4">
               <h3 className="font-bold text-amber-700 text-sm">Preparing</h3>
-              <span className="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">12</span>
+              <span className="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{kitchenData.preparing.length}</span>
             </div>
             {kitchenData.preparing.map((order, idx) => (
               <OrderCard key={idx} order={order} colorTheme="amber" />
@@ -169,7 +145,7 @@ const Kitchen = () => {
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center bg-emerald-100/50 border border-emerald-200/50 rounded-xl py-3 px-4">
               <h3 className="font-bold text-emerald-700 text-sm">Ready</h3>
-              <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">15</span>
+              <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{kitchenData.ready.length}</span>
             </div>
             {kitchenData.ready.map((order, idx) => (
               <OrderCard key={idx} order={order} colorTheme="emerald" />
@@ -180,7 +156,7 @@ const Kitchen = () => {
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center bg-slate-200/50 border border-slate-300/50 rounded-xl py-3 px-4">
               <h3 className="font-bold text-slate-700 text-sm">Completed</h3>
-              <span className="bg-slate-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">128</span>
+              <span className="bg-slate-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{kitchenData.completed.length}</span>
             </div>
             {kitchenData.completed.map((order, idx) => (
               <OrderCard key={idx} order={order} colorTheme="slate" isCompleted />
