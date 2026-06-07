@@ -1,51 +1,164 @@
 import React, { useState } from "react";
-import { 
-  Download, 
-  TrendingUp, 
-  ShoppingBag, 
-  Users, 
-  DollarSign, 
-  Calendar, 
-  BarChart3, 
-  PieChart as PieIcon 
+import {
+  Download,
+  TrendingUp,
+  ShoppingBag,
+  Users,
+  DollarSign,
+  Calendar,
+  BarChart3,
+  PieChart as PieIcon,
 } from "lucide-react";
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
-  PieChart, 
-  Pie, 
-  Cell
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 
 // Links the stylesheet cleanly
 import "../../styles/reports.css";
-// Premium Mock Metrics matching your dashboard values safely
-const revenueTrendData = [
-  { label: "05-05", revenue: 0 },
-  { label: "10-05", revenue: 0 },
-  { label: "15-05", revenue: 0 },
-  { label: "20-05", revenue: 0 },
-  { label: "25-05", revenue: 0 },
-  { label: "31-05", revenue: 0 },
-];
-
-const categoryDistributionData = [
-  { name: "Pizza", value: 0, color: "#1e293b" },    /* Slate-800 */
-  { name: "Momo", value: 0, color: "#475569" },     /* Slate-600 */
-  { name: "Burger", value: 0, color: "#94a3b8" },   /* Slate-400 */
-  { name: "Beverage", value: 0, color: "#cbd5e1" }, /* Slate-300 */
-];
-
-const topItems = [];
+import { useOrders } from "../../context/OrderContext";
 
 export default function Reports() {
   const [activeTab, setActiveTab] = useState("Overview");
-  const tabs = ["Overview", "Sales Report", "Orders", "Menu Report", "Customers"];
+  const tabs = [
+    "Overview",
+    "Sales Report",
+    "Orders",
+    "Menu Report",
+    "Customers",
+  ];
+
+  const { orders = [] } = useOrders() || {};
+
+  const completedSales = orders.filter((order) => order.status === "Completed");
+
+  const totalRevenue = completedSales.reduce((acc, order) => {
+    const subtotal = (order.items || []).reduce(
+      (sum, item) => sum + item.qty * item.price,
+      0
+    );
+    return (
+      acc +
+      (order.amount !== undefined
+        ? order.amount
+        : subtotal + (subtotal > 0 ? 50 : 0))
+    );
+  }, 0);
+
+  const totalOrders = orders.length;
+  const totalCustomers = new Set(orders.map((o) => o.customer || "Guest")).size;
+  const avgOrderValue =
+    completedSales.length > 0 ? totalRevenue / completedSales.length : 0;
+
+  // Category Distribution Data
+  const categoriesMap = {};
+  let totalItemsSold = 0;
+  completedSales.forEach((order) => {
+    (order.items || []).forEach((item) => {
+      const cat = item.category || "Other";
+      categoriesMap[cat] = (categoriesMap[cat] || 0) + item.qty;
+      totalItemsSold += item.qty;
+    });
+  });
+
+  const colors = ["#1e293b", "#475569", "#94a3b8", "#cbd5e1", "#818cf8"];
+  let categoryDistributionData = Object.entries(categoriesMap).map(
+    ([name, qty], idx) => ({
+      name,
+      value: totalItemsSold > 0 ? Math.round((qty / totalItemsSold) * 100) : 0,
+      color: colors[idx % colors.length],
+    })
+  );
+  if (categoryDistributionData.length === 0) {
+    categoryDistributionData = [
+      { name: "No Sales", value: 100, color: "#cbd5e1" },
+    ];
+  }
+
+  const itemsMap = {};
+  completedSales.forEach((order) => {
+    (order.items || []).forEach((item) => {
+      if (!itemsMap[item.name]) {
+        itemsMap[item.name] = {
+          name: item.name,
+          image:
+            item.image ||
+            "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&q=80",
+          category: item.category || "Mains",
+          qty: 0,
+          revenue: 0,
+        };
+      }
+      itemsMap[item.name].qty += item.qty;
+      itemsMap[item.name].revenue += item.qty * (parseFloat(item.price) || 0);
+    });
+  });
+
+  const topItems = Object.values(itemsMap)
+    .sort((a, b) => b.qty - a.qty)
+    .map((item) => ({
+      ...item,
+      quantity: item.qty,
+      revenue: `Rs. ${item.revenue.toLocaleString()}`,
+    }));
+
+  const startOfMonth = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth(),
+    1
+  ).toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
+  const endOfMonth = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth() + 1,
+    0
+  ).toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
+
+  // Dynamic Revenue Trend Data (Last 7 Days)
+  const revenueTrendData = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    revenueTrendData.push({
+      label: d
+        .toLocaleDateString("en-US", { month: "2-digit", day: "2-digit" })
+        .replace("/", "-"),
+      fullDate: d.toLocaleDateString(),
+      revenue: 0,
+    });
+  }
+
+  completedSales.forEach((order) => {
+    const orderDate = new Date(
+      order.timestamp || order.date
+    ).toLocaleDateString();
+    const dayData = revenueTrendData.find((d) => d.fullDate === orderDate);
+    if (dayData) {
+      const subtotal = (order.items || []).reduce(
+        (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
+        0
+      );
+      dayData.revenue +=
+        order.amount !== undefined
+          ? order.amount
+          : subtotal + (subtotal > 0 ? 50 : 0);
+    }
+  });
 
   const handlePrintExport = () => {
     window.print();
@@ -54,7 +167,6 @@ export default function Reports() {
   return (
     <div className="report-page">
       <div className="report-container">
-        
         {/* HEADER SECTION */}
         <div className="report-header">
           <div>
@@ -81,7 +193,11 @@ export default function Reports() {
               {tab === "Sales Report" && <DollarSign size={15} />}
               {tab === "Orders" && <ShoppingBag size={15} />}
               {tab === "Customers" && <Users size={15} />}
-              {tab !== "Overview" && tab !== "Sales Report" && tab !== "Orders" && tab !== "Customers" && "🍔"}
+              {tab !== "Overview" &&
+                tab !== "Sales Report" &&
+                tab !== "Orders" &&
+                tab !== "Customers" &&
+                "🍔"}
               <span className="tab-text-label">{tab}</span>
             </button>
           ))}
@@ -91,22 +207,44 @@ export default function Reports() {
         <div className="report-filter">
           <div className="date-box">
             <Calendar size={15} className="text-purple-500" />
-            <span>May 01, 2026 - May 31, 2026</span>
+            <span>
+              {startOfMonth} - {endOfMonth}
+            </span>
           </div>
         </div>
 
         {/* ANALYTIC KPI SUMMARY GRID */}
         <div className="report-stats-grid">
           {[
-            { title: "Total Revenue", value: "Rs. 0", change: "0% this month", icon: <DollarSign size={20} /> },
-            { title: "Total Orders", value: "0", change: "0% this month", icon: <ShoppingBag size={20} /> },
-            { title: "Avg Order Value", value: "Rs. 0", change: "0% this month", icon: <TrendingUp size={20} /> },
-            { title: "Customers", value: "0", change: "0% this month", icon: <Users size={20} /> },
+            {
+              title: "Total Revenue",
+              value: `Rs. ${totalRevenue.toLocaleString()}`,
+              change: "0% this month",
+              icon: <DollarSign size={20} />,
+            },
+            {
+              title: "Total Orders",
+              value: totalOrders,
+              change: "0% this month",
+              icon: <ShoppingBag size={20} />,
+            },
+            {
+              title: "Avg Order Value",
+              value: `Rs. ${avgOrderValue.toLocaleString(undefined, {
+                maximumFractionDigits: 0,
+              })}`,
+              change: "0% this month",
+              icon: <TrendingUp size={20} />,
+            },
+            {
+              title: "Customers",
+              value: totalCustomers,
+              change: "0% this month",
+              icon: <Users size={20} />,
+            },
           ].map((stat, i) => (
             <div key={i} className="report-stat-card">
-              <div className="report-icon-wrapper">
-                {stat.icon}
-              </div>
+              <div className="report-icon-wrapper">{stat.icon}</div>
               <div className="stat-content">
                 <h3>{stat.title}</h3>
                 <h1>{stat.value}</h1>
@@ -118,7 +256,6 @@ export default function Reports() {
 
         {/* INTERACTIVE GRAPH DATA BLOCK CONTAINER */}
         <div className="report-chart-grid">
-          
           {/* SMOOTH AREA-LINE CHART */}
           <div className="chart-card linear-graph-block">
             <div className="chart-header-node">
@@ -128,24 +265,71 @@ export default function Reports() {
               </div>
               <button className="chart-toggle-btn">By Day</button>
             </div>
-            
+
             <div className="chart-wrapper-canvas">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueTrendData} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
+                <AreaChart
+                  data={revenueTrendData}
+                  margin={{ top: 10, right: 5, left: -20, bottom: 0 }}
+                >
                   <defs>
-                    <linearGradient id="reportRevenueGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#1e293b" stopOpacity={0.15}/>
-                      <stop offset="95%" stopColor="#1e293b" stopOpacity={0}/>
+                    <linearGradient
+                      id="reportRevenueGrad"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor="#1e293b"
+                        stopOpacity={0.15}
+                      />
+                      <stop offset="95%" stopColor="#1e293b" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="label" stroke="#94a3b8" tickLine={false} axisLine={false} dy={8} style={{ fontSize: '11px' }} />
-                  <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} dx={-5} tickFormatter={(v) => `Rs.${v/1000}k`} style={{ fontSize: '11px' }} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: "#0f172a", borderRadius: "10px", border: "none", color: "#fff", fontSize: "12px" }}
-                    formatter={(value) => [`Rs. ${value.toLocaleString()}`, "Revenue"]}
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="#f1f5f9"
+                    vertical={false}
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="#334155" strokeWidth={2.5} fillOpacity={1} fill="url(#reportRevenueGrad)" />
+                  <XAxis
+                    dataKey="label"
+                    stroke="#94a3b8"
+                    tickLine={false}
+                    axisLine={false}
+                    dy={8}
+                    style={{ fontSize: "11px" }}
+                  />
+                  <YAxis
+                    stroke="#94a3b8"
+                    tickLine={false}
+                    axisLine={false}
+                    dx={-5}
+                    tickFormatter={(v) => `Rs.${v / 1000}k`}
+                    style={{ fontSize: "11px" }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#0f172a",
+                      borderRadius: "10px",
+                      border: "none",
+                      color: "#fff",
+                      fontSize: "12px",
+                    }}
+                    formatter={(value) => [
+                      `Rs. ${value.toLocaleString()}`,
+                      "Revenue",
+                    ]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#334155"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#reportRevenueGrad)"
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -187,23 +371,30 @@ export default function Reports() {
                 {categoryDistributionData.map((item, index) => (
                   <div key={index} className="legend-row-item">
                     <div className="legend-indicator">
-                      <span className="color-indicator-dot" style={{ backgroundColor: item.color }} />
+                      <span
+                        className="color-indicator-dot"
+                        style={{ backgroundColor: item.color }}
+                      />
                       <span className="legend-name-text">{item.name}</span>
                     </div>
-                    <span className="legend-percentage-value">{item.value}%</span>
+                    <span className="legend-percentage-value">
+                      {item.value}%
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-
         </div>
 
         {/* COMPREHENSIVE PERFORMANCE DATATABLE */}
         <div className="top-items-card">
           <div className="table-title-node">
             <h2>Top Selling Items</h2>
-            <p>High velocity restaurant performance entries listed by inventory rank</p>
+            <p>
+              High velocity restaurant performance entries listed by inventory
+              rank
+            </p>
           </div>
 
           <div className="report-table-wrapper">
@@ -220,7 +411,10 @@ export default function Reports() {
               <tbody>
                 {topItems.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="text-center py-8 text-slate-400 font-medium">
+                    <td
+                      colSpan="5"
+                      className="text-center py-8 text-slate-400 font-medium"
+                    >
                       No items sold yet.
                     </td>
                   </tr>
@@ -244,7 +438,6 @@ export default function Reports() {
             </table>
           </div>
         </div>
-
       </div>
     </div>
   );

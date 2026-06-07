@@ -1,68 +1,16 @@
 import React, { useState } from "react";
 import "../../styles/tables.css";
-
-// Initial data populated with realistic static items for testing the view feature
-const initialTables = [
-  { 
-    id: 1, 
-    seats: 4, 
-    status: "Available", 
-    customer: "No Customer",
-    activeOrder: null 
-  },
-  { 
-    id: 2, 
-    seats: 2, 
-    status: "Available", 
-    customer: "No Customer",
-    activeOrder: null 
-  },
-  { 
-    id: 3, 
-    seats: 6, 
-    status: "Available", 
-    customer: "No Customer",
-    activeOrder: null 
-  },
-  { 
-    id: 4, 
-    seats: 8, 
-    status: "Available", 
-    customer: "No Customer",
-    activeOrder: null 
-  },
-  { 
-    id: 5, 
-    seats: 2, 
-    status: "Available", 
-    customer: "No Customer",
-    activeOrder: null 
-  },
-  { 
-    id: 6, 
-    seats: 5, 
-    status: "Available", 
-    customer: "No Customer",
-    activeOrder: null 
-  },
-  { 
-    id: 7, 
-    seats: 3, 
-    status: "Available", 
-    customer: "No Customer",
-    activeOrder: null 
-  },
-  { 
-    id: 8, 
-    seats: 6, 
-    status: "Available", 
-    customer: "No Customer",
-    activeOrder: null 
-  },
-];
+import { useTables } from "../../context/TableContext";
+import { useOrders } from "../../context/OrderContext";
 
 const Tables = () => {
-  const [tablesList, setTablesList] = useState(initialTables);
+  const { tables, addTable, editTable, updateTableStatus } = useTables() || {
+    tables: [],
+  };
+  const { orders, setOrders, cancelOrder, completeOrder } = useOrders() || {
+    orders: [],
+  };
+
   const [activeModal, setActiveModal] = useState(null); // 'add' | 'edit' | 'view' | null
   const [selectedTable, setSelectedTable] = useState(null);
 
@@ -71,12 +19,36 @@ const Tables = () => {
   const [formStatus, setFormStatus] = useState("Available");
   const [formCustomer, setFormCustomer] = useState("");
 
+  // Map global tables to the format needed
+  const tablesList = tables.map((t) => {
+    const tableOrders = orders.filter(
+      (o) =>
+        o.table === t.name &&
+        o.status !== "Completed" &&
+        o.status !== "Cancelled"
+    );
+
+    let activeOrder =
+      tableOrders.length > 0 ? tableOrders.flatMap((o) => o.items || []) : null;
+
+    return {
+      ...t,
+      customer: t.currentCustomer || "No Customer",
+      activeOrder,
+    };
+  });
 
   // Dynamic Dashboard Stats Counters
   const totalTables = tablesList.length;
-  const availableCount = tablesList.filter((t) => t.status === "Available").length;
-  const occupiedCount = tablesList.filter((t) => t.status === "Occupied").length;
-  const reservedCount = tablesList.filter((t) => t.status === "Reserved").length;
+  const availableCount = tablesList.filter(
+    (t) => t.status === "Available"
+  ).length;
+  const occupiedCount = tablesList.filter(
+    (t) => t.status === "Occupied"
+  ).length;
+  const reservedCount = tablesList.filter(
+    (t) => t.status === "Reserved"
+  ).length;
 
   // --- Modal Controllers ---
   const handleOpenAdd = () => {
@@ -106,51 +78,60 @@ const Tables = () => {
 
   // --- Toggle Food Status (Interactive Status Tag) ---
   const toggleItemDelivery = (tableId, itemId) => {
-    const updatedTables = tablesList.map((t) => {
-      if (t.id === tableId && t.activeOrder) {
-        const updatedOrder = t.activeOrder.map((item) =>
-          item.id === itemId ? { ...item, delivered: !item.delivered } : item
-        );
-        return { ...t, activeOrder: updatedOrder };
-      }
-      return t;
-    });
+    if (setOrders) {
+      // Find orders for this table
+      const targetTable = tables.find((t) => t.id === tableId);
+      if (!targetTable) return;
 
-    setTablesList(updatedTables);
-    // Directly update modal viewport state sync
-    const currentlyViewing = updatedTables.find((t) => t.id === tableId);
-    setSelectedTable(currentlyViewing);
+      setOrders((prevOrders) =>
+        prevOrders.map((order) => {
+          if (
+            order.table === targetTable.name &&
+            order.status !== "Completed" &&
+            order.status !== "Cancelled"
+          ) {
+            return {
+              ...order,
+              items: (order.items || []).map((item) =>
+                item.id === itemId
+                  ? { ...item, delivered: !item.delivered }
+                  : item
+              ),
+            };
+          }
+          return order;
+        })
+      );
+    }
   };
 
   // --- Form Operations ---
   const saveAddTable = (e) => {
     e.preventDefault();
-    const newTable = {
-      id: tablesList.length > 0 ? Math.max(...tablesList.map((t) => t.id)) + 1 : 1,
+    const newCustomer =
+      formStatus === "Available" || formStatus === "Cleaning"
+        ? "No Customer"
+        : formCustomer || "Anonymous";
+    addTable({
+      name: `Table ${tables.length + 1}`,
       seats: parseInt(formSeats, 10),
       status: formStatus,
-      customer: formStatus === "Available" || formStatus === "Cleaning" ? "No Customer" : formCustomer || "Anonymous",
-      activeOrder: null
-    };
-    setTablesList([...tablesList, newTable]);
+      currentCustomer: newCustomer,
+    });
     closeModal();
   };
 
   const saveEditTable = (e) => {
     e.preventDefault();
-    setTablesList(
-      tablesList.map((t) =>
-        t.id === selectedTable.id
-          ? {
-              ...t,
-              seats: parseInt(formSeats, 10),
-              status: formStatus,
-              customer: formStatus === "Available" || formStatus === "Cleaning" ? "No Customer" : formCustomer,
-              activeOrder: formStatus === "Available" || formStatus === "Cleaning" ? null : t.activeOrder
-            }
-          : t
-      )
-    );
+    const newCustomer =
+      formStatus === "Available" || formStatus === "Cleaning"
+        ? "No Customer"
+        : formCustomer || "Anonymous";
+    editTable(selectedTable.id, {
+      seats: parseInt(formSeats, 10),
+      status: formStatus,
+      currentCustomer: newCustomer,
+    });
     closeModal();
   };
 
@@ -190,10 +171,19 @@ const Tables = () => {
       {/* TABLES GRID */}
       <div className="tables-grid">
         {tablesList.map((table) => (
-          <div className={`table-card ${table.status.toLowerCase()}`} key={table.id}>
+          <div
+            className={`table-card ${
+              table.status ? table.status.toLowerCase() : "available"
+            }`}
+            key={table.id}
+          >
             <div className="table-top">
-              <h2>Table {table.id}</h2>
-              <span className={`status-badge ${table.status.toLowerCase()}`}>
+              <h2>{table.name}</h2>
+              <span
+                className={`status-badge ${
+                  table.status ? table.status.toLowerCase() : "available"
+                }`}
+              >
                 {table.status}
               </span>
             </div>
@@ -201,15 +191,25 @@ const Tables = () => {
             <div className="table-icon">🍽️</div>
 
             <div className="table-info">
-              <p><strong>Seats:</strong> {table.seats}</p>
-              <p><strong>Customer:</strong> {table.customer}</p>
+              <p>
+                <strong>Seats:</strong> {table.seats}
+              </p>
+              <p>
+                <strong>Customer:</strong> {table.customer}
+              </p>
             </div>
 
             <div className="table-actions">
-              <button className="view-btn" onClick={() => handleOpenView(table)}>
+              <button
+                className="view-btn"
+                onClick={() => handleOpenView(table)}
+              >
                 View
               </button>
-              <button className="edit-btn" onClick={() => handleOpenEdit(table)}>
+              <button
+                className="edit-btn"
+                onClick={() => handleOpenEdit(table)}
+              >
                 Edit
               </button>
             </div>
@@ -221,57 +221,181 @@ const Tables = () => {
       {activeModal && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            
             {/* VIEW DETAILS MODAL */}
-            {activeModal === "view" && selectedTable && (
-              <div>
-                <h2>Table {selectedTable.id} Details</h2>
-                <hr />
-                <div className="view-details-info">
-                  <p><strong>Status:</strong> <span className={`status-text ${selectedTable.status.toLowerCase()}`}>{selectedTable.status}</span></p>
-                  <p><strong>Capacity:</strong> {selectedTable.seats} Seats</p>
-                  <p><strong>Customer:</strong> {selectedTable.customer}</p>
-                </div>
-
-                <h3 style={{ marginTop: "24px", fontSize: "16px", color: "#1e293b" }}>Ordered Items Tracking</h3>
-                <hr style={{ margin: "8px 0" }} />
-                
-                <div className="modal-order-list">
-                  {!selectedTable.activeOrder || selectedTable.activeOrder.length === 0 ? (
-                    <p className="no-orders-text">No active orders running for this table.</p>
-                  ) : (
-                    selectedTable.activeOrder.map((item) => (
-                      <div className="modal-order-item" key={item.id}>
-                        <div className="item-name-qty">
-                          <span>{item.name}</span>
-                          <strong className="item-qty">x{item.qty}</strong>
-                        </div>
-                        
-                        {/* Interactive Toggle Button status layout */}
-                        <button 
-                          type="button"
-                          className={`delivery-toggle-btn ${item.delivered ? "delivered" : "pending"}`}
-                          onClick={() => toggleItemDelivery(selectedTable.id, item.id)}
+            {activeModal === "view" &&
+              selectedTable &&
+              (() => {
+                const currentViewingTable =
+                  tablesList.find((t) => t.id === selectedTable.id) ||
+                  selectedTable;
+                return (
+                  <div>
+                    <h2>{currentViewingTable.name} Details</h2>
+                    <hr />
+                    <div className="view-details-info">
+                      <p>
+                        <strong>Status:</strong>{" "}
+                        <span
+                          className={`status-text ${
+                            currentViewingTable.status
+                              ? currentViewingTable.status.toLowerCase()
+                              : "available"
+                          }`}
                         >
-                          {item.delivered ? "✓ Delivered" : "⏳ Pending"}
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
+                          {currentViewingTable.status}
+                        </span>
+                      </p>
+                      <p>
+                        <strong>Capacity:</strong> {currentViewingTable.seats}{" "}
+                        Seats
+                      </p>
+                      <p>
+                        <strong>Customer:</strong>{" "}
+                        {currentViewingTable.customer}
+                      </p>
+                    </div>
 
-                <div className="modal-actions">
-                  <button className="modal-close-btn" onClick={closeModal}>Close Details</button>
-                </div>
-              </div>
-            )}
+                    <h3
+                      style={{
+                        marginTop: "24px",
+                        fontSize: "16px",
+                        color: "#1e293b",
+                      }}
+                    >
+                      Ordered Items Tracking
+                    </h3>
+                    <hr style={{ margin: "8px 0" }} />
+
+                    <div className="modal-order-list">
+                      {!currentViewingTable.activeOrder ||
+                      currentViewingTable.activeOrder.length === 0 ? (
+                        <p className="no-orders-text">
+                          No active orders running for this table.
+                        </p>
+                      ) : (
+                        currentViewingTable.activeOrder.map((item, idx) => (
+                          <div
+                            className="modal-order-item"
+                            key={item.id || idx}
+                          >
+                            <div className="item-name-qty">
+                              <span>{item.name}</span>
+                              <strong className="item-qty">x{item.qty}</strong>
+                            </div>
+
+                            {/* Interactive Toggle Button status layout */}
+                            <button
+                              type="button"
+                              className={`delivery-toggle-btn ${
+                                item.delivered ? "delivered" : "pending"
+                              }`}
+                              onClick={() =>
+                                toggleItemDelivery(
+                                  currentViewingTable.id,
+                                  item.id
+                                )
+                              }
+                            >
+                              {item.delivered ? "✓ Delivered" : "⏳ Pending"}
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div
+                      className="modal-actions"
+                      style={{
+                        display: "flex",
+                        gap: "10px",
+                        marginTop: "20px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Cancel all active orders for this table?"
+                            )
+                          ) {
+                            const tableOrders = orders.filter(
+                              (o) =>
+                                o.table === currentViewingTable.name &&
+                                o.status !== "Completed" &&
+                                o.status !== "Cancelled"
+                            );
+                            tableOrders.forEach((o) => {
+                              if (cancelOrder) cancelOrder(o.id);
+                            });
+                            if (updateTableStatus)
+                              updateTableStatus(
+                                currentViewingTable.id,
+                                "Available",
+                                "No Customer"
+                              );
+                            closeModal();
+                          }
+                        }}
+                        className="cancel-btn"
+                        style={{
+                          flex: 1,
+                          backgroundColor: "#fff1f2",
+                          color: "#e11d48",
+                          border: "1px solid #ffe4e6",
+                        }}
+                      >
+                        Cancel Order
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "Checkout and mark this table's orders as Paid?"
+                            )
+                          ) {
+                            const tableOrders = orders.filter(
+                              (o) =>
+                                o.table === currentViewingTable.name &&
+                                o.status !== "Completed" &&
+                                o.status !== "Cancelled"
+                            );
+                            tableOrders.forEach((o) => {
+                              if (completeOrder)
+                                completeOrder(o.id, { paymentMethod: "Cash" });
+                            });
+                            if (updateTableStatus)
+                              updateTableStatus(
+                                currentViewingTable.id,
+                                "Available",
+                                "No Customer"
+                              );
+                            closeModal();
+                          }
+                        }}
+                        className="save-btn"
+                        style={{ flex: 2, backgroundColor: "#0f172a" }}
+                      >
+                        Checkout Table
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
 
             {/* ADD / EDIT FORM MODALS */}
             {(activeModal === "add" || activeModal === "edit") && (
-              <form onSubmit={activeModal === "add" ? saveAddTable : saveEditTable}>
-                <h2>{activeModal === "add" ? "Add New Table" : `Edit Table ${selectedTable?.id}`}</h2>
+              <form
+                onSubmit={activeModal === "add" ? saveAddTable : saveEditTable}
+              >
+                <h2>
+                  {activeModal === "add"
+                    ? "Add New Table"
+                    : `Edit Table ${selectedTable?.id}`}
+                </h2>
                 <hr />
-                
+
                 <div className="form-group">
                   <label>Number of Seats:</label>
                   <input
@@ -285,7 +409,10 @@ const Tables = () => {
 
                 <div className="form-group">
                   <label>Status:</label>
-                  <select value={formStatus} onChange={(e) => setFormStatus(e.target.value)}>
+                  <select
+                    value={formStatus}
+                    onChange={(e) => setFormStatus(e.target.value)}
+                  >
                     <option value="Available">Available</option>
                     <option value="Occupied">Occupied</option>
                     <option value="Reserved">Reserved</option>
@@ -307,7 +434,11 @@ const Tables = () => {
                 )}
 
                 <div className="modal-actions">
-                  <button type="button" className="cancel-btn" onClick={closeModal}>
+                  <button
+                    type="button"
+                    className="cancel-btn"
+                    onClick={closeModal}
+                  >
                     Cancel
                   </button>
                   <button type="submit" className="save-btn">
@@ -316,7 +447,6 @@ const Tables = () => {
                 </div>
               </form>
             )}
-
           </div>
         </div>
       )}

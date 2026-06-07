@@ -1,9 +1,17 @@
 import React from "react";
-import { CheckCircle2, PackageCheck, UtensilsCrossed, Clock, BellRing, Sparkles, ChefHat } from "lucide-react";
+import {
+  CheckCircle2,
+  PackageCheck,
+  UtensilsCrossed,
+  Clock,
+  BellRing,
+  Sparkles,
+  ChefHat,
+} from "lucide-react";
 import { useOrders } from "../../context/OrderContext";
 
 const ReadyOrders = () => {
-  const { orders, completeOrder } = useOrders();
+  const { orders, serveOrder } = useOrders();
 
   // Filter orders to only show those marked as "Ready" by the kitchen
   const readyOrders = orders.filter((order) => order.status === "Ready");
@@ -15,7 +23,6 @@ const ReadyOrders = () => {
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-300/10 rounded-full blur-[100px] -z-10" />
 
       <main className="max-w-[1400px] mx-auto">
-        
         {/* HEADER SECTION */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
           <div>
@@ -28,12 +35,15 @@ const ReadyOrders = () => {
               </h1>
             </div>
             <p className="text-slate-500 text-sm font-medium flex items-center gap-1.5 ml-1">
-              <ChefHat size={16} className="text-slate-400"/> Kitchen has finished these orders. Awaiting waitstaff pickup.
+              <ChefHat size={16} className="text-slate-400" /> Kitchen has
+              finished these orders. Awaiting waitstaff pickup.
             </p>
           </div>
           <div className="bg-white/80 backdrop-blur-md text-emerald-700 px-5 py-3 rounded-2xl font-bold flex items-center gap-3 border border-emerald-100 shadow-sm">
             <div className="relative flex h-3 w-3">
-              {readyOrders.length > 0 && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>}
+              {readyOrders.length > 0 && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              )}
               <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
             </div>
             <span className="text-lg">{readyOrders.length}</span>
@@ -47,31 +57,36 @@ const ReadyOrders = () => {
             <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
               <UtensilsCrossed size={40} className="text-slate-300" />
             </div>
-            <h3 className="text-2xl font-black text-slate-700">No orders waiting</h3>
+            <h3 className="text-2xl font-black text-slate-700">
+              No orders waiting
+            </h3>
             <p className="text-slate-500 mt-2 font-medium text-center max-w-md">
-              The expo window is clear! Check back later when the kitchen marks new tickets as ready.
+              The expo window is clear! Check back later when the kitchen marks
+              new tickets as ready.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 xl:gap-8">
             {readyOrders.map((order) => (
-              <div 
-                key={order.id} 
+              <div
+                key={order.id}
                 className="bg-white rounded-[24px] shadow-sm hover:shadow-2xl hover:shadow-emerald-500/10 border border-slate-100 p-6 flex flex-col h-full transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group"
               >
                 {/* Top Green Accent Line */}
                 <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-400 to-teal-500" />
-                
+
                 {/* Order Meta Data */}
                 <div className="flex justify-between items-start mb-6 pt-2">
                   <div>
-                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">{order.id}</h2>
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                      {order.id}
+                    </h2>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="inline-flex bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 rounded-md shadow-sm">
-                        {order.channel || 'System'}
+                        {order.channel || "System"}
                       </span>
                       <span className="inline-flex bg-emerald-50 text-emerald-700 text-[11px] font-bold px-2.5 py-1 rounded-md border border-emerald-100">
-                        {order.table || 'Queue'}
+                        {order.table || "Queue"}
                       </span>
                     </div>
                   </div>
@@ -90,7 +105,10 @@ const ReadyOrders = () => {
                   </h4>
                   <ul className="space-y-3">
                     {(order.items || []).map((item, idx) => (
-                      <li key={idx} className="flex justify-between items-start p-3 bg-slate-50/80 rounded-xl border border-slate-100/50 group-hover:bg-emerald-50/30 transition-colors">
+                      <li
+                        key={idx}
+                        className="flex justify-between items-start p-3 bg-slate-50/80 rounded-xl border border-slate-100/50 group-hover:bg-emerald-50/30 transition-colors"
+                      >
                         <span className="flex items-start gap-3">
                           <span className="bg-white border border-slate-200 text-slate-700 w-6 h-6 rounded-md flex items-center justify-center text-xs font-black shadow-sm flex-shrink-0 mt-0.5">
                             {item.qty}
@@ -99,7 +117,11 @@ const ReadyOrders = () => {
                             <span className="text-sm font-bold text-slate-800 leading-tight">
                               {item.name}
                             </span>
-                            {item.notes && <span className="text-[10px] font-semibold text-rose-500 mt-1">Note: {item.notes}</span>}
+                            {item.notes && (
+                              <span className="text-[10px] font-semibold text-rose-500 mt-1">
+                                Note: {item.notes}
+                              </span>
+                            )}
                           </div>
                         </span>
                       </li>
@@ -109,17 +131,19 @@ const ReadyOrders = () => {
 
                 {/* Action Button */}
                 <button
-                  onClick={() => completeOrder(order.id)}
+                  onClick={() => serveOrder(order.id)}
                   className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-auto group/btn"
                 >
-                  <Sparkles size={18} className="group-hover/btn:animate-spin" />
+                  <Sparkles
+                    size={18}
+                    className="group-hover/btn:animate-spin"
+                  />
                   Mark as Served
                 </button>
               </div>
             ))}
           </div>
         )}
-
       </main>
     </div>
   );

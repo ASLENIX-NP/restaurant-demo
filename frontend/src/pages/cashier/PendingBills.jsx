@@ -9,6 +9,7 @@ import {
   CreditCard,
   Filter,
   Percent,
+  Printer,
   Receipt,
   Search,
   Smartphone,
@@ -28,90 +29,260 @@ const paymentMethods = [
   { name: "Khalti", icon: Wallet },
 ];
 
-const filters = ["All", "Unpaid", "Partial"];
+const filters = ["All", "Pending", "Cooking", "Ready", "Served"];
 
 export default function PendingBillsPage() {
-  const { orders, completeOrder } = useOrders();
-  const { updateTableStatus } = useTables();
+  const { orders, completeOrder, cancelOrder } = useOrders();
+  const { tables, updateTableStatus } = useTables();
 
   // Dynamically generate pending bills from live global orders
   const pendingBillsData = useMemo(() => {
-    return orders
-      .filter((order) => order.status !== "Completed") // Only show unpaid orders
-      .map((order) => {
-        const subtotal = (order.items || []).reduce((acc, item) => acc + item.qty * item.price, 0);
-        return {
-          id: order.id,
+    const activeOrders = orders.filter((order) => order.status !== "Completed"); // Only show unpaid orders
+    const grouped = {};
+
+    activeOrders.forEach((order) => {
+      const isTable =
+        order.table && order.table !== "Walk-in" && order.table !== "Queue";
+      const key = isTable ? order.table : order.id; // Group by table if seated, else by ID
+
+      if (!grouped[key]) {
+        grouped[key] = {
+          id: key,
+          orderIds: [order.id],
           table: order.table || "Walk-in",
           customer: order.customer || "Guest",
           server: order.server || "System",
-          amount: subtotal + (subtotal * 0.13) + (subtotal > 0 ? 50 : 0), // Subtotal + VAT + Service Charge
-          status: "Unpaid",
+          subtotal: 0,
+          paymentStatus: "Unpaid",
+          statuses: [order.status],
           priority: order.priority || "Normal",
           guests: order.guests || 1,
-          time: order.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          time:
+            order.time ||
+            new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
           date: order.date || new Date().toLocaleDateString(),
           section: order.channel || "Dining",
-          items: order.items || [],
+          items: [],
         };
+      } else {
+        grouped[key].orderIds.push(order.id);
+        grouped[key].statuses.push(order.status);
+      }
+
+      const orderSubtotal = (order.items || []).reduce(
+        (acc, item) => acc + item.qty * (parseFloat(item.price) || 0),
+        0
+      );
+      grouped[key].subtotal += orderSubtotal;
+
+      // Merge identical items
+      (order.items || []).forEach((item) => {
+        const existingItem = grouped[key].items.find(
+          (i) => i.name === item.name && i.price === item.price
+        );
+        if (existingItem) {
+          existingItem.qty += item.qty;
+        } else {
+          grouped[key].items.push({ ...item });
+        }
       });
+    });
+
+    return Object.values(grouped).map((group) => {
+      // Determine highest priority kitchen status across merged orders
+      let overallStatus = "Served";
+      if (group.statuses.includes("Pending")) overallStatus = "Pending";
+      else if (group.statuses.includes("Cooking")) overallStatus = "Cooking";
+      else if (group.statuses.includes("Ready")) overallStatus = "Ready";
+
+      return {
+        ...group,
+        amount: group.subtotal,
+        kitchenStatus: overallStatus,
+      };
+    });
   }, [orders]);
 
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [discountType, setDiscountType] = useState("percentage");
   const [discountValue, setDiscountValue] = useState(0);
+  const [serviceCharge, setServiceCharge] = useState(0);
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
 
-  const selectedInvoice = pendingBillsData.find((bill) => bill.id === selectedInvoiceId);
+  const selectedInvoice = pendingBillsData.find(
+    (bill) => bill.id === selectedInvoiceId
+  );
 
   const filteredBills = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
 
     return pendingBillsData.filter((bill) => {
-      const matchesFilter = activeFilter === "All" || bill.status === activeFilter;
+      const matchesFilter =
+        activeFilter === "All" || bill.kitchenStatus === activeFilter;
       const matchesSearch =
         !term ||
         bill.id.toLowerCase().includes(term) ||
+        bill.orderIds.some((id) => id.toLowerCase().includes(term)) ||
         bill.table.toLowerCase().includes(term) ||
         bill.customer.toLowerCase().includes(term);
 
       return matchesFilter && matchesSearch;
     });
-  }, [activeFilter, searchTerm]);
+  }, [activeFilter, searchTerm, pendingBillsData]);
 
   const metrics = useMemo(() => {
-    const totalDue = pendingBillsData.reduce((sum, bill) => sum + bill.amount, 0);
-    const unpaid = pendingBillsData.filter((bill) => bill.status === "Unpaid").length;
-    const partial = pendingBillsData.filter((bill) => bill.status === "Partial").length;
-    const largestBill = Math.max(...pendingBillsData.map((bill) => bill.amount));
+    const totalDue = pendingBillsData.reduce(
+      (sum, bill) => sum + bill.amount,
+      0
+    );
+    const unpaid = pendingBillsData.filter(
+      (bill) => bill.paymentStatus === "Unpaid"
+    ).length;
+    const partial = pendingBillsData.filter(
+      (bill) => bill.paymentStatus === "Partial"
+    ).length;
+    const largestBill =
+      pendingBillsData.length > 0
+        ? Math.max(...pendingBillsData.map((bill) => bill.amount))
+        : 0;
 
     return { totalDue, unpaid, partial, largestBill };
-  }, []);
+  }, [pendingBillsData]);
 
   const subtotal = selectedInvoice
-    ? selectedInvoice.items.reduce((acc, item) => acc + item.qty * item.price, 0)
+    ? selectedInvoice.items.reduce(
+        (acc, item) => acc + item.qty * (parseFloat(item.price) || 0),
+        0
+      )
     : 0;
 
   const discountAmount = selectedInvoice
     ? discountType === "percentage"
-      ? subtotal * (Math.min(Math.max(discountValue, 0), 100) / 100)
-      : Math.min(Math.max(discountValue, 0), subtotal)
+      ? subtotal * (Math.min(Math.max(discountValue || 0, 0), 100) / 100)
+      : Math.min(Math.max(discountValue || 0, 0), subtotal)
     : 0;
 
-  const taxableAmount = subtotal - discountAmount;
-  const vat = taxableAmount * 0.13;
-  const serviceCharge = subtotal > 0 ? 50 : 0;
-  const total = taxableAmount + vat + serviceCharge;
+  const safeServiceCharge = serviceCharge || 0;
+  const total = subtotal - discountAmount + safeServiceCharge;
 
   const handleSelectInvoice = (billId) => {
     setSelectedInvoiceId(billId);
     setDiscountValue(0);
+    setServiceCharge(0); // Default service charge when opening a bill
+    setIsPaymentSuccess(false);
+  };
+
+  const handleFinalizePayment = (shouldPrint) => {
+    if (shouldPrint) {
+      window.print();
+    }
+
+    // Use a small timeout to ensure a smooth transition and reliable print capture
+    setTimeout(() => {
+      const tableObj = tables.find((t) => t.name === selectedInvoice.table);
+      if (tableObj) {
+        updateTableStatus(tableObj.id, "Available", "No Customer");
+      } else {
+        const match = selectedInvoice.table.match(/\d+/);
+        if (match) {
+          updateTableStatus(parseInt(match[0], 10), "Available", "No Customer");
+        }
+      }
+
+      const finalDetails = {
+        paymentMethod,
+        discountAmount,
+        serviceCharge: safeServiceCharge,
+        amount: total,
+      };
+
+      if (selectedInvoice.orderIds) {
+        const splitDetails = {
+          ...finalDetails,
+          amount: total / selectedInvoice.orderIds.length,
+          discountAmount: discountAmount / selectedInvoice.orderIds.length,
+          serviceCharge: safeServiceCharge / selectedInvoice.orderIds.length,
+        };
+        selectedInvoice.orderIds.forEach((id) =>
+          completeOrder(id, splitDetails)
+        );
+      } else {
+        completeOrder(selectedInvoice.id, finalDetails);
+      }
+
+      setIsPaymentSuccess(false);
+      setSelectedInvoiceId(null);
+    }, 100);
+  };
+
+  const handleCancelBill = () => {
+    if (window.confirm("Are you sure you want to cancel this bill?")) {
+      const tableObj = tables.find((t) => t.name === selectedInvoice.table);
+      if (tableObj) {
+        updateTableStatus(tableObj.id, "Available", "No Customer");
+      } else {
+        const match = selectedInvoice.table.match(/\d+/);
+        if (match) {
+          updateTableStatus(parseInt(match[0], 10), "Available", "No Customer");
+        }
+      }
+
+      if (selectedInvoice.orderIds) {
+        selectedInvoice.orderIds.forEach((id) => cancelOrder(id));
+      } else {
+        cancelOrder(selectedInvoice.id);
+      }
+      setSelectedInvoiceId(null);
+    }
   };
 
   return (
     <div className="pending-bills-modern">
+      {/* PRINT-ONLY STYLES */}
+      <style>
+        {`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          /* Hide layout structures that cause extra blank pages */
+          .sidebar, .navbar, .pending-shell, .checkout-popout-backdrop, .print-modal-hide {
+            display: none !important;
+          }
+          html, body {
+            height: auto;
+            margin: 0;
+          }
+          #printable-receipt, #printable-receipt * {
+            visibility: visible;
+          }
+          #printable-receipt {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #000;
+            font-size: 14px;
+          }
+          @page { margin: 0; size: auto; }
+        }
+        @media screen {
+          #printable-receipt {
+            display: none;
+          }
+        }
+        `}
+      </style>
+
       <main className="pending-shell">
         <section className="pending-hero">
           <div>
@@ -120,7 +291,10 @@ export default function PendingBillsPage() {
               Cashier Checkout Desk
             </span>
             <h1>Pending Bills</h1>
-            <p>Settle open restaurant checks, apply discounts, and close tables faster.</p>
+            <p>
+              Settle open restaurant checks, apply discounts, and close tables
+              faster.
+            </p>
           </div>
 
           <div className="pending-hero-actions">
@@ -141,28 +315,36 @@ export default function PendingBillsPage() {
 
         <section className="pending-metrics">
           <div className="pending-metric-card dark">
-            <span className="metric-icon"><Wallet size={22} /></span>
+            <span className="metric-icon">
+              <Wallet size={22} />
+            </span>
             <div>
               <p>Total Due</p>
               <strong>Rs. {metrics.totalDue.toLocaleString()}</strong>
             </div>
           </div>
           <div className="pending-metric-card">
-            <span className="metric-icon red"><Receipt size={22} /></span>
+            <span className="metric-icon red">
+              <Receipt size={22} />
+            </span>
             <div>
               <p>Unpaid Checks</p>
               <strong>{metrics.unpaid}</strong>
             </div>
           </div>
           <div className="pending-metric-card">
-            <span className="metric-icon amber"><Coins size={22} /></span>
+            <span className="metric-icon amber">
+              <Coins size={22} />
+            </span>
             <div>
               <p>Partial Bills</p>
               <strong>{metrics.partial}</strong>
             </div>
           </div>
           <div className="pending-metric-card">
-            <span className="metric-icon green"><ChefHat size={22} /></span>
+            <span className="metric-icon green">
+              <ChefHat size={22} />
+            </span>
             <div>
               <p>Largest Table</p>
               <strong>Rs. {metrics.largestBill.toLocaleString()}</strong>
@@ -198,15 +380,28 @@ export default function PendingBillsPage() {
                 key={bill.id}
                 type="button"
                 onClick={() => handleSelectInvoice(bill.id)}
-                className={`restaurant-bill-card ${isSelected ? "selected" : ""} status-${bill.status.toLowerCase()}`}
+                className={`restaurant-bill-card ${
+                  isSelected ? "selected" : ""
+                } status-${bill.kitchenStatus.toLowerCase()}`}
               >
                 <div className="bill-card-top">
-                  <span className="invoice-pill">{bill.id}</span>
-                  <span className="bill-status">{bill.status}</span>
+                  <span className="invoice-pill">
+                    {bill.orderIds[0]}{" "}
+                    {bill.orderIds.length > 1
+                      ? `(+${bill.orderIds.length - 1})`
+                      : ""}
+                  </span>
+                  <span
+                    className={`bill-status ${bill.kitchenStatus.toLowerCase()}`}
+                  >
+                    {bill.kitchenStatus}
+                  </span>
                 </div>
 
                 <div className="table-focus">
-                  <span className="table-icon"><Table2 size={22} /></span>
+                  <span className="table-icon">
+                    <Table2 size={22} />
+                  </span>
                   <div>
                     <h2>{bill.table}</h2>
                     <p>{bill.section} section</p>
@@ -214,8 +409,12 @@ export default function PendingBillsPage() {
                 </div>
 
                 <div className="bill-meta-grid">
-                  <span><User size={14} /> {bill.customer}</span>
-                  <span><Clock size={14} /> {bill.time}</span>
+                  <span>
+                    <User size={14} /> {bill.customer}
+                  </span>
+                  <span>
+                    <Clock size={14} /> {bill.time}
+                  </span>
                   <span>{bill.guests} guests</span>
                   <span>Server {bill.server}</span>
                 </div>
@@ -241,23 +440,42 @@ export default function PendingBillsPage() {
         )}
 
         {selectedInvoice && (
-          <div className="checkout-popout-backdrop" onClick={() => setSelectedInvoiceId(null)}>
-            <div className="billing-checkout-pane" onClick={(event) => event.stopPropagation()}>
+          <div
+            className="checkout-popout-backdrop"
+            onClick={() => setSelectedInvoiceId(null)}
+          >
+            <div
+              className="billing-checkout-pane"
+              onClick={(event) => event.stopPropagation()}
+            >
               <div className="pane-header">
                 <div>
                   <span className="checkout-kicker">Restaurant checkout</span>
                   <h2>{selectedInvoice.table}</h2>
-                  <p>{selectedInvoice.id} - {selectedInvoice.customer}</p>
+                  <p>
+                    {selectedInvoice.orderIds.join(", ")} -{" "}
+                    {selectedInvoice.customer}
+                  </p>
                 </div>
-                <button className="close-pane-icon" type="button" onClick={() => setSelectedInvoiceId(null)}>
+                <button
+                  className="close-pane-icon"
+                  type="button"
+                  onClick={() => setSelectedInvoiceId(null)}
+                >
                   <X size={18} />
                 </button>
               </div>
 
               <div className="checkout-info-strip">
-                <span>Date <strong>{selectedInvoice.date}</strong></span>
-                <span>Time <strong>{selectedInvoice.time}</strong></span>
-                <span>Guests <strong>{selectedInvoice.guests}</strong></span>
+                <span>
+                  Date <strong>{selectedInvoice.date}</strong>
+                </span>
+                <span>
+                  Time <strong>{selectedInvoice.time}</strong>
+                </span>
+                <span>
+                  Guests <strong>{selectedInvoice.guests}</strong>
+                </span>
               </div>
 
               <div className="pane-table-box">
@@ -274,10 +492,18 @@ export default function PendingBillsPage() {
                       <tr key={item.name}>
                         <td>
                           <strong>{item.name}</strong>
-                          <span>Rs. {item.price} each - {item.station}</span>
+                          <span>
+                            Rs. {item.price || 0} each{" "}
+                            {item.station ? `- ${item.station}` : ""}
+                          </span>
                         </td>
                         <td>{item.qty}</td>
-                        <td>Rs. {(item.qty * item.price).toLocaleString()}</td>
+                        <td>
+                          Rs.{" "}
+                          {(
+                            item.qty * (parseFloat(item.price) || 0)
+                          ).toLocaleString()}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -332,43 +558,364 @@ export default function PendingBillsPage() {
                   min="0"
                   max={discountType === "percentage" ? 100 : subtotal}
                   value={discountValue || ""}
-                  onChange={(event) => setDiscountValue(parseFloat(event.target.value) || 0)}
-                  placeholder={discountType === "percentage" ? "Percentage reduction" : "Flat discount amount"}
+                  onChange={(event) =>
+                    setDiscountValue(
+                      event.target.value === ""
+                        ? 0
+                        : parseFloat(event.target.value)
+                    )
+                  }
+                  placeholder={
+                    discountType === "percentage"
+                      ? "Percentage reduction"
+                      : "Flat discount amount"
+                  }
+                  className="discount-input"
+                />
+              </div>
+
+              <div className="checkout-section" style={{ marginTop: "1rem" }}>
+                <h3>Service Charge</h3>
+                <input
+                  type="number"
+                  min="0"
+                  value={serviceCharge === 0 ? "" : serviceCharge}
+                  onChange={(event) =>
+                    setServiceCharge(
+                      event.target.value === ""
+                        ? 0
+                        : parseFloat(event.target.value)
+                    )
+                  }
+                  placeholder="Service charge amount"
                   className="discount-input"
                 />
               </div>
 
               <div className="checkout-summary">
-                <div><span>Subtotal</span><strong>Rs. {subtotal.toLocaleString()}</strong></div>
-                <div className="discount-row"><span>Discount</span><strong>- Rs. {discountAmount.toFixed(2)}</strong></div>
-                <div><span>VAT (13%)</span><strong>Rs. {vat.toFixed(2)}</strong></div>
-                <div><span>Service Charge</span><strong>Rs. {serviceCharge}</strong></div>
-                <div className="grand-total"><span>Grand Total</span><strong>Rs. {total.toFixed(2)}</strong></div>
+                <div>
+                  <span>Subtotal (Excl. VAT)</span>
+                  <strong>
+                    Rs.{" "}
+                    {(subtotal / 1.13).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </strong>
+                </div>
+                <div>
+                  <span>VAT (13%)</span>
+                  <strong>
+                    Rs.{" "}
+                    {(subtotal - subtotal / 1.13).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </strong>
+                </div>
+                <div className="discount-row">
+                  <span>Discount</span>
+                  <strong>- Rs. {discountAmount.toFixed(2)}</strong>
+                </div>
+                <div>
+                  <span>Service Charge</span>
+                  <strong>Rs. {safeServiceCharge.toFixed(2)}</strong>
+                </div>
+                <div className="grand-total">
+                  <span>Grand Total</span>
+                  <strong>Rs. {total.toFixed(2)}</strong>
+                </div>
               </div>
 
-              <button 
-                className="complete-payment-btn-modern" 
-                type="button"
-                onClick={() => {
-                  // 1. Free up the table globally if it was a dine-in order
-                  const match = selectedInvoice.table.match(/\d+/);
-                  if (match) {
-                    updateTableStatus(parseInt(match[0]), "Available", "No Customer");
-                  }
-                  
-                  // 2. Mark the order as completed to remove it from Pending Bills
-                  completeOrder(selectedInvoice.id); // Triggers global context update
-                  setSelectedInvoiceId(null); // Closes the modal
-                  alert(`Payment of Rs. ${total.toFixed(2)} completed! Table is now free.`);
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  width: "100%",
+                  marginTop: "16px",
+                  flexWrap: "wrap",
                 }}
               >
-                <CheckCircle size={16} />
-                Complete Payment
-              </button>
+                <button
+                  style={{
+                    flex: "1 1 calc(50% - 6px)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    padding: "14px 20px",
+                    backgroundColor: "#fff1f2",
+                    border: "1px solid #ffe4e6",
+                    borderRadius: "12px",
+                    color: "#e11d48",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                  type="button"
+                  onClick={handleCancelBill}
+                  title="Cancel and Void Bill"
+                >
+                  <XCircle size={18} /> Cancel Bill
+                </button>
+                <button
+                  style={{
+                    flex: "1 1 calc(50% - 6px)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    padding: "14px 20px",
+                    backgroundColor: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "12px",
+                    color: "#475569",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                  type="button"
+                  onClick={() => window.print()}
+                  title="Print Receipt"
+                >
+                  <Printer size={18} /> Print
+                </button>
+                <button
+                  className="complete-payment-btn-modern"
+                  style={{ flex: "1 1 100%", margin: 0 }}
+                  type="button"
+                  onClick={() => setIsPaymentSuccess(true)}
+                >
+                  <CheckCircle size={16} />
+                  Complete Checkout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUCCESS / PRINT MODAL */}
+        {isPaymentSuccess && selectedInvoice && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[70] flex justify-center items-center p-4 transition-opacity print-modal-hide">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-slide-in">
+              <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={28} className="text-emerald-500" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900 mb-2">
+                Payment Completed!
+              </h2>
+              <p className="text-sm text-slate-500 font-medium mb-6">
+                Payment of <strong>Rs. {total.toFixed(2)}</strong> received
+                successfully. The table is now free. Would you like to print the
+                receipt?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleFinalizePayment(false)}
+                  className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition"
+                >
+                  No, Thanks
+                </button>
+                <button
+                  onClick={() => handleFinalizePayment(true)}
+                  className="flex-1 bg-emerald-500 text-white font-bold py-3 rounded-xl hover:bg-emerald-600 shadow-md shadow-emerald-200 transition flex justify-center items-center gap-2"
+                >
+                  <Printer size={18} /> Print Receipt
+                </button>
+              </div>
             </div>
           </div>
         )}
       </main>
+
+      {/* DEDICATED PRINTABLE RECEIPT LAYOUT */}
+      {selectedInvoice && (
+        <div id="printable-receipt">
+          <div style={{ textAlign: "center", marginBottom: "15px" }}>
+            <h2 style={{ fontSize: "20px", margin: "0 0 5px 0" }}>
+              ASLENIX RESTAURANT
+            </h2>
+            <p style={{ margin: "2px 0" }}>Kathmandu, Nepal</p>
+            <p style={{ margin: "2px 0" }}>Tel: +977 9812345678</p>
+          </div>
+
+          <div
+            style={{
+              borderBottom: "1px dashed #000",
+              paddingBottom: "10px",
+              marginBottom: "10px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Bill No:</span>{" "}
+              <span>{selectedInvoice.orderIds.join(", ")}</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Date:</span>{" "}
+              <span>
+                {selectedInvoice.date} {selectedInvoice.time}
+              </span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Table:</span> <span>{selectedInvoice.table}</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Customer:</span> <span>{selectedInvoice.customer}</span>
+            </div>
+          </div>
+
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              marginTop: "10px",
+              marginBottom: "10px",
+              borderBottom: "1px dashed #000",
+              paddingBottom: "10px",
+            }}
+          >
+            <thead>
+              <tr>
+                <th
+                  style={{
+                    textAlign: "left",
+                    borderBottom: "1px dashed #000",
+                    paddingBottom: "5px",
+                  }}
+                >
+                  Item
+                </th>
+                <th
+                  style={{
+                    textAlign: "center",
+                    borderBottom: "1px dashed #000",
+                    paddingBottom: "5px",
+                  }}
+                >
+                  Qty
+                </th>
+                <th
+                  style={{
+                    textAlign: "right",
+                    borderBottom: "1px dashed #000",
+                    paddingBottom: "5px",
+                  }}
+                >
+                  Amount
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedInvoice.items.map((item, idx) => (
+                <tr key={idx}>
+                  <td style={{ padding: "5px 0" }}>{item.name}</td>
+                  <td style={{ textAlign: "center", padding: "5px 0" }}>
+                    {item.qty}
+                  </td>
+                  <td style={{ textAlign: "right", padding: "5px 0" }}>
+                    Rs. {(item.qty * (parseFloat(item.price) || 0)).toFixed(2)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "5px",
+            }}
+          >
+            <span>Subtotal (Excl. VAT):</span>{" "}
+            <span>Rs. {(subtotal / 1.13).toFixed(2)}</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "5px",
+            }}
+          >
+            <span>VAT (13%):</span>{" "}
+            <span>Rs. {(subtotal - subtotal / 1.13).toFixed(2)}</span>
+          </div>
+          {discountAmount > 0 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Discount:</span>{" "}
+              <span>- Rs. {discountAmount.toFixed(2)}</span>
+            </div>
+          )}
+          {serviceCharge > 0 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Service Charge:</span>{" "}
+              <span>Rs. {serviceCharge.toFixed(2)}</span>
+            </div>
+          )}
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontWeight: "bold",
+              fontSize: "16px",
+              marginTop: "10px",
+              borderTop: "1px dashed #000",
+              paddingTop: "10px",
+            }}
+          >
+            <span>GRAND TOTAL:</span>
+            <span>Rs. {total.toFixed(2)}</span>
+          </div>
+
+          <div
+            style={{
+              textAlign: "center",
+              marginTop: "20px",
+              fontWeight: "bold",
+            }}
+          >
+            <p>Thank you for your visit!</p>
+            <p>Please come again.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

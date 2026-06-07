@@ -6,9 +6,7 @@ const InvoicePrinting = () => {
       <div className="page-header">
         <h1>Invoice Printing</h1>
 
-        <p>
-          Generate and print invoices
-        </p>
+        <p>Generate and print invoices</p>
       </div>
 
       <div className="invoice-card">
@@ -19,7 +17,7 @@ const InvoicePrinting = () => {
 
           <p>Table: 4</p>
 
-          <p>Date: 2026-05-25</p>
+          <p>Date: {new Date().toISOString().split("T")[0]}</p>
         </div>
 
         <div className="invoice-items">
@@ -42,9 +40,7 @@ const InvoicePrinting = () => {
           <h2>Rs. 1,750</h2>
         </div>
 
-        <button className="print-btn">
-          🖨️ Print Invoice
-        </button>
+        <button className="print-btn">🖨️ Print Invoice</button>
       </div>
     </div>
   );

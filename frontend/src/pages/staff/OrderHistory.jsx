@@ -14,70 +14,48 @@ import {
   XCircle,
 } from "lucide-react";
 import "../../styles/history.css";
-
-const initialOrders = [
-  {
-    id: "#1021",
-    table: "Table 4",
-    amount: 2400,
-    status: "Completed",
-    customer: "John Doe",
-    customerType: "Regular Customer",
-    itemsCount: 4,
-    time: "7:30 PM",
-    date: "2026-06-01",
-    paymentMethod: "UPI / QR",
-    server: "Asha",
-    breakdown: [
-      { name: "Chicken Burger", qty: 2, price: 600 },
-      { name: "French Fries", qty: 1, price: 400 },
-      { name: "Cold Coffee", qty: 1, price: 800 },
-    ],
-  },
-  {
-    id: "#1022",
-    table: "Table 2",
-    amount: 1800,
-    status: "Cancelled",
-    customer: "Emily Smith",
-    customerType: "New Customer",
-    itemsCount: 2,
-    time: "8:00 PM",
-    date: "2026-06-01",
-    paymentMethod: "N/A",
-    server: "Nirmal",
-    breakdown: [{ name: "Chowmein", qty: 2, price: 900 }],
-  },
-  {
-    id: "#1023",
-    table: "Table 7",
-    amount: 3200,
-    status: "Completed",
-    customer: "Michael Lee",
-    customerType: "VIP Guest",
-    itemsCount: 5,
-    time: "9:15 PM",
-    date: "2026-05-31",
-    paymentMethod: "Credit Card",
-    server: "Maya",
-    breakdown: [
-      { name: "Pepperoni Pizza", qty: 1, price: 1400 },
-      { name: "Chicken Momo", qty: 2, price: 1000 },
-      { name: "Cold Coffee", qty: 2, price: 800 },
-    ],
-  },
-];
+import { useOrders } from "../../context/OrderContext";
 
 const filters = ["All", "Completed", "Cancelled"];
 
 const avatarColors = ["blue", "violet", "green"];
 
 const History = () => {
-  const [ordersList] = useState(initialOrders);
+  const { orders = [] } = useOrders();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("All");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
+
+  const ordersList = useMemo(() => {
+    return orders
+      .filter((o) => o.status === "Completed" || o.status === "Cancelled")
+      .map((o) => {
+        const subtotal = (o.items || []).reduce(
+          (sum, i) => sum + i.qty * (parseFloat(i.price) || 0),
+          0
+        );
+        const amount =
+          o.amount !== undefined
+            ? o.amount
+            : subtotal + (subtotal > 0 ? 50 : 0);
+        return {
+          id: o.id,
+          table: o.table || "Walk-in",
+          amount: amount,
+          status: o.status,
+          customer: o.customer || "Guest",
+          customerType: "Customer",
+          itemsCount: (o.items || []).reduce((sum, i) => sum + i.qty, 0),
+          time: o.time || "N/A",
+          date: o.date || new Date().toLocaleDateString(),
+          paymentMethod: o.paymentMethod || "Cash",
+          server: o.server || "System",
+          breakdown: o.items || [],
+        };
+      })
+      .reverse();
+  }, [orders]);
 
   const filteredOrders = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -96,9 +74,16 @@ const History = () => {
   }, [activeTab, ordersList, searchTerm]);
 
   const stats = useMemo(() => {
-    const completedOrders = ordersList.filter((order) => order.status === "Completed");
-    const cancelledOrders = ordersList.filter((order) => order.status === "Cancelled");
-    const totalSales = completedOrders.reduce((sum, order) => sum + order.amount, 0);
+    const completedOrders = ordersList.filter(
+      (order) => order.status === "Completed"
+    );
+    const cancelledOrders = ordersList.filter(
+      (order) => order.status === "Cancelled"
+    );
+    const totalSales = completedOrders.reduce(
+      (sum, order) => sum + order.amount,
+      0
+    );
 
     return {
       totalSales,
@@ -121,7 +106,10 @@ const History = () => {
             Staff Order Ledger
           </span>
           <h1>Order History</h1>
-          <p>Track completed and cancelled restaurant orders with receipt-level detail.</p>
+          <p>
+            Track completed and cancelled restaurant orders with receipt-level
+            detail.
+          </p>
         </div>
 
         <button
@@ -137,21 +125,33 @@ const History = () => {
 
       <section className="history-summary-cards">
         <div className="summary-card dark">
-          <span className="card-icon"><Wallet size={23} /></span>
+          <span className="card-icon">
+            <Wallet size={23} />
+          </span>
           <div>
-            <h3>Rs. {stats.totalSales.toLocaleString()}</h3>
+            <h3>
+              Rs.{" "}
+              {stats.totalSales.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </h3>
             <p>Total Revenue Processed</p>
           </div>
         </div>
         <div className="summary-card">
-          <span className="card-icon green"><CheckCircle2 size={23} /></span>
+          <span className="card-icon green">
+            <CheckCircle2 size={23} />
+          </span>
           <div>
             <h3>{stats.completedCount} Orders</h3>
             <p>Completed Manifests</p>
           </div>
         </div>
         <div className="summary-card">
-          <span className="card-icon red"><XCircle size={23} /></span>
+          <span className="card-icon red">
+            <XCircle size={23} />
+          </span>
           <div>
             <h3>{stats.cancelledCount} Orders</h3>
             <p>Cancelled Invoices</p>
@@ -211,7 +211,11 @@ const History = () => {
                   <td className="order-id">{order.id}</td>
                   <td>
                     <div className="customer-box">
-                      <div className={`customer-avatar ${avatarColors[index % avatarColors.length]}`}>
+                      <div
+                        className={`customer-avatar ${
+                          avatarColors[index % avatarColors.length]
+                        }`}
+                      >
                         {order.customer.charAt(0)}
                       </div>
                       <div>
@@ -234,15 +238,31 @@ const History = () => {
                     </span>
                     <small>{order.time}</small>
                   </td>
-                  <td className="amount">Rs. {order.amount.toLocaleString()}</td>
+                  <td className="amount">
+                    Rs.{" "}
+                    {order.amount.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </td>
                   <td>
-                    <span className={`status-badge-history ${order.status.toLowerCase()}`}>
-                      {order.status === "Completed" ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
+                    <span
+                      className={`status-badge-history ${order.status.toLowerCase()}`}
+                    >
+                      {order.status === "Completed" ? (
+                        <CheckCircle2 size={14} />
+                      ) : (
+                        <XCircle size={14} />
+                      )}
                       {order.status}
                     </span>
                   </td>
                   <td>
-                    <button className="action-inspect-btn" onClick={() => setSelectedOrder(order)} type="button">
+                    <button
+                      className="action-inspect-btn"
+                      onClick={() => setSelectedOrder(order)}
+                      type="button"
+                    >
                       <Eye size={14} />
                       Receipt
                     </button>
@@ -256,30 +276,57 @@ const History = () => {
 
       {selectedOrder && (
         <div className="modal-overlay" onClick={() => setSelectedOrder(null)}>
-          <div className="invoice-modal" onClick={(event) => event.stopPropagation()}>
+          <div
+            className="invoice-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="invoice-header">
               <div>
                 <span className="invoice-kicker">Receipt Preview</span>
                 <h2>Invoice Manifest</h2>
-                <p>{selectedOrder.id} - {selectedOrder.date}</p>
+                <p>
+                  {selectedOrder.id} - {selectedOrder.date}
+                </p>
               </div>
-              <button className="close-x-btn" onClick={() => setSelectedOrder(null)} type="button">
+              <button
+                className="close-x-btn"
+                onClick={() => setSelectedOrder(null)}
+                type="button"
+              >
                 <X size={18} />
               </button>
             </div>
 
             <div className="invoice-meta-grid">
-              <p><User size={14} /><span>Customer</span><strong>{selectedOrder.customer}</strong></p>
-              <p><Table2 size={14} /><span>Table</span><strong>{selectedOrder.table}</strong></p>
-              <p><CalendarDays size={14} /><span>Time</span><strong>{selectedOrder.time}</strong></p>
-              <p><Wallet size={14} /><span>Payment</span><strong>{selectedOrder.paymentMethod}</strong></p>
+              <p>
+                <User size={14} />
+                <span>Customer</span>
+                <strong>{selectedOrder.customer}</strong>
+              </p>
+              <p>
+                <Table2 size={14} />
+                <span>Table</span>
+                <strong>{selectedOrder.table}</strong>
+              </p>
+              <p>
+                <CalendarDays size={14} />
+                <span>Time</span>
+                <strong>{selectedOrder.time}</strong>
+              </p>
+              <p>
+                <Wallet size={14} />
+                <span>Payment</span>
+                <strong>{selectedOrder.paymentMethod}</strong>
+              </p>
             </div>
 
             <h4 className="modal-section-title">Itemized Summary</h4>
             <div className="invoice-items-list">
               {selectedOrder.breakdown.map((item) => (
                 <div key={item.name} className="invoice-item-row">
-                  <span>{item.name} <strong>x{item.qty}</strong></span>
+                  <span>
+                    {item.name} <strong>x{item.qty}</strong>
+                  </span>
                   <span>Rs. {item.price.toLocaleString()}</span>
                 </div>
               ))}
@@ -287,12 +334,24 @@ const History = () => {
 
             <div className="invoice-total-row">
               <h3>Grand Total</h3>
-              <h2>Rs. {selectedOrder.amount.toLocaleString()}</h2>
+              <h2>
+                Rs.{" "}
+                {selectedOrder.amount.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </h2>
             </div>
 
             <div className="invoice-status-footer">
-              <span className={`status-badge-history ${selectedOrder.status.toLowerCase()}`}>
-                {selectedOrder.status === "Completed" ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
+              <span
+                className={`status-badge-history ${selectedOrder.status.toLowerCase()}`}
+              >
+                {selectedOrder.status === "Completed" ? (
+                  <CheckCircle2 size={14} />
+                ) : (
+                  <XCircle size={14} />
+                )}
                 Invoice State: {selectedOrder.status}
               </span>
             </div>

@@ -2,18 +2,65 @@
 
 import React from "react";
 import "../../styles/cashierDashboard.css";
+import { useOrders } from "../../context/OrderContext";
 
 const Dashboard = () => {
+  const { orders = [] } = useOrders() || {};
+
+  const completedSales = orders.filter((order) => order.status === "Completed");
+  const pendingBills = orders.filter((order) => order.status !== "Completed");
+
+  const totalSalesAmount = completedSales.reduce((acc, order) => {
+    const subtotal = (order.items || []).reduce(
+      (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
+      0
+    );
+    return (
+      acc +
+      (order.amount !== undefined
+        ? order.amount
+        : subtotal + (subtotal > 0 ? 50 : 0))
+    );
+  }, 0);
+
+  const pendingBillsAmount = pendingBills.reduce((acc, order) => {
+    const subtotal = (order.items || []).reduce(
+      (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
+      0
+    );
+    return (
+      acc +
+      (order.amount !== undefined
+        ? order.amount
+        : subtotal + (subtotal > 0 ? 50 : 0))
+    );
+  }, 0);
+
+  const totalOrders = orders.length;
+
+  const totalItemsSold = completedSales.reduce((acc, order) => {
+    return acc + (order.items || []).reduce((sum, item) => sum + item.qty, 0);
+  }, 0);
+
+  const avgOrderValue =
+    completedSales.length > 0 ? totalSalesAmount / completedSales.length : 0;
+
   return (
     <div className="cashier-dashboard">
-      
       {/* HEADER */}
       <div className="dashboard-header">
         <div>
           <h1>Dashboard</h1>
           <p>Welcome back! Here's what's happening with your sales today.</p>
         </div>
-        <button className="date-btn">📅 May 15, 2024</button>
+        <button className="date-btn">
+          📅{" "}
+          {new Date().toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}
+        </button>
       </div>
 
       {/* TOP STATS CARDS */}
@@ -22,8 +69,23 @@ const Dashboard = () => {
           <div className="stat-icon-wrapper green-light">💵</div>
           <div className="stat-info">
             <h4>Total Sales</h4>
-            <h2>Rs. 0.00</h2>
-            <span className="trend-text">0% vs yesterday</span>
+            <h2>
+              Rs.{" "}
+              {totalSalesAmount.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </h2>
+            <span className="trend-text">Completed Revenue</span>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon-wrapper orange-light">⏳</div>
+          <div className="stat-info">
+            <h4>Pending Bills</h4>
+            <h2>{pendingBills.length}</h2>
+            <span className="trend-text">Unpaid Orders</span>
           </div>
         </div>
 
@@ -31,17 +93,8 @@ const Dashboard = () => {
           <div className="stat-icon-wrapper blue-light">🛒</div>
           <div className="stat-info">
             <h4>Total Orders</h4>
-            <h2>0</h2>
-            <span className="trend-text">0 vs yesterday</span>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon-wrapper orange-light">📦</div>
-          <div className="stat-info">
-            <h4>Total Items Sold</h4>
-            <h2>0</h2>
-            <span className="trend-text">0% vs yesterday</span>
+            <h2>{totalOrders}</h2>
+            <span className="trend-text">All Orders Today</span>
           </div>
         </div>
 
@@ -49,15 +102,20 @@ const Dashboard = () => {
           <div className="stat-icon-wrapper purple-light">💳</div>
           <div className="stat-info">
             <h4>Average Order Value</h4>
-            <h2>Rs. 0.00</h2>
-            <span className="trend-text">0% vs yesterday</span>
+            <h2>
+              Rs.{" "}
+              {avgOrderValue.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </h2>
+            <span className="trend-text">Based on completed</span>
           </div>
         </div>
       </div>
 
       {/* MIDDLE SECTION: GRAPHICAL OVERVIEWS */}
       <div className="middle-grid">
-        
         {/* SALES OVERVIEW (AREA GRAPH) */}
         <div className="overview-card">
           <div className="card-top">
@@ -71,23 +129,35 @@ const Dashboard = () => {
             <div className="overview-info-list">
               <div className="overview-item">
                 <span className="item-label">💳 Sales Amount</span>
-                <strong className="item-val">Rs. 0.00</strong>
+                <strong className="item-val">
+                  Rs.{" "}
+                  {totalSalesAmount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </strong>
               </div>
               <div className="overview-item">
                 <span className="item-label">🧾 Orders</span>
-                <strong className="item-val">0</strong>
+                <strong className="item-val">{totalOrders}</strong>
               </div>
               <div className="overview-item">
                 <span className="item-label">📦 Items Sold</span>
-                <strong className="item-val">0</strong>
+                <strong className="item-val">{totalItemsSold}</strong>
               </div>
               <div className="overview-item">
                 <span className="item-label">👥 Customers</span>
-                <strong className="item-val">0</strong>
+                <strong className="item-val">{orders.length}</strong>
               </div>
               <div className="overview-item">
-                <span className="item-label">↩ Refunds</span>
-                <strong className="item-val">0</strong>
+                <span className="item-label">⏳ Pending Amount</span>
+                <strong className="item-val">
+                  Rs.{" "}
+                  {pendingBillsAmount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </strong>
               </div>
             </div>
 
@@ -95,7 +165,13 @@ const Dashboard = () => {
             <div className="chart-area-container">
               <svg viewBox="0 0 500 200" className="svg-area-chart">
                 <defs>
-                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    id="chartGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop offset="0%" stopColor="#2563eb" stopOpacity="0.4" />
                     <stop offset="100%" stopColor="#2563eb" stopOpacity="0.0" />
                   </linearGradient>
@@ -130,34 +206,91 @@ const Dashboard = () => {
         <div className="payment-card">
           <h3>Sales by Payment Method</h3>
           <div className="payment-chart-wrapper">
-            
             <div className="donut-chart-container">
-              <svg width="140" height="140" viewBox="0 0 42 42" className="donut-svg">
-                <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#e2e8f0" strokeWidth="4" />
+              <svg
+                width="140"
+                height="140"
+                viewBox="0 0 42 42"
+                className="donut-svg"
+              >
+                <circle
+                  cx="21"
+                  cy="21"
+                  r="15.915"
+                  fill="transparent"
+                  stroke="#e2e8f0"
+                  strokeWidth="4"
+                />
                 {/* Segment: Cash */}
-                <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#10b981" strokeWidth="4" 
-                  strokeDasharray="45 55" strokeDashoffset="25" />
+                <circle
+                  cx="21"
+                  cy="21"
+                  r="15.915"
+                  fill="transparent"
+                  stroke="#10b981"
+                  strokeWidth="4"
+                  strokeDasharray="45 55"
+                  strokeDashoffset="25"
+                />
                 {/* Segment: Card */}
-                <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#3b82f6" strokeWidth="4" 
-                  strokeDasharray="30 70" strokeDashoffset="80" />
+                <circle
+                  cx="21"
+                  cy="21"
+                  r="15.915"
+                  fill="transparent"
+                  stroke="#3b82f6"
+                  strokeWidth="4"
+                  strokeDasharray="30 70"
+                  strokeDashoffset="80"
+                />
                 {/* Segment: eSewa */}
-                <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#22c55e" strokeWidth="4" 
-                  strokeDasharray="15 85" strokeDashoffset="50" />
+                <circle
+                  cx="21"
+                  cy="21"
+                  r="15.915"
+                  fill="transparent"
+                  stroke="#22c55e"
+                  strokeWidth="4"
+                  strokeDasharray="15 85"
+                  strokeDashoffset="50"
+                />
                 {/* Segment: Khalti */}
-                <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#8b5cf6" strokeWidth="4" 
-                  strokeDasharray="10 90" strokeDashoffset="35" />
+                <circle
+                  cx="21"
+                  cy="21"
+                  r="15.915"
+                  fill="transparent"
+                  stroke="#8b5cf6"
+                  strokeWidth="4"
+                  strokeDasharray="10 90"
+                  strokeDashoffset="35"
+                />
               </svg>
               <div className="donut-center-labels">
                 <span className="donut-title">Total</span>
-                <span className="donut-value">Rs. 0</span>
+                <span className="donut-value">
+                  Rs.{" "}
+                  {totalSalesAmount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
               </div>
             </div>
 
             <div className="payment-legend-list">
-              <div className="legend-item"><span className="indicator-dot bg-green"></span> Cash</div>
-              <div className="legend-item"><span className="indicator-dot bg-blue"></span> Card</div>
-              <div className="legend-item"><span className="indicator-dot bg-lightgreen"></span> eSewa</div>
-              <div className="legend-item"><span className="indicator-dot bg-purple"></span> Khalti</div>
+              <div className="legend-item">
+                <span className="indicator-dot bg-green"></span> Cash
+              </div>
+              <div className="legend-item">
+                <span className="indicator-dot bg-blue"></span> Card
+              </div>
+              <div className="legend-item">
+                <span className="indicator-dot bg-lightgreen"></span> eSewa
+              </div>
+              <div className="legend-item">
+                <span className="indicator-dot bg-purple"></span> Khalti
+              </div>
             </div>
           </div>
         </div>
@@ -165,7 +298,6 @@ const Dashboard = () => {
 
       {/* BOTTOM GRID: TABLES & RECENTS */}
       <div className="bottom-grid">
-        
         {/* RECENT TRANSACTIONS TABLE */}
         <div className="transactions-card">
           <div className="card-top">
@@ -178,7 +310,7 @@ const Dashboard = () => {
               <thead>
                 <tr>
                   <th>Order ID</th>
-                  <th>Customer</th>
+                  <th>Table / Customer</th>
                   <th>Items</th>
                   <th>Amount</th>
                   <th>Payment Method</th>
@@ -187,11 +319,71 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td colSpan="7" style={{ textAlign: "center", padding: "2rem", color: "#94a3b8" }}>
-                    No recent transactions found.
-                  </td>
-                </tr>
+                {orders.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="7"
+                      style={{
+                        textAlign: "center",
+                        padding: "2rem",
+                        color: "#94a3b8",
+                      }}
+                    >
+                      No recent transactions found.
+                    </td>
+                  </tr>
+                ) : (
+                  [...orders]
+                    .reverse()
+                    .slice(0, 5)
+                    .map((order) => {
+                      const subtotal = (order.items || []).reduce(
+                        (sum, item) =>
+                          sum + item.qty * (parseFloat(item.price) || 0),
+                        0
+                      );
+                      const total =
+                        order.amount !== undefined
+                          ? order.amount
+                          : subtotal + (subtotal > 0 ? 50 : 0);
+                      const itemCount = (order.items || []).reduce(
+                        (sum, item) => sum + item.qty,
+                        0
+                      );
+                      return (
+                        <tr key={order.id}>
+                          <td>{order.id}</td>
+                          <td>
+                            <div style={{ fontWeight: 600, color: "#1e293b" }}>
+                              {order.table || "Walk-in"}
+                            </div>
+                            <div style={{ fontSize: "12px", color: "#64748b" }}>
+                              {order.customer || order.server || "Guest"}
+                            </div>
+                          </td>
+                          <td>{itemCount}</td>
+                          <td>
+                            Rs.{" "}
+                            {total.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </td>
+                          <td>{order.paymentMethod || "Cash"}</td>
+                          <td>
+                            <span
+                              className={`status-badge ${order.status
+                                .toLowerCase()
+                                .replace(" ", "-")}`}
+                            >
+                              {order.status}
+                            </span>
+                          </td>
+                          <td>{order.time || "N/A"}</td>
+                        </tr>
+                      );
+                    })
+                )}
               </tbody>
             </table>
           </div>
@@ -205,17 +397,70 @@ const Dashboard = () => {
           </div>
 
           <div className="sales-items-vertical-stack">
-            <div style={{ textAlign: "center", padding: "2rem", color: "#94a3b8" }}>
-              No recent sales.
-            </div>
+            {completedSales.length === 0 ? (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "2rem",
+                  color: "#94a3b8",
+                }}
+              >
+                No recent sales.
+              </div>
+            ) : (
+              [...completedSales]
+                .reverse()
+                .slice(0, 5)
+                .map((order) => {
+                  const subtotal = (order.items || []).reduce(
+                    (sum, item) =>
+                      sum + item.qty * (parseFloat(item.price) || 0),
+                    0
+                  );
+                  const total =
+                    order.amount !== undefined
+                      ? order.amount
+                      : subtotal + (subtotal > 0 ? 50 : 0);
+                  return (
+                    <div
+                      key={order.id}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        padding: "1rem",
+                        borderBottom: "1px solid #f1f5f9",
+                      }}
+                    >
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <strong style={{ color: "#0f172a" }}>{order.id}</strong>
+                        <span style={{ fontSize: "12px", color: "#64748b" }}>
+                          {order.time}
+                        </span>
+                      </div>
+                      <strong style={{ color: "#0f172a" }}>
+                        Rs.{" "}
+                        {total.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </strong>
+                    </div>
+                  );
+                })
+            )}
           </div>
 
           <div className="summary-total-footer-strip">
-            <span>Total (0 Items)</span>
-            <strong>Rs. 0.00</strong>
+            <span>Total ({totalItemsSold} Items)</span>
+            <strong>
+              Rs.{" "}
+              {totalSalesAmount.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </strong>
           </div>
         </div>
-
       </div>
     </div>
   );

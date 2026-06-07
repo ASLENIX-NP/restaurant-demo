@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import {
   AlarmClock,
   Bell,
@@ -43,6 +43,25 @@ const Dashboard = () => {
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { orders, startCooking, markReady } = useOrders();
+  const prevOrdersRef = useRef(orders);
+
+  // Play notification sound when a new incoming order is detected
+  useEffect(() => {
+    const newOrder = orders.find(
+      (order) =>
+        order.status === "Pending" &&
+        !prevOrdersRef.current.find((o) => o.id === order.id)
+    );
+
+    if (newOrder && !isAudioMuted) {
+      const audio = new Audio(
+        "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
+      );
+      audio.play().catch((err) => console.log("Audio play prevented:", err));
+    }
+
+    prevOrdersRef.current = orders;
+  }, [orders, isAudioMuted]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -73,7 +92,9 @@ const Dashboard = () => {
       });
 
     return {
-      totalActive: orders.length,
+      totalActive: orders.filter(
+        (o) => o.status !== "Completed" && o.status !== "Served"
+      ).length,
       pending,
       cooking,
       ready,
@@ -85,6 +106,9 @@ const Dashboard = () => {
   const filteredOrders = useMemo(() => {
     return orders
       .filter((order) => {
+        if (order.status === "Completed" || order.status === "Served")
+          return false;
+
         const stationMatches =
           activeStation === "All Stations" ||
           order.station === activeStation ||
@@ -122,7 +146,13 @@ const Dashboard = () => {
           <span className="live-dot" />
           <div>
             <span>System Active</span>
-            <strong>June 2, 2026</strong>
+            <strong>
+              {new Date().toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </strong>
           </div>
         </div>
       </header>
