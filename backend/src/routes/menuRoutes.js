@@ -1,22 +1,30 @@
 const express = require("express");
 const router = express.Router();
-const {
-  createMenuItem,
-  getMenuItems,
-  getMenuItemById,
-  updateMenuItem,
-  deleteMenuItem,
-} = require("../controllers/menuController");
-
+const menuController = require("../controllers/menuController");
 const { protect, authorize } = require("../middleware/authMiddleware");
 
-router.route("/")
-  .post(protect, authorize("Admin", "Cashier"), createMenuItem)
-  .get(getMenuItems);
+// Public route to view the menu
+router.get("/", menuController.getMenuItems);
 
-router.route("/:id")
-  .get(getMenuItemById)
-  .put(protect, authorize("Admin", "Cashier"), updateMenuItem)
-  .delete(protect, authorize("Admin", "Cashier"), deleteMenuItem);
+// Protected routes for Admin/Cashier
+router.post(
+  "/",
+  protect,
+  authorize("Admin", "Cashier"),
+  menuController.createMenuItem
+);
+
+router.put(
+  "/:id",
+  protect,
+  authorize("Admin", "Cashier"),
+  menuController.updateMenuItem
+);
+router.delete(
+  "/:id",
+  protect,
+  authorize("Admin", "Cashier"),
+  menuController.deleteMenuItem
+);
 
 module.exports = router;

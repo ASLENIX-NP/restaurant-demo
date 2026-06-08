@@ -1,110 +1,79 @@
 const MenuItem = require("../models/MenuItem");
 
+// @desc    Get all menu items
+// @route   GET /api/menu
+// @access  Public
+exports.getMenuItems = async (req, res) => {
+  try {
+    const items = await MenuItem.find({});
+    res.status(200).json(items);
+  } catch (error) {
+    console.error("Error fetching menu items:", error);
+    res.status(500).json({ message: "Server error fetching menu items" });
+  }
+};
+
 // @desc    Create a new menu item
 // @route   POST /api/menu
-// @access  Private/Admin
-const createMenuItem = async (req, res) => {
+// @access  Private (Admin/Cashier)
+exports.createMenuItem = async (req, res) => {
   try {
     const { name, description, price, category, isAvailable, image } = req.body;
 
     if (!name || !price || !category) {
-      return res.status(400).json({ message: "Please provide required fields: name, price, category" });
+      return res
+        .status(400)
+        .json({ message: "Name, price, and category are required" });
     }
 
     const menuItem = new MenuItem({
       name,
-      description,
+      description: description || "Delicious food item",
       price,
       category,
       isAvailable: isAvailable !== undefined ? isAvailable : true,
       image: image || "",
     });
 
-    const createdMenuItem = await menuItem.save();
-    res.status(201).json(createdMenuItem);
+    const createdItem = await menuItem.save();
+    res.status(201).json(createdItem);
   } catch (error) {
-    res.status(500).json({ message: error.message || "Server Error" });
-  }
-};
-
-// @desc    Get all menu items
-// @route   GET /api/menu
-// @access  Public
-const getMenuItems = async (req, res) => {
-  try {
-    const menuItems = await MenuItem.find({});
-    res.json(menuItems);
-  } catch (error) {
-    res.status(500).json({ message: error.message || "Server Error" });
-  }
-};
-
-// @desc    Get menu item by ID
-// @route   GET /api/menu/:id
-// @access  Public
-const getMenuItemById = async (req, res) => {
-  try {
-    const menuItem = await MenuItem.findById(req.params.id);
-    
-    if (menuItem) {
-      res.json(menuItem);
-    } else {
-      res.status(404).json({ message: "Menu item not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message || "Server Error" });
+    console.error("Error creating menu item:", error);
+    res.status(500).json({ message: "Server error creating menu item" });
   }
 };
 
 // @desc    Update a menu item
 // @route   PUT /api/menu/:id
-// @access  Private/Admin
-const updateMenuItem = async (req, res) => {
+// @access  Private (Admin/Cashier)
+exports.updateMenuItem = async (req, res) => {
   try {
-    const { name, description, price, category, isAvailable, image } = req.body;
+    const updatedItem = await MenuItem.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
 
-    const menuItem = await MenuItem.findById(req.params.id);
-
-    if (menuItem) {
-      menuItem.name = name || menuItem.name;
-      menuItem.description = description || menuItem.description;
-      menuItem.price = price || menuItem.price;
-      menuItem.category = category || menuItem.category;
-      menuItem.isAvailable = isAvailable !== undefined ? isAvailable : menuItem.isAvailable;
-      menuItem.image = image || menuItem.image;
-
-      const updatedMenuItem = await menuItem.save();
-      res.json(updatedMenuItem);
-    } else {
-      res.status(404).json({ message: "Menu item not found" });
-    }
+    if (!updatedItem)
+      return res.status(404).json({ message: "Menu item not found" });
+    res.status(200).json(updatedItem);
   } catch (error) {
-    res.status(500).json({ message: error.message || "Server Error" });
+    console.error("Error updating menu item:", error);
+    res.status(500).json({ message: "Server error updating menu item" });
   }
 };
 
 // @desc    Delete a menu item
 // @route   DELETE /api/menu/:id
-// @access  Private/Admin
-const deleteMenuItem = async (req, res) => {
+// @access  Private (Admin/Cashier)
+exports.deleteMenuItem = async (req, res) => {
   try {
-    const menuItem = await MenuItem.findById(req.params.id);
-
-    if (menuItem) {
-      await menuItem.deleteOne();
-      res.json({ message: "Menu item removed" });
-    } else {
-      res.status(404).json({ message: "Menu item not found" });
-    }
+    const menuItem = await MenuItem.findByIdAndDelete(req.params.id);
+    if (!menuItem)
+      return res.status(404).json({ message: "Menu item not found" });
+    res.status(200).json({ message: "Menu item successfully removed" });
   } catch (error) {
-    res.status(500).json({ message: error.message || "Server Error" });
+    console.error("Error deleting menu item:", error);
+    res.status(500).json({ message: "Server error deleting menu item" });
   }
-};
-
-module.exports = {
-  createMenuItem,
-  getMenuItems,
-  getMenuItemById,
-  updateMenuItem,
-  deleteMenuItem,
 };

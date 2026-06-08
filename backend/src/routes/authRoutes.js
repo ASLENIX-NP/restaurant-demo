@@ -9,14 +9,29 @@ const { protect, authorize } = require("../middleware/authMiddleware");
 router.post("/login", authController.login);
 
 // @route   POST /api/auth/register
-// @desc    Register a new user (Restricted to Admin)
-// @access  Private
-router.post("/register", protect, authorize("Admin"), authController.register);
+// @desc    Register a new user (Pending approval)
+// @access  Public
+router.post("/register", authController.register);
 
 // @route   GET /api/auth/users
 // @desc    Get all users
 // @access  Private
 router.get("/users", protect, authorize("Admin"), authController.getUsers);
+
+// @route   PUT /api/auth/users/:id/status
+// @desc    Update user status (Approve or Deactivate)
+// @access  Private (Admin only)
+router.put("/users/:id/status", protect, authorize("Admin"), authController.updateUserStatus);
+
+// @route   GET /api/auth/profile
+// @desc    Get current user profile
+// @access  Private (Any logged-in user)
+router.get("/profile", protect, authController.getProfile);
+
+// @route   PUT /api/auth/profile
+// @desc    Update user profile and password
+// @access  Private (Any logged-in user)
+router.put("/profile", protect, authController.updateProfile);
 
 // --- TEST ROUTES FOR MIDDLEWARE ---
 
