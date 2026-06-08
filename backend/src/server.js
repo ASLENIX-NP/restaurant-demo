@@ -16,6 +16,8 @@ app.use(express.json()); // Allows the server to accept JSON data in request bod
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/menu", require("./routes/menuRoutes"));
+app.use("/api/tables", require("./routes/tableRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
 
 // Basic Health Check Route to verify it's working
 app.get("/api/health", (req, res) => {
