@@ -113,10 +113,10 @@ const Invoices = () => {
 
   const handlePrint = (invoice) => {
     setActiveDropdownId(null);
-    alert(
-      `Initializing print queue layout configuration window for: ${invoice.id}`
-    );
-    window.print();
+    setSelectedInvoice(invoice);
+    setTimeout(() => {
+      window.print();
+    }, 100);
   };
 
   const handleUpdateStatus = (id, newStatus) => {
@@ -147,6 +147,55 @@ const Invoices = () => {
 
   return (
     <div className="invoices-page">
+      {/* PRINT-ONLY STYLES FOR THERMAL PRINTER */}
+      <style>
+        {`
+        @media print {
+          @page { margin: 0; size: 80mm auto; }
+          html, body {
+            width: 80mm;
+            background: #fff;
+            margin: 0;
+            padding: 0;
+          }
+          body * {
+            visibility: hidden;
+          }
+          /* Completely collapse layout structures that stretch the page width */
+          .sidebar, .navbar, header, footer, .invoices-page > *:not(#printable-invoice-container) {
+            display: none !important;
+          }
+          .invoices-page {
+            padding: 0 !important;
+            margin: 0 !important;
+            min-height: 0 !important;
+            min-width: 0 !important;
+            background: transparent !important;
+          }
+          #printable-invoice-container, #printable-invoice-container * {
+            visibility: visible;
+          }
+          #printable-invoice-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 80mm;
+            margin: 0;
+            padding: 5mm;
+            font-family: 'Courier New', monospace;
+            color: #000;
+            font-size: 12px;
+            background: #fff;
+          }
+        }
+        @media screen {
+          #printable-invoice-container {
+            display: none;
+          }
+        }
+        `}
+      </style>
+
       {/* Header Layout */}
       <div className="invoice-top">
         <div>
@@ -516,6 +565,146 @@ const Invoices = () => {
                 <Printer size={16} /> Send to Printer Queue
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* DEDICATED PRINTABLE INVOICE RECEIPT */}
+      {selectedInvoice && (
+        <div id="printable-invoice-container">
+          <div style={{ textAlign: "center", marginBottom: "15px" }}>
+            <h2 style={{ fontSize: "18px", margin: "0 0 5px 0" }}>
+              ASLENIX RESTAURANT
+            </h2>
+            <p style={{ margin: "2px 0" }}>Kathmandu, Nepal</p>
+            <p style={{ margin: "2px 0" }}>Tel: +977 9812345678</p>
+          </div>
+
+          <div
+            style={{
+              borderBottom: "1px dashed #000",
+              paddingBottom: "10px",
+              marginBottom: "10px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Bill No:</span> <span>{selectedInvoice.id}</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Date:</span> <span>{selectedInvoice.date}</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Customer:</span> <span>{selectedInvoice.customer}</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Method:</span> <span>{selectedInvoice.method}</span>
+            </div>
+          </div>
+
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              marginTop: "10px",
+              marginBottom: "10px",
+              borderBottom: "1px dashed #000",
+              paddingBottom: "10px",
+            }}
+          >
+            <thead>
+              <tr>
+                <th
+                  style={{
+                    textAlign: "left",
+                    borderBottom: "1px dashed #000",
+                    paddingBottom: "5px",
+                  }}
+                >
+                  Item
+                </th>
+                <th
+                  style={{
+                    textAlign: "center",
+                    borderBottom: "1px dashed #000",
+                    paddingBottom: "5px",
+                  }}
+                >
+                  Qty
+                </th>
+                <th
+                  style={{
+                    textAlign: "right",
+                    borderBottom: "1px dashed #000",
+                    paddingBottom: "5px",
+                  }}
+                >
+                  Amount
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedInvoice.items?.map((item, idx) => (
+                <tr key={idx}>
+                  <td style={{ padding: "5px 0" }}>{item.name}</td>
+                  <td style={{ textAlign: "center", padding: "5px 0" }}>
+                    {item.qty}
+                  </td>
+                  <td style={{ textAlign: "right", padding: "5px 0" }}>
+                    Rs. {(item.qty * (parseFloat(item.price) || 0)).toFixed(2)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontWeight: "bold",
+              fontSize: "14px",
+              marginTop: "10px",
+              borderTop: "1px dashed #000",
+              paddingTop: "10px",
+            }}
+          >
+            <span>GRAND TOTAL:</span>
+            <span>{selectedInvoice.amount}</span>
+          </div>
+
+          <div
+            style={{
+              textAlign: "center",
+              marginTop: "20px",
+              fontWeight: "bold",
+            }}
+          >
+            <p>Thank you for your visit!</p>
+            <p>Please come again.</p>
           </div>
         </div>
       )}

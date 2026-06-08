@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "../pages/auth/Login";
 import ProtectedRoute from "./ProtectedRoute";
+import CustomerMenu from "../pages/CustomerMenu";
 
 // ================= CONTEXT =================
 import { TableProvider } from "../context/TableContext";
@@ -52,6 +53,9 @@ const AppRoutes = () => {
         <Routes>
           {/* LOGIN */}
           <Route path="/" element={<Login />} />
+
+          {/* PUBLIC CUSTOMER MENU */}
+          <Route path="/menu" element={<CustomerMenu />} />
 
           {/* ================= ADMIN ================= */}
           <Route

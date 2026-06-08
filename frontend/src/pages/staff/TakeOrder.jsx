@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Minus,
@@ -12,67 +12,6 @@ import { useOrders } from "../../context/OrderContext";
 import { useAuth } from "../../context/AuthContext";
 import { useTables } from "../../context/TableContext";
 
-const categories = [
-  "All Categories",
-  "Fast Food",
-  "Nepali",
-  "Beverage",
-  "Chinese",
-  "Snacks",
-  "Desserts",
-];
-
-const menuItems = [
-  {
-    id: 1,
-    name: "Chicken Burger",
-    category: "Fast Food",
-    price: 450,
-    image:
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=400&auto=format&fit=crop",
-  },
-  {
-    id: 2,
-    name: "Pepperoni Pizza",
-    category: "Fast Food",
-    price: 900,
-    image:
-      "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=400&auto=format&fit=crop",
-  },
-  {
-    id: 3,
-    name: "Chicken Momo",
-    category: "Nepali",
-    price: 320,
-    image:
-      "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=400&auto=format&fit=crop",
-  },
-  {
-    id: 4,
-    name: "Cold Coffee",
-    category: "Beverage",
-    price: 250,
-    image:
-      "https://images.unsplash.com/photo-1517701550927-30cf4ba1f846?q=80&w=400&auto=format&fit=crop",
-  },
-  {
-    id: 5,
-    name: "Chowmein",
-    category: "Chinese",
-    price: 350,
-    image:
-      "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?q=80&w=400&auto=format&fit=crop",
-  },
-  {
-    id: 6,
-    name: "French Fries",
-    category: "Snacks",
-    price: 200,
-    image:
-      "https://images.unsplash.com/photo-1576107232684-1279f390859f?q=80&w=400&auto=format&fit=crop",
-  },
-];
-
 export default function TakeOrder() {
   const { addOrder } = useOrders();
   const { user } = useAuth();
@@ -80,6 +19,7 @@ export default function TakeOrder() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedTable, setSelectedTable] = useState("All Tables");
   const [cart, setCart] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
 
   const dynamicTables = [
     "All Tables",
@@ -94,6 +34,35 @@ export default function TakeOrder() {
       setTimeout(() => setNotification(null), 4000); // Auto-close success after 4s
     }
   };
+
+  // Load dynamic menu data synced with Admin Menu Management
+  useEffect(() => {
+    const loadProducts = () => {
+      const data = localStorage.getItem("restaurant_menu");
+      if (data) {
+        setMenuItems(
+          JSON.parse(data)
+            .filter((item) => item.isAvailable !== false)
+            .map((item) => ({ ...item, id: item._id || item.id }))
+        );
+      }
+    };
+    loadProducts();
+
+    // Listen for real-time cross-tab updates triggered by Admin
+    const handleStorageChange = (e) => {
+      if (e.key === "restaurant_menu_updated") {
+        loadProducts();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const categories = [
+    "All Categories",
+    ...new Set(menuItems.map((item) => item.category).filter(Boolean)),
+  ];
 
   const filteredItems =
     selectedCategory === "All Categories"
@@ -314,7 +283,10 @@ export default function TakeOrder() {
                       Available
                     </span>
                     <img
-                      src={item.image}
+                      src={
+                        item.image ||
+                        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&q=80"
+                      }
                       alt={item.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
@@ -376,7 +348,10 @@ export default function TakeOrder() {
                 cart.map((item) => (
                   <div className="flex gap-3 items-center group" key={item.id}>
                     <img
-                      src={item.image}
+                      src={
+                        item.image ||
+                        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&q=80"
+                      }
                       alt={item.name}
                       className="w-14 h-14 rounded-xl object-cover border border-slate-100 shadow-sm"
                     />

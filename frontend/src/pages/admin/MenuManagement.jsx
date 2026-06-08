@@ -12,15 +12,10 @@ import {
   Trash2,
   X,
   Image as ImageIcon,
+  Database,
 } from "lucide-react";
 
 import "../../styles/menu.css"; // Kept for any global custom overrides
-import {
-  getProducts,
-  addProduct,
-  deleteProduct,
-  updateProduct,
-} from "../../services/menuService";
 
 const Menu = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -44,16 +39,11 @@ const Menu = () => {
     loadProducts();
   }, []);
 
-  const loadProducts = async () => {
-    try {
-      setLoading(true);
-      const data = await getProducts();
-      setMenuItems(data || []);
-    } catch (error) {
-      console.error("MENU ERROR:", error);
-    } finally {
-      setLoading(false);
-    }
+  const loadProducts = () => {
+    setLoading(true);
+    const data = localStorage.getItem("restaurant_menu");
+    setMenuItems(data ? JSON.parse(data) : []);
+    setLoading(false);
   };
 
   const filteredItems = menuItems.filter((item) =>
@@ -110,54 +100,117 @@ const Menu = () => {
   };
 
   // Actions
-  const handleSaveItem = async (e) => {
+  const handleSaveItem = (e) => {
     e.preventDefault();
     if (!newItem.name || !newItem.category || !newItem.price) {
       alert("Please fill all required fields");
       return;
     }
 
-    try {
-      setSaving(true);
+    setSaving(true);
+    let updatedList = [...menuItems];
 
-      if (isEditing) {
-        const updatedItem = await updateProduct(editId, newItem);
-        setMenuItems(
-          menuItems.map((item) =>
-            item._id === editId || item.id === editId ? updatedItem : item
-          )
-        );
-      } else {
-        const addedItem = await addProduct(newItem);
-        setMenuItems([...menuItems, addedItem]);
-      }
-
-      setIsEditing(false);
-      setEditId(null);
-      setShowAddModal(false);
-    } catch (error) {
-      console.error("Failed to save product", error);
-      alert(
-        error.response?.data?.message ||
-          "Failed to save menu item. Are you authorized?"
+    if (isEditing) {
+      updatedList = updatedList.map((item) =>
+        (item._id || item.id) === editId ? { ...item, ...newItem } : item
       );
-    } finally {
-      setSaving(false);
+    } else {
+      updatedList.push({ ...newItem, id: Date.now().toString() });
+    }
+
+    setMenuItems(updatedList);
+    localStorage.setItem("restaurant_menu", JSON.stringify(updatedList));
+    localStorage.setItem("restaurant_menu_updated", Date.now().toString());
+
+    setIsEditing(false);
+    setEditId(null);
+    setShowAddModal(false);
+    setSaving(false);
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this menu item?")) {
+      const updatedList = menuItems.filter(
+        (item) => (item._id || item.id) !== id
+      );
+      setMenuItems(updatedList);
+      localStorage.setItem("restaurant_menu", JSON.stringify(updatedList));
+      localStorage.setItem("restaurant_menu_updated", Date.now().toString());
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this menu item?")) {
-      try {
-        await deleteProduct(id);
-        setMenuItems(
-          menuItems.filter((item) => item._id !== id && item.id !== id)
-        );
-      } catch (error) {
-        console.error("Failed to delete product", error);
-        alert(error.response?.data?.message || "Failed to delete item.");
-      }
-    }
+  // Seed Initial Diverse Menu Data
+  const handleSeedData = () => {
+    if (!window.confirm("Load sample menu items into the database?")) return;
+
+    setSaving(true);
+    const sampleItems = [
+      {
+        id: "s1",
+        name: "Classic Cheeseburger",
+        category: "Fast Food",
+        price: 450,
+        description: "Juicy beef patty with melted cheddar cheese.",
+        image:
+          "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80",
+        isAvailable: true,
+      },
+      {
+        id: "s2",
+        name: "Pepperoni Pizza",
+        category: "Italian",
+        price: 850,
+        description: "Wood-fired pizza with crispy pepperoni slices.",
+        image:
+          "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&q=80",
+        isAvailable: true,
+      },
+      {
+        id: "s3",
+        name: "Chicken Momo",
+        category: "Nepali",
+        price: 250,
+        description: "Authentic steamed dumplings filled with minced chicken.",
+        image:
+          "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&q=80",
+        isAvailable: true,
+      },
+      {
+        id: "s4",
+        name: "Caesar Salad",
+        category: "Healthy",
+        price: 350,
+        description: "Fresh romaine lettuce tossed in Caesar dressing.",
+        image:
+          "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=400&q=80",
+        isAvailable: true,
+      },
+      {
+        id: "s5",
+        name: "Caramel Macchiato",
+        category: "Beverages",
+        price: 280,
+        description: "Chilled espresso mixed with caramel and milk.",
+        image:
+          "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=400&q=80",
+        isAvailable: true,
+      },
+      {
+        id: "s6",
+        name: "Chocolate Lava Cake",
+        category: "Desserts",
+        price: 320,
+        description: "Warm chocolate cake with a gooey molten center.",
+        image:
+          "https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400&q=80",
+        isAvailable: true,
+      },
+    ];
+
+    setMenuItems(sampleItems);
+    localStorage.setItem("restaurant_menu", JSON.stringify(sampleItems));
+    localStorage.setItem("restaurant_menu_updated", Date.now().toString());
+    setSaving(false);
   };
 
   return (
@@ -174,12 +227,21 @@ const Menu = () => {
               Management
             </p>
           </div>
-          <button
-            onClick={handleOpenAdd}
-            className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
-          >
-            <Plus size={16} /> Add New Item
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSeedData}
+              disabled={saving}
+              className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
+            >
+              <Database size={16} /> Load Samples
+            </button>
+            <button
+              onClick={handleOpenAdd}
+              className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
+            >
+              <Plus size={16} /> Add New Item
+            </button>
+          </div>
         </div>
 
         {/* METRICS & STATS GRID */}

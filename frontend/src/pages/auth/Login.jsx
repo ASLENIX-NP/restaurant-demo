@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import api from "../../services/api";
 import "../../styles/login.css";
 
 const Login = () => {
@@ -13,27 +12,22 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   // LOGIN
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    if (e) e.preventDefault();
     setError("");
     setLoading(true);
-    try {
-      const response = await api.post("/auth/login", { username, password });
-      
-      if (response.data && response.data.success) {
-        const { token, user } = response.data;
-        // Include token and user info together for AuthContext
-        login({ ...user, token });
-        
-        // REDIRECT based on role
-        const roleRoute = user.role ? user.role.toLowerCase() : "staff";
-        navigate(`/${roleRoute}`);
-      }
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || "Invalid username or password");
-    } finally {
-      setLoading(false);
+
+    const result = await login(username, password);
+
+    if (result && result.success) {
+      navigate(`/${result.role}`);
+    } else {
+      setError(
+        result?.message ||
+          "Invalid username or password. Passwords: admin123, chef123, staff123, cashier123"
+      );
     }
+    setLoading(false);
   };
 
   return (
@@ -68,8 +62,11 @@ const Login = () => {
 
         {/* DEMO USERS */}
         <div className="demo-users">
-          <h3>Register via Admin Dashboard to test live login</h3>
-          <p>Requires an initial Admin user in MongoDB.</p>
+          <h3>Local Testing Mode Active</h3>
+          <p>
+            Login with: admin, chef, staff, or cashier (Passwords: admin123,
+            chef123, staff123, cashier123)
+          </p>
         </div>
       </div>
     </div>

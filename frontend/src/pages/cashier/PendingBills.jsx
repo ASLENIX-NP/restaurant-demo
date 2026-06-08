@@ -17,6 +17,7 @@ import {
   User,
   Wallet,
   X,
+  XCircle,
 } from "lucide-react";
 import "../../styles/pendingBills.css";
 import { useOrders } from "../../context/OrderContext";
@@ -32,8 +33,8 @@ const paymentMethods = [
 const filters = ["All", "Pending", "Cooking", "Ready", "Served"];
 
 export default function PendingBillsPage() {
-  const { orders, completeOrder, cancelOrder } = useOrders();
-  const { tables, updateTableStatus } = useTables();
+  const { orders = [], completeOrder, cancelOrder } = useOrders() || {};
+  const { tables = [], updateTableStatus } = useTables() || {};
 
   // Dynamically generate pending bills from live global orders
   const pendingBillsData = useMemo(() => {
@@ -248,16 +249,26 @@ export default function PendingBillsPage() {
       <style>
         {`
         @media print {
+          @page { margin: 0; size: 80mm auto; }
+          html, body {
+            width: 80mm;
+            background: #fff;
+            margin: 0;
+            padding: 0;
+          }
           body * {
             visibility: hidden;
           }
-          /* Hide layout structures that cause extra blank pages */
-          .sidebar, .navbar, .pending-shell, .checkout-popout-backdrop, .print-modal-hide {
+          /* Completely collapse layout structures that stretch the page width */
+          .sidebar, .navbar, header, footer, .pending-shell, .checkout-popout-backdrop, .print-modal-hide {
             display: none !important;
           }
-          html, body {
-            height: auto;
-            margin: 0;
+          .pending-bills-modern {
+            padding: 0 !important;
+            margin: 0 !important;
+            min-height: 0 !important;
+            min-width: 0 !important;
+            background: transparent !important;
           }
           #printable-receipt, #printable-receipt * {
             visibility: visible;
@@ -266,18 +277,56 @@ export default function PendingBillsPage() {
             position: absolute;
             left: 0;
             top: 0;
-            width: 100%;
+            width: 80mm;
             margin: 0;
-            padding: 10px;
-            font-family: 'Courier New', Courier, monospace;
+            padding: 5mm;
+            font-family: 'Courier New', monospace;
             color: #000;
-            font-size: 14px;
+            font-size: 12px;
+            background: #fff;
           }
-          @page { margin: 0; size: auto; }
         }
         @media screen {
           #printable-receipt {
             display: none;
+          }
+
+          /* Checkout Pane UI Enhancements */
+          .billing-checkout-pane {
+            width: 100vw !important;
+            max-width: 580px !important;
+            padding: 2.5rem 2rem !important;
+          }
+          .pane-header h2 {
+            font-size: 1.8rem !important;
+            margin-bottom: 0.25rem !important;
+          }
+          .pane-table-box table {
+            font-size: 15px !important;
+          }
+          .pane-table-box th, .pane-table-box td {
+            padding: 12px 8px !important;
+          }
+          .payment-method-grid button {
+            padding: 16px !important;
+            font-size: 15px !important;
+            gap: 10px !important;
+          }
+          .checkout-summary {
+            font-size: 16px !important;
+            gap: 12px !important;
+          }
+          .grand-total {
+            margin-top: 12px !important;
+            padding-top: 18px !important;
+          }
+          .grand-total strong {
+            font-size: 1.85rem !important;
+          }
+          .discount-input {
+            padding: 16px 18px !important;
+            font-size: 16px !important;
+            border-radius: 12px !important;
           }
         }
         `}
@@ -643,12 +692,13 @@ export default function PendingBillsPage() {
                     alignItems: "center",
                     justifyContent: "center",
                     gap: "8px",
-                    padding: "14px 20px",
+                    padding: "16px 20px",
                     backgroundColor: "#fff1f2",
                     border: "1px solid #ffe4e6",
-                    borderRadius: "12px",
+                    borderRadius: "14px",
                     color: "#e11d48",
                     fontWeight: "bold",
+                    fontSize: "15px",
                     cursor: "pointer",
                     transition: "all 0.2s",
                   }}
@@ -656,7 +706,7 @@ export default function PendingBillsPage() {
                   onClick={handleCancelBill}
                   title="Cancel and Void Bill"
                 >
-                  <XCircle size={18} /> Cancel Bill
+                  <XCircle size={20} /> Cancel Bill
                 </button>
                 <button
                   style={{
@@ -665,12 +715,13 @@ export default function PendingBillsPage() {
                     alignItems: "center",
                     justifyContent: "center",
                     gap: "8px",
-                    padding: "14px 20px",
+                    padding: "16px 20px",
                     backgroundColor: "#f8fafc",
                     border: "1px solid #e2e8f0",
-                    borderRadius: "12px",
+                    borderRadius: "14px",
                     color: "#475569",
                     fontWeight: "bold",
+                    fontSize: "15px",
                     cursor: "pointer",
                     transition: "all 0.2s",
                   }}
@@ -678,15 +729,25 @@ export default function PendingBillsPage() {
                   onClick={() => window.print()}
                   title="Print Receipt"
                 >
-                  <Printer size={18} /> Print
+                  <Printer size={20} /> Print
                 </button>
                 <button
                   className="complete-payment-btn-modern"
-                  style={{ flex: "1 1 100%", margin: 0 }}
+                  style={{
+                    flex: "1 1 100%",
+                    margin: 0,
+                    padding: "20px",
+                    fontSize: "17px",
+                    borderRadius: "14px",
+                    display: "flex",
+                    gap: "10px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                   type="button"
                   onClick={() => setIsPaymentSuccess(true)}
                 >
-                  <CheckCircle size={16} />
+                  <CheckCircle size={22} />
                   Complete Checkout
                 </button>
               </div>
