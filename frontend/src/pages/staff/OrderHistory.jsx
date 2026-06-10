@@ -80,13 +80,13 @@ const History = () => {
     const cancelledOrders = ordersList.filter(
       (order) => order.status === "Cancelled"
     );
-    const totalSales = completedOrders.reduce(
-      (sum, order) => sum + order.amount,
+    const totalItems = completedOrders.reduce(
+      (sum, order) => sum + order.itemsCount,
       0
     );
 
     return {
-      totalSales,
+      totalItems,
       completedCount: completedOrders.length,
       cancelledCount: cancelledOrders.length,
     };
@@ -126,17 +126,11 @@ const History = () => {
       <section className="history-summary-cards">
         <div className="summary-card dark">
           <span className="card-icon">
-            <Wallet size={23} />
+            <FileText size={23} />
           </span>
           <div>
-            <h3>
-              Rs.{" "}
-              {stats.totalSales.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </h3>
-            <p>Total Revenue Processed</p>
+            <h3>{stats.totalItems} Items</h3>
+            <p>Total Items Processed</p>
           </div>
         </div>
         <div className="summary-card">
@@ -200,7 +194,7 @@ const History = () => {
                 <th>Assigned Table</th>
                 <th>Cart Load</th>
                 <th>Timestamp</th>
-                <th>Gross Settlement</th>
+                <th>Items Ordered</th>
                 <th>Workflow Status</th>
                 <th>Operations</th>
               </tr>
@@ -238,12 +232,14 @@ const History = () => {
                     </span>
                     <small>{order.time}</small>
                   </td>
-                  <td className="amount">
-                    Rs.{" "}
-                    {order.amount.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                  <td>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxHeight: "60px", overflowY: "auto", fontSize: "12px" }}>
+                      {order.breakdown.map((item, i) => (
+                        <span key={i} style={{ color: "#475569", whiteSpace: "nowrap" }}>
+                          <strong>{item.qty}x</strong> {item.name}
+                        </span>
+                      ))}
+                    </div>
                   </td>
                   <td>
                     <span
@@ -322,25 +318,18 @@ const History = () => {
 
             <h4 className="modal-section-title">Itemized Summary</h4>
             <div className="invoice-items-list">
-              {selectedOrder.breakdown.map((item) => (
-                <div key={item.name} className="invoice-item-row">
+              {selectedOrder.breakdown.map((item, i) => (
+                <div key={i} className="invoice-item-row">
                   <span>
                     {item.name} <strong>x{item.qty}</strong>
                   </span>
-                  <span>Rs. {item.price.toLocaleString()}</span>
                 </div>
               ))}
             </div>
 
             <div className="invoice-total-row">
-              <h3>Grand Total</h3>
-              <h2>
-                Rs.{" "}
-                {selectedOrder.amount.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </h2>
+              <h3>Total Items</h3>
+              <h2>{selectedOrder.itemsCount}</h2>
             </div>
 
             <div className="invoice-status-footer">

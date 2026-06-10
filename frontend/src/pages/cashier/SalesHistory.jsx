@@ -1,14 +1,16 @@
 // src/pages/cashier/SalesHistory.jsx
 
-import React from "react";
+import React, { useState } from "react";
 import "../../styles/saleshistory.css";
 
 import { FaSearch, FaFilter, FaDownload, FaChevronRight } from "react-icons/fa";
+import { X } from "lucide-react";
 import { useOrders } from "../../context/OrderContext";
 
 const SalesHistory = () => {
   // Provide a safe fallback array in case context is still initializing
   const { orders = [] } = useOrders() || {};
+  const [selectedSale, setSelectedSale] = useState(null);
 
   // Get all completed orders from the global context
   const completedSales = [...orders]
@@ -215,7 +217,7 @@ const SalesHistory = () => {
                       <div>
                         <span className="sale-status completed">Completed</span>
                       </div>
-                      <button className="details-btn">View Details</button>
+                      <button className="details-btn" onClick={() => setSelectedSale(sale)}>View Details</button>
                       <FaChevronRight className="arrow-icon" />
                     </div>
                   </div>
@@ -374,6 +376,68 @@ const SalesHistory = () => {
           </div>
         </div>
       </div>
+
+      {/* SALE DETAILS MODAL */}
+      {selectedSale && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[99] flex justify-center items-center p-4 transition-opacity" onClick={() => setSelectedSale(null)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in p-6 relative" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-xl font-black text-slate-900">
+                  Order {selectedSale.id}
+                </h2>
+                <p className="text-purple-600 font-bold text-xs mt-0.5">
+                  {selectedSale.customer || "Walk-in Customer"}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedSale(null)}
+                className="bg-white border border-slate-200 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg shadow-sm transition"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="max-h-[300px] overflow-y-auto pr-2">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead className="bg-slate-50/50 text-slate-400 text-[10px] uppercase tracking-wider font-bold border-b border-slate-100">
+                  <tr>
+                    <th className="py-2 pl-2">Item</th>
+                    <th className="py-2 text-center">Qty</th>
+                    <th className="py-2 pr-2 text-right">Price</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {(selectedSale.items || []).map((item, idx) => (
+                    <tr key={idx}>
+                      <td className="py-3 pl-2 font-semibold text-slate-700">
+                        {item.name}
+                      </td>
+                      <td className="py-3 text-center font-bold text-slate-500">
+                        {item.qty}
+                      </td>
+                      <td className="py-3 pr-2 text-right font-black text-slate-900">
+                        Rs. {(item.qty * (parseFloat(item.price) || 0)).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 mt-6 text-sm font-medium text-slate-600 flex justify-between items-center">
+              <span>Total Amount</span>
+              <span className="text-slate-900 font-black text-lg">
+                Rs. {(
+                  selectedSale.amount !== undefined
+                    ? selectedSale.amount
+                    : (selectedSale.items || []).reduce((sum, i) => sum + i.qty * i.price, 0) + 50
+                ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

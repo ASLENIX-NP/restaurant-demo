@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   UtensilsCrossed,
   XCircle,
+  User,
 } from "lucide-react";
 import "../../styles/takeorders.css"; // Kept for any global custom overrides
 import { useOrders } from "../../context/OrderContext";
@@ -20,6 +21,7 @@ export default function TakeOrder() {
   const [selectedTable, setSelectedTable] = useState("All Tables");
   const [cart, setCart] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
+  const [orderNote, setOrderNote] = useState("");
 
   const dynamicTables = [
     "All Tables",
@@ -124,11 +126,11 @@ export default function TakeOrder() {
     const orderData = {
       id: orderId,
       table: selectedTable,
-      server: user?.name || "Staff Member",
+      server: user?.name || user?.username || "Staff Member",
       channel: selectedTable === "Pickup" ? "Takeaway" : "Dine In",
       priority: "Normal",
       station: "Hot Line",
-      notes: "",
+      notes: orderNote,
       elapsedMinutes: 0,
       items: cart.map(({ id, name, qty, price, category }) => ({
         id,
@@ -171,6 +173,7 @@ export default function TakeOrder() {
 
     setCart([]);
     setSelectedTable("All Tables");
+    setOrderNote("");
   };
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
@@ -322,13 +325,18 @@ export default function TakeOrder() {
           {/* RIGHT: CURRENT ORDER / CART */}
           <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col h-[calc(100vh-140px)] sticky top-6">
             {/* Cart Header */}
-            <div className="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
-              <h3 className="font-black text-slate-900 text-lg">
-                Current Order
-              </h3>
-              <span className="bg-purple-50 text-purple-600 font-bold text-xs px-3 py-1 rounded-lg border border-purple-100">
-                {selectedTable}
-              </span>
+            <div className="mb-5 pb-4 border-b border-slate-100">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-black text-slate-900 text-lg">
+                  Current Order
+                </h3>
+                <span className="bg-purple-50 text-purple-600 font-bold text-xs px-3 py-1 rounded-lg border border-purple-100">
+                  {selectedTable}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+                <User size={14} /> Server: {user?.name || user?.username || "Staff Member"}
+              </div>
             </div>
 
             {/* Cart Items List */}
@@ -399,6 +407,15 @@ export default function TakeOrder() {
 
             {/* Cart Summary & Actions */}
             <div className="mt-4 pt-4 border-t border-slate-100 space-y-2 bg-white">
+              <div className="mb-3">
+                <textarea
+                  value={orderNote}
+                  onChange={(e) => setOrderNote(e.target.value)}
+                  placeholder="Add special instructions or notes..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-purple-400 transition-all resize-none"
+                  rows="2"
+                />
+              </div>
               <div className="flex justify-between text-sm font-medium text-slate-500">
                 <span>Subtotal</span>
                 <span className="text-slate-900 font-bold">Rs. {subtotal}</span>

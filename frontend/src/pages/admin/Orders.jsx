@@ -6,6 +6,8 @@ import {
   CheckCircle2,
   Hourglass,
   Truck,
+  Eye,
+  X,
 } from "lucide-react";
 import { useOrders } from "../../context/OrderContext";
 
@@ -15,6 +17,7 @@ const Orders = () => {
   const { orders = [] } = useOrders();
   const [activeFilter, setActiveFilter] = useState("All Orders");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   const formattedOrders = orders
     .map((o, i) => {
@@ -35,10 +38,8 @@ const Orders = () => {
         customer: o.customer || "Guest",
         phone: o.phone || "N/A",
         avatarColor: avatarColors[i % avatarColors.length],
-        items: (o.items || []).map(
-          () =>
-            "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&q=80"
-        ), // Fallback item image
+        itemsList: o.items || [],
+        table: o.table || "Walk-in",
         type: o.channel || "Dine In",
         amount: `Rs. ${total.toLocaleString()}`,
         status: o.status,
@@ -216,6 +217,7 @@ const Orders = () => {
                     Order ID
                   </th>
                   <th className="p-5 border-b border-slate-100">Customer</th>
+                  <th className="p-5 border-b border-slate-100">Table</th>
                   <th className="p-5 border-b border-slate-100">Items</th>
                   <th className="p-5 border-b border-slate-100">Type</th>
                   <th className="p-5 border-b border-slate-100">Amount</th>
@@ -227,7 +229,7 @@ const Orders = () => {
                 {filteredOrders.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="8"
                       className="text-center py-12 text-slate-400 font-medium"
                     >
                       No orders found matching your criteria.
@@ -263,18 +265,20 @@ const Orders = () => {
                         </div>
                       </td>
 
-                      {/* Overlapping Items Array Column */}
+                      {/* Table Column */}
+                      <td className="p-5 font-bold text-slate-700">
+                        {order.table}
+                      </td>
+
+                      {/* Ordered Items Column */}
                       <td className="p-5">
-                        <div className="flex -space-x-2.5">
-                          {order.items.map((img, i) => (
-                            <img
-                              key={i}
-                              src={img}
-                              alt="Food Item"
-                              className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm relative hover:z-10 transition-transform hover:scale-110"
-                            />
-                          ))}
-                        </div>
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="flex items-center gap-1.5 text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          <Eye size={14} />
+                          View Items
+                        </button>
                       </td>
 
                       {/* Type Column */}
@@ -314,6 +318,64 @@ const Orders = () => {
           </div>
         </div>
       </main>
+
+      {/* ITEMS MODAL */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in p-6 relative">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-xl font-black text-slate-900">
+                  Order {selectedOrder.id}
+                </h2>
+                <p className="text-purple-600 font-bold text-xs mt-0.5">
+                  {selectedOrder.customer}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="bg-white border border-slate-200 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg shadow-sm transition"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="max-h-[300px] overflow-y-auto pr-2">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead className="bg-slate-50/50 text-slate-400 text-[10px] uppercase tracking-wider font-bold border-b border-slate-100">
+                  <tr>
+                    <th className="py-2 pl-2">Item</th>
+                    <th className="py-2 text-center">Qty</th>
+                    <th className="py-2 pr-2 text-right">Price</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {selectedOrder.itemsList.map((item, idx) => (
+                    <tr key={idx}>
+                      <td className="py-3 pl-2 font-semibold text-slate-700">
+                        {item.name}
+                      </td>
+                      <td className="py-3 text-center font-bold text-slate-500">
+                        {item.qty}
+                      </td>
+                      <td className="py-3 pr-2 text-right font-black text-slate-900">
+                        Rs. {(item.qty * (parseFloat(item.price) || 0)).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 mt-6 text-sm font-medium text-slate-600 flex justify-between items-center">
+              <span>Total Amount</span>
+              <span className="text-slate-900 font-black text-lg">
+                {selectedOrder.amount}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

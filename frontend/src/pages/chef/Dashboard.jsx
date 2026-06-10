@@ -119,11 +119,7 @@ const Dashboard = () => {
         return stationMatches && statusMatches;
       })
       .sort((a, b) => {
-        // 1. Push orders marked as "Ready" to the bottom of the list
-        if (a.status === "Ready" && b.status !== "Ready") return 1;
-        if (a.status !== "Ready" && b.status === "Ready") return -1;
-
-        // 2. Put oldest incoming active orders at the top of the queue (First Come First Serve)
+        // Put oldest incoming active orders at the top of the queue (First In First Out)
         const timeA = new Date(a.timestamp || 0).getTime();
         const timeB = new Date(b.timestamp || 0).getTime();
         return timeA - timeB;
@@ -341,7 +337,9 @@ const Dashboard = () => {
                     <div>
                       <span className="order-id">{order.id}</span>
                       <span className="table-assignment">
-                        {order.channel || "System"} - {order.table || "Queue"} •
+                        {order.channel || "System"} - {order.table || "Queue"}
+                      </span>
+                      <span className="block text-[11px] font-bold text-slate-500 mt-1">
                         Server: {order.server || "System"}
                       </span>
                     </div>

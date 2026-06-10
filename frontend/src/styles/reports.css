@@ -427,24 +427,60 @@
    PRINT STYLES OPTIMIZATION
    ========================================================================== */
 
+.print-only {
+    display: none;
+}
+
 @media print {
     body {
         background: #fff;
         color: #000;
+        margin: 0;
+        padding: 0;
     }
     .report-page {
         padding: 0;
         background: transparent;
     }
-    .export-report-btn,
-    .report-tabs {
+    .screen-only {
         display: none !important;
     }
-    .chart-card,
-    .report-stat-card,
-    .top-items-card {
-        border: 1px solid #ccc !important;
-        box-shadow: none !important;
-        page-break-inside: avoid;
+    .print-only {
+        display: block !important;
+        font-family: sans-serif;
+    }
+    .print-only h1 {
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
+    .print-only h2 {
+        font-size: 18px;
+        margin-top: 20px;
+        border-bottom: 1px solid #000;
+        padding-bottom: 5px;
+    }
+    .print-only p {
+        margin: 5px 0;
+    }
+    .print-only-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 15px;
+    }
+    .print-only-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+    .print-only-table th, .print-only-table td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+    .print-only-table th {
+        background-color: #f8fafc !important;
+        -webkit-print-color-adjust: exact;
+        color: #000;
     }
 }

@@ -107,11 +107,16 @@ export default function PendingBillsPage() {
     });
   }, [orders]);
 
+  const defaultTaxSettings = useMemo(() => {
+    const saved = localStorage.getItem("restaurant_tax_settings");
+    return saved ? JSON.parse(saved) : { vat: 13, serviceCharge: 10, defaultDiscount: 0 };
+  }, []);
+
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [discountType, setDiscountType] = useState("percentage");
-  const [discountValue, setDiscountValue] = useState(0);
-  const [serviceCharge, setServiceCharge] = useState(0);
+  const [discountValue, setDiscountValue] = useState(defaultTaxSettings.defaultDiscount);
+  const [serviceCharge, setServiceCharge] = useState(defaultTaxSettings.serviceCharge);
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
@@ -174,8 +179,8 @@ export default function PendingBillsPage() {
 
   const handleSelectInvoice = (billId) => {
     setSelectedInvoiceId(billId);
-    setDiscountValue(0);
-    setServiceCharge(0); // Default service charge when opening a bill
+    setDiscountValue(defaultTaxSettings.defaultDiscount);
+    setServiceCharge(defaultTaxSettings.serviceCharge); // Default service charge when opening a bill
     setIsPaymentSuccess(false);
   };
 
@@ -646,17 +651,17 @@ export default function PendingBillsPage() {
                   <span>Subtotal (Excl. VAT)</span>
                   <strong>
                     Rs.{" "}
-                    {(subtotal / 1.13).toLocaleString(undefined, {
+                    {(subtotal / (1 + defaultTaxSettings.vat / 100)).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
                   </strong>
                 </div>
                 <div>
-                  <span>VAT (13%)</span>
+                  <span>VAT ({defaultTaxSettings.vat}%)</span>
                   <strong>
                     Rs.{" "}
-                    {(subtotal - subtotal / 1.13).toLocaleString(undefined, {
+                    {(subtotal - subtotal / (1 + defaultTaxSettings.vat / 100)).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
@@ -913,7 +918,7 @@ export default function PendingBillsPage() {
             }}
           >
             <span>Subtotal (Excl. VAT):</span>{" "}
-            <span>Rs. {(subtotal / 1.13).toFixed(2)}</span>
+            <span>Rs. {(subtotal / (1 + defaultTaxSettings.vat / 100)).toFixed(2)}</span>
           </div>
           <div
             style={{
@@ -922,8 +927,8 @@ export default function PendingBillsPage() {
               marginBottom: "5px",
             }}
           >
-            <span>VAT (13%):</span>{" "}
-            <span>Rs. {(subtotal - subtotal / 1.13).toFixed(2)}</span>
+            <span>VAT ({defaultTaxSettings.vat}%):</span>{" "}
+            <span>Rs. {(subtotal - subtotal / (1 + defaultTaxSettings.vat / 100)).toFixed(2)}</span>
           </div>
           {discountAmount > 0 && (
             <div

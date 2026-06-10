@@ -23,10 +23,17 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { useNavigate } from "react-router-dom";
 import { useOrders } from "../../context/OrderContext";
+import { useTables } from "../../context/TableContext";
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const { orders = [] } = useOrders() || {};
+  const { tables = [] } = useTables() || {};
+
+  const reservedCount = tables.filter((t) => (t.status || "").toLowerCase() === "reserved").length;
+  const pendingPaymentsCount = orders.filter((o) => o.status !== "Completed" && o.status !== "Cancelled").length;
 
   const completedSales = orders.filter((order) => order.status === "Completed");
 
@@ -380,7 +387,10 @@ export default function AdminDashboard() {
               <h2 className="text-base font-bold text-slate-900">
                 Top Selling Items
               </h2>
-              <button className="text-purple-600 hover:text-purple-700 font-bold text-xs transition">
+              <button 
+                onClick={() => navigate("/admin/reports")}
+                className="text-purple-600 hover:text-purple-700 font-bold text-xs transition"
+              >
                 View All
               </button>
             </div>
@@ -442,7 +452,10 @@ export default function AdminDashboard() {
               <h2 className="text-base font-bold text-slate-900">
                 Recent Orders
               </h2>
-              <button className="text-purple-600 hover:text-purple-700 font-bold text-xs transition">
+              <button 
+                onClick={() => navigate("/admin/orders")}
+                className="text-purple-600 hover:text-purple-700 font-bold text-xs transition"
+              >
                 View All
               </button>
             </div>
@@ -515,25 +528,33 @@ export default function AdminDashboard() {
                   label: "Upcoming Reservations",
                   icon: <Calendar size={15} />,
                   color: "bg-purple-50 text-purple-600 border-purple-100",
+                  action: () => navigate("/admin/tables"),
+                  count: reservedCount > 0 ? reservedCount : null
                 },
                 {
                   label: "Low Stock Items",
                   icon: <AlertTriangle size={15} />,
                   color: "bg-red-50 text-red-600 border-red-100",
+                  action: () => navigate("/admin/inventory"),
+                  count: 2 // Sample static value until inventory is linked to context
                 },
                 {
                   label: "New Reviews Pending",
                   icon: <Star size={15} />,
                   color: "bg-amber-50 text-amber-600 border-amber-100",
+                  action: () => alert("Reviews management module coming soon!"),
                 },
                 {
-                  label: "Pending Payments",
+                  label: "Payments",
                   icon: <CreditCard size={15} />,
                   color: "bg-blue-50 text-blue-600 border-blue-100",
+                  action: () => navigate("/admin/billing"),
+                  count: pendingPaymentsCount > 0 ? pendingPaymentsCount : null
                 },
               ].map((reminder) => (
                 <button
                   key={reminder.label}
+                  onClick={reminder.action}
                   className="w-full bg-white border border-slate-200/60 hover:border-slate-300 rounded-xl p-3 flex items-center justify-between text-xs font-semibold text-slate-700 transition hover:bg-slate-50/50 group"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -542,10 +563,17 @@ export default function AdminDashboard() {
                     </div>
                     <span className="truncate">{reminder.label}</span>
                   </div>
-                  <ChevronRight
-                    size={14}
-                    className="text-slate-400 group-hover:translate-x-0.5 transition-transform"
-                  />
+                  <div className="flex items-center gap-2">
+                    {reminder.count && (
+                      <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-bold text-[10px]">
+                        {reminder.count}
+                      </span>
+                    )}
+                    <ChevronRight
+                      size={14}
+                      className="text-slate-400 group-hover:translate-x-0.5 transition-transform"
+                    />
+                  </div>
                 </button>
               ))}
             </div>

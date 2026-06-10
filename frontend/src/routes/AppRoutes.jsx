@@ -45,6 +45,7 @@ import Invoices from "../pages/cashier/Invoices";
 import SalesHistory from "../pages/cashier/SalesHistory";
 import POS from "../pages/cashier/POS";
 import ShiftManagement from "../pages/cashier/ShiftManagement";
+import CashierReservations from "../pages/cashier/Reservations";
 
 const AppRoutes = () => {
   return (
@@ -124,6 +125,7 @@ const AppRoutes = () => {
             <Route path="menu" element={<MenuManagement />} />
             <Route path="qr-menu" element={<QRMenuManager />} />
             <Route path="tables" element={<TableManagement />} />
+            <Route path="reservations" element={<CashierReservations />} />
             <Route path="payments" element={<Payments />} />
             <Route path="pending-bills" element={<PendingBills />} />
             <Route path="invoices" element={<Invoices />} />

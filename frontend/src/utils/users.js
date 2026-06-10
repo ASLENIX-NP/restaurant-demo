@@ -1,65 +1,49 @@
 const defaultUsers = [
-
     {
         username: "admin",
         password: "admin123",
         role: "admin",
     },
-
     {
         username: "staff",
         password: "staff123",
         role: "staff",
     },
-
     {
         username: "chef",
         password: "chef123",
         role: "chef",
     },
-
     {
         username: "cashier",
         password: "cashier123",
         role: "cashier",
     },
-
 ];
 
-// GET USERS
+const usersKey = "restaurant_users";
+const pendingApplicationsKey = "restaurant_user_applications";
+
 export const getUsers = () => {
+    const savedUsers = localStorage.getItem(usersKey);
 
-    const savedUsers =
-        localStorage.getItem(
-            "restaurant_users"
-        );
-
-    // IF EXISTS
     if (savedUsers) {
-
-        return JSON.parse(
-            savedUsers
-        );
+        return JSON.parse(savedUsers);
     }
 
-    // SAVE DEFAULT USERS
-    localStorage.setItem(
-        "restaurant_users",
-        JSON.stringify(
-            defaultUsers
-        )
-    );
-
+    localStorage.setItem(usersKey, JSON.stringify(defaultUsers));
     return defaultUsers;
 };
 
-// SAVE USERS
-export const saveUsers = (
-    users
-) => {
+export const saveUsers = (users) => {
+    localStorage.setItem(usersKey, JSON.stringify(users));
+};
 
-    localStorage.setItem(
-        "restaurant_users",
-        JSON.stringify(users)
-    );
+export const getPendingApplications = () => {
+    const savedApplications = localStorage.getItem(pendingApplicationsKey);
+    return savedApplications ? JSON.parse(savedApplications) : [];
+};
+
+export const savePendingApplications = (applications) => {
+    localStorage.setItem(pendingApplicationsKey, JSON.stringify(applications));
 };

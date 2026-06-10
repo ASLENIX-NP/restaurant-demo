@@ -41,6 +41,13 @@ const Settings = () => {
     { title: "Automated Daily Backups", desc: "Securely backup database at 3:00 AM", active: true },
   ]);
 
+  // State for tax and billing defaults
+  const [taxSettings, setTaxSettings] = useState(() => {
+    const saved = localStorage.getItem("restaurant_tax_settings");
+    if (saved) return JSON.parse(saved);
+    return { vat: 13, serviceCharge: 10, defaultDiscount: 0 };
+  });
+
   // Handle toggling the payment method status
   const togglePaymentMethod = (name) => {
     setPaymentMethods((prevMethods) => 
@@ -59,6 +66,19 @@ const Settings = () => {
     );
   };
 
+  const handleTaxChange = (e) => {
+    const { name, value } = e.target;
+    setTaxSettings((prev) => ({
+      ...prev,
+      [name]: parseFloat(value) || 0,
+    }));
+  };
+
+  const handleSaveSettings = () => {
+    localStorage.setItem("restaurant_tax_settings", JSON.stringify(taxSettings));
+    alert("Settings saved successfully!");
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
       <main className="max-w-[1600px] mx-auto pb-12">
@@ -71,7 +91,7 @@ const Settings = () => {
               Dashboard <span className="mx-1.5 text-slate-300">&gt;</span> Settings
             </p>
           </div>
-          <button className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all">
+          <button onClick={handleSaveSettings} className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all">
             <Save size={16} /> Save Changes
           </button>
         </div>
@@ -137,15 +157,20 @@ const Settings = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">VAT (%)</label>
-                    <input type="number" defaultValue="13" className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-emerald-500 transition-all font-semibold text-sm text-slate-700" />
+                    <input type="number" name="vat" value={taxSettings.vat} onChange={handleTaxChange} className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-emerald-500 transition-all font-semibold text-sm text-slate-700" />
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Service Charge (%)</label>
-                    <input type="number" defaultValue="10" className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-emerald-500 transition-all font-semibold text-sm text-slate-700" />
+                    <input type="number" name="serviceCharge" value={taxSettings.serviceCharge} onChange={handleTaxChange} className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-emerald-500 transition-all font-semibold text-sm text-slate-700" />
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Default Discount (%)</label>
-                    <input type="number" defaultValue="0" className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-emerald-500 transition-all font-semibold text-sm text-slate-700" />
+                    <input type="number" name="defaultDiscount" value={taxSettings.defaultDiscount} onChange={handleTaxChange} className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-emerald-500 transition-all font-semibold text-sm text-slate-700" />
+                  </div>
+                  <div className="pt-2">
+                    <button onClick={handleSaveSettings} className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl transition-all shadow-sm text-sm">
+                      Save Tax Settings
+                    </button>
                   </div>
                 </div>
               </div>

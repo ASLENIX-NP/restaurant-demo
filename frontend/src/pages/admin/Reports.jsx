@@ -6,7 +6,6 @@ import {
   Users,
   DollarSign,
   Calendar,
-  BarChart3,
   PieChart as PieIcon,
 } from "lucide-react";
 import {
@@ -27,18 +26,24 @@ import "../../styles/reports.css";
 import { useOrders } from "../../context/OrderContext";
 
 export default function Reports() {
-  const [activeTab, setActiveTab] = useState("Overview");
-  const tabs = [
-    "Overview",
-    "Sales Report",
-    "Orders",
-    "Menu Report",
-    "Customers",
-  ];
-
   const { orders = [] } = useOrders() || {};
+  const [timeRange, setTimeRange] = useState("This Month");
 
-  const completedSales = orders.filter((order) => order.status === "Completed");
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfLast7Days = new Date(startOfToday);
+  startOfLast7Days.setDate(startOfLast7Days.getDate() - 6);
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const filteredOrders = orders.filter((order) => {
+    const orderDate = new Date(order.timestamp || order.date);
+    if (timeRange === "Today") return orderDate >= startOfToday;
+    if (timeRange === "Last 7 Days") return orderDate >= startOfLast7Days;
+    if (timeRange === "This Month") return orderDate >= startOfThisMonth;
+    return true; // All Time
+  });
+
+  const completedSales = filteredOrders.filter((order) => order.status === "Completed");
 
   const totalRevenue = completedSales.reduce((acc, order) => {
     const subtotal = (order.items || []).reduce(
@@ -53,8 +58,8 @@ export default function Reports() {
     );
   }, 0);
 
-  const totalOrders = orders.length;
-  const totalCustomers = new Set(orders.map((o) => o.customer || "Guest")).size;
+  const totalOrders = filteredOrders.length;
+  const totalCustomers = new Set(filteredOrders.map((o) => o.customer || "Guest")).size;
   const avgOrderValue =
     completedSales.length > 0 ? totalRevenue / completedSales.length : 0;
 
@@ -110,28 +115,24 @@ export default function Reports() {
       revenue: `Rs. ${item.revenue.toLocaleString()}`,
     }));
 
-  const startOfMonth = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth(),
-    1
-  ).toLocaleDateString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  });
-  const endOfMonth = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth() + 1,
-    0
-  ).toLocaleDateString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  });
+  const formatDate = (date) => date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+  let displayStart = "";
+  let displayEnd = formatDate(now);
 
-  // Dynamic Revenue Trend Data (Last 7 Days)
+  if (timeRange === "Today") displayStart = displayEnd;
+  else if (timeRange === "Last 7 Days") displayStart = formatDate(startOfLast7Days);
+  else if (timeRange === "This Month") displayStart = formatDate(startOfThisMonth);
+  else displayStart = "All Time";
+
+  // Dynamic Revenue Trend Data
+  let numDays = 7;
+  if (timeRange === "Today") numDays = 1;
+  else if (timeRange === "Last 7 Days") numDays = 7;
+  else if (timeRange === "This Month") numDays = now.getDate() || 1; // days elapsed this month
+  else if (timeRange === "All Time") numDays = 30; // Show last 30 days for trend
+
   const revenueTrendData = [];
-  for (let i = 6; i >= 0; i--) {
+  for (let i = numDays - 1; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     revenueTrendData.push({
@@ -164,9 +165,11 @@ export default function Reports() {
     window.print();
   };
 
+  const dynamicChangeText = timeRange === "All Time" ? "Lifetime" : `In ${timeRange}`;
+
   return (
     <div className="report-page">
-      <div className="report-container">
+      <div className="report-container screen-only">
         {/* HEADER SECTION */}
         <div className="report-header">
           <div>
@@ -181,34 +184,24 @@ export default function Reports() {
           </button>
         </div>
 
-        {/* CONTROLS TABS */}
-        <div className="report-tabs">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              className={activeTab === tab ? "active-tab" : ""}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab === "Overview" && <BarChart3 size={15} />}
-              {tab === "Sales Report" && <DollarSign size={15} />}
-              {tab === "Orders" && <ShoppingBag size={15} />}
-              {tab === "Customers" && <Users size={15} />}
-              {tab !== "Overview" &&
-                tab !== "Sales Report" &&
-                tab !== "Orders" &&
-                tab !== "Customers" &&
-                "🍔"}
-              <span className="tab-text-label">{tab}</span>
-            </button>
-          ))}
-        </div>
-
         {/* TIME FRAME RANGE FILTER BAR */}
         <div className="report-filter">
-          <div className="date-box">
+          <div className="date-box flex items-center gap-2">
             <Calendar size={15} className="text-purple-500" />
-            <span>
-              {startOfMonth} - {endOfMonth}
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value)}
+              className="bg-transparent border-none font-bold text-slate-700 outline-none cursor-pointer text-sm"
+            >
+              <option value="Today">Today</option>
+              <option value="Last 7 Days">Last 7 Days</option>
+              <option value="This Month">This Month</option>
+              <option value="All Time">All Time</option>
+            </select>
+            <span className="text-slate-400 text-xs font-medium border-l border-slate-200 pl-2 ml-1">
+              {timeRange === "Today" || timeRange === "All Time"
+                ? displayStart
+                : `${displayStart} - ${displayEnd}`}
             </span>
           </div>
         </div>
@@ -219,13 +212,13 @@ export default function Reports() {
             {
               title: "Total Revenue",
               value: `Rs. ${totalRevenue.toLocaleString()}`,
-              change: "0% this month",
+              change: dynamicChangeText,
               icon: <DollarSign size={20} />,
             },
             {
               title: "Total Orders",
               value: totalOrders,
-              change: "0% this month",
+              change: dynamicChangeText,
               icon: <ShoppingBag size={20} />,
             },
             {
@@ -233,13 +226,13 @@ export default function Reports() {
               value: `Rs. ${avgOrderValue.toLocaleString(undefined, {
                 maximumFractionDigits: 0,
               })}`,
-              change: "0% this month",
+              change: dynamicChangeText,
               icon: <TrendingUp size={20} />,
             },
             {
               title: "Customers",
               value: totalCustomers,
-              change: "0% this month",
+              change: dynamicChangeText,
               icon: <Users size={20} />,
             },
           ].map((stat, i) => (
@@ -438,6 +431,63 @@ export default function Reports() {
             </table>
           </div>
         </div>
+      </div>
+
+      {/* PRINT-ONLY UI SECTION */}
+      <div className="print-only">
+        <h1>Sales & Performance Report</h1>
+        <p><strong>Date Period:</strong> {timeRange === "Today" || timeRange === "All Time" ? displayStart : `${displayStart} to ${displayEnd}`}</p>
+        <p><strong>Generated On:</strong> {new Date().toLocaleString()}</p>
+        
+        <div className="print-only-grid">
+          <div>
+            <h2>Summary</h2>
+            <p><strong>Total Revenue:</strong> Rs. {totalRevenue.toLocaleString()}</p>
+            <p><strong>Total Orders:</strong> {totalOrders}</p>
+            <p><strong>Avg Order Value:</strong> Rs. {avgOrderValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            <p><strong>Total Customers:</strong> {totalCustomers}</p>
+          </div>
+          <div>
+            <h2>Category Distribution</h2>
+            <ul style={{ margin: 0, paddingLeft: "20px" }}>
+              {categoryDistributionData.map(c => (
+                <li key={c.name} style={{ marginBottom: "4px" }}>
+                  <strong>{c.name}:</strong> {c.value}%
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <h2>Top Selling Items</h2>
+        <table className="print-only-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Item Name</th>
+              <th>Category</th>
+              <th style={{ textAlign: "center" }}>Quantity</th>
+              <th style={{ textAlign: "right" }}>Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            {topItems.length === 0 ? (
+              <tr>
+                <td colSpan="5" style={{ textAlign: "center", padding: "20px" }}>No items sold yet.</td>
+              </tr>
+            ) : (
+              topItems.map((item, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{item.name}</td>
+                  <td>{item.category}</td>
+                  <td style={{ textAlign: "center" }}>{item.quantity}</td>
+                  <td style={{ textAlign: "right" }}>{item.revenue}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

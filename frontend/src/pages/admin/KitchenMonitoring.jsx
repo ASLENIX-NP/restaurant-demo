@@ -20,6 +20,7 @@ const Kitchen = () => {
     id: order.id,
     time: order.time,
     table: order.table,
+    server: order.server || "System",
     type: order.channel || "Dine In",
     items: (order.items || []).map(item => `${item.qty}x ${item.name}`),
     statusText: order.status === "Pending" ? "Waiting for Kitchen" : 
@@ -27,11 +28,18 @@ const Kitchen = () => {
                 order.status === "Ready" ? "Ready For Service" : "Completed"
   });
 
+  // Helper to ensure strict FIFO (Oldest first)
+  const sortFIFO = (orderList) => {
+    return [...orderList].sort((a, b) => 
+      new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()
+    );
+  };
+
   const kitchenData = {
-    newOrders: orders.filter(o => o.status === "Pending").map(formatOrderForKitchen),
-    preparing: orders.filter(o => o.status === "Cooking").map(formatOrderForKitchen),
-    ready: orders.filter(o => o.status === "Ready").map(formatOrderForKitchen),
-    completed: orders.filter(o => o.status === "Completed").map(formatOrderForKitchen)
+    newOrders: sortFIFO(orders.filter(o => o.status === "Pending")).map(formatOrderForKitchen),
+    preparing: sortFIFO(orders.filter(o => o.status === "Cooking")).map(formatOrderForKitchen),
+    ready: sortFIFO(orders.filter(o => o.status === "Ready")).map(formatOrderForKitchen),
+    completed: sortFIFO(orders.filter(o => o.status === "Completed")).map(formatOrderForKitchen)
   };
 
   const handleRefresh = () => {
@@ -195,9 +203,10 @@ const OrderCard = ({ order, colorTheme, isCompleted = false }) => {
       </div>
 
       {/* Meta Info */}
-      <p className="text-xs font-bold text-slate-500 mb-4 pb-3 border-b border-slate-100">
-        {order.table} <span className="mx-1 text-slate-300">•</span> {order.type}
-      </p>
+      <div className="text-xs font-bold text-slate-500 mb-4 pb-3 border-b border-slate-100 flex flex-col gap-1">
+        <div>{order.table} <span className="mx-1 text-slate-300">•</span> {order.type}</div>
+        <div className="text-[10px] text-slate-400">Server: {order.server}</div>
+      </div>
 
       {/* Food Items */}
       <ul className="space-y-2 mb-5">

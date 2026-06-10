@@ -1,9 +1,19 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { BellRing, X } from "lucide-react";
+import { 
+  BellRing, 
+  X,
+  LayoutDashboard,
+  PenLine,
+  LayoutGrid,
+  PackageCheck,
+  CalendarDays,
+  Clock,
+  LogOut,
+  Store
+} from "lucide-react";
 import { useOrders } from "../../context/OrderContext";
-
-import Navbar from "./Navbar";
+import { useAuth } from "../../context/AuthContext";
 
 import "../../styles/layout.css";
 
@@ -11,6 +21,7 @@ const StaffLayout = () => {
   const navigate = useNavigate();
   const { orders } = useOrders();
   const [notification, setNotification] = useState(null);
+  const { logout } = useAuth();
   const prevOrdersRef = useRef(orders);
 
   useEffect(() => {
@@ -47,43 +58,64 @@ const StaffLayout = () => {
     };
   }, [orders]);
 
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <div className="layout">
       {/* SIDEBAR */}
       <div className="sidebar">
-        <h1 className="logo">ASLENIX</h1>
+        <div className="sidebar-header">
+          <div className="brand-logo">
+            <Store size={28} className="brand-icon" />
+            <h1 className="logo-text">ASLENIX</h1>
+          </div>
+          <p className="brand-subtitle">Staff Panel</p>
+        </div>
 
         <nav className="sidebar-menu">
           <NavLink to="/staff" end className="menu-item">
-            📊 Dashboard
+            <LayoutDashboard size={20} />
+            <span>Dashboard</span>
           </NavLink>
 
           <NavLink to="/staff/take-order" className="menu-item">
-            📝 Take Order
+            <PenLine size={20} />
+            <span>Take Order</span>
           </NavLink>
 
           <NavLink to="/staff/tables" className="menu-item">
-            🍽️ Tables
+            <LayoutGrid size={20} />
+            <span>Tables</span>
           </NavLink>
 
           <NavLink to="/staff/ready-orders" className="menu-item">
-            📦 Ready Orders
+            <PackageCheck size={20} />
+            <span>Ready Orders</span>
           </NavLink>
 
           <NavLink to="/staff/reservations" className="menu-item">
-            🗓️ Reservations
+            <CalendarDays size={20} />
+            <span>Reservations</span>
           </NavLink>
 
           <NavLink to="/staff/history" className="menu-item">
-            🕓 History
+            <Clock size={20} />
+            <span>History</span>
           </NavLink>
         </nav>
+
+        {/* LOGOUT */}
+        <button className="logout-btn" onClick={handleLogout}>
+          <LogOut size={18} />
+          <span>Logout</span>
+        </button>
       </div>
 
       {/* MAIN */}
       <div className="main">
-        <Navbar title="Staff Panel" />
-
         <div className="content">
           <Outlet />
         </div>

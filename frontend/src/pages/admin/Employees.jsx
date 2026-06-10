@@ -19,73 +19,96 @@ import {
   List,
   Filter,
 } from "lucide-react";
+import {
+  getPendingApplications,
+  savePendingApplications,
+  getUsers,
+  saveUsers,
+} from "../../utils/users";
 
 import "../../styles/employees.css"; // Kept for any global custom overrides
 
 const Employees = () => {
   const navigate = useNavigate();
 
-  const [employees, setEmployees] = useState([
-    {
-      tempId: "emp-1",
-      username: "johndoe",
-      name: "John Doe",
-      role: "Manager",
-      shift: "Morning",
-      email: "john.doe@example.com",
-      phone: "+977 9812345678",
-      salary: "Rs. 45,000",
-      status: "Active",
-      image: "https://randomuser.me/api/portraits/men/1.jpg",
-    },
-    {
-      tempId: "emp-2",
-      username: "sarahsmith",
-      name: "Sarah Smith",
-      role: "Chef",
-      shift: "Evening",
-      email: "sarah.smith@example.com",
-      phone: "+977 9823456789",
-      salary: "Rs. 60,000",
-      status: "Active",
-      image: "https://randomuser.me/api/portraits/women/2.jpg",
-    },
-    {
-      tempId: "emp-3",
-      username: "mikejones",
-      name: "Mike Jones",
-      role: "Waiter",
-      shift: "Day",
-      email: "mike.jones@example.com",
-      phone: "+977 9834567890",
-      salary: "Rs. 25,000",
-      status: "Inactive",
-      image: "https://randomuser.me/api/portraits/men/3.jpg",
-    },
-    {
-      tempId: "emp-4",
-      username: "emilydavis",
-      name: "Emily Davis",
-      role: "Cashier",
-      shift: "Morning",
-      email: "emily.davis@example.com",
-      phone: "+977 9845678901",
-      salary: "Rs. 30,000",
-      status: "Active",
-      image: "https://randomuser.me/api/portraits/women/4.jpg",
-    },
-  ]);
+  const [employees, setEmployees] = useState(() => {
+    const savedEmployees = localStorage.getItem("restaurant_employees");
+    if (savedEmployees) {
+      return JSON.parse(savedEmployees);
+    }
 
+    return [
+      {
+        tempId: "emp-1",
+        username: "johndoe",
+        name: "John Doe",
+        role: "Manager",
+        shift: "Morning",
+        email: "john.doe@example.com",
+        phone: "+977 9812345678",
+        salary: "Rs. 45,000",
+        status: "Active",
+        image: "https://randomuser.me/api/portraits/men/1.jpg",
+      },
+      {
+        tempId: "emp-2",
+        username: "sarahsmith",
+        name: "Sarah Smith",
+        role: "Chef",
+        shift: "Evening",
+        email: "sarah.smith@example.com",
+        phone: "+977 9823456789",
+        salary: "Rs. 60,000",
+        status: "Active",
+        image: "https://randomuser.me/api/portraits/women/2.jpg",
+      },
+      {
+        tempId: "emp-3",
+        username: "mikejones",
+        name: "Mike Jones",
+        role: "Waiter",
+        shift: "Day",
+        email: "mike.jones@example.com",
+        phone: "+977 9834567890",
+        salary: "Rs. 25,000",
+        status: "Inactive",
+        image: "https://randomuser.me/api/portraits/men/3.jpg",
+      },
+      {
+        tempId: "emp-4",
+        username: "emilydavis",
+        name: "Emily Davis",
+        role: "Cashier",
+        shift: "Morning",
+        email: "emily.davis@example.com",
+        phone: "+977 9845678901",
+        salary: "Rs. 30,000",
+        status: "Active",
+        image: "https://randomuser.me/api/portraits/women/4.jpg",
+      },
+    ];
+  });
+
+  const [pendingApplications, setPendingApplications] = useState([]);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
+  const [sortBy, setSortBy] = useState("Newest First");
 
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
+
+  useEffect(() => {
+    setPendingApplications(getPendingApplications() || []);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("restaurant_employees", JSON.stringify(employees));
+  }, [employees]);
 
   const [newEmployee, setNewEmployee] = useState({
     username: "",
@@ -112,6 +135,56 @@ const Employees = () => {
     setEmployees(updated);
     setShowDeleteModal(false);
     setEmployeeToDelete(null);
+  };
+
+  const handleApproveApplication = (applicationId) => {
+    const application = pendingApplications.find((app) => app.id === applicationId);
+    if (!application) return;
+
+    const updatedPending = pendingApplications.filter((app) => app.id !== applicationId);
+    savePendingApplications(updatedPending);
+    setPendingApplications(updatedPending);
+
+    let normalizedRole = application.role?.toLowerCase() || "staff";
+    if (normalizedRole === "manager") normalizedRole = "admin";
+    if (normalizedRole === "waiter") normalizedRole = "staff";
+
+    const users = getUsers() || [];
+    const updatedUsers = [
+      ...users,
+      {
+        username: application.username,
+        password: application.password,
+        role: normalizedRole,
+      },
+    ];
+    
+    saveUsers(updatedUsers);
+    try {
+      // Fallback direct storage sync
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
+    } catch(e) {}
+
+    const approvedEmployee = {
+      tempId: `app-${Date.now()}`,
+      username: application.username,
+      name: application.name,
+      role: application.role,
+      shift: application.shift || "Day",
+      email: application.email,
+      phone: application.phone,
+      salary: application.salary || "Rs. 25,000",
+      status: "Active",
+      image: application.image || "https://randomuser.me/api/portraits/lego/1.jpg",
+    };
+
+    setEmployees((prev) => [...prev, approvedEmployee]);
+  };
+
+  const handleRejectApplication = (applicationId) => {
+    const updatedPending = pendingApplications.filter((app) => app.id !== applicationId);
+    savePendingApplications(updatedPending);
+    setPendingApplications(updatedPending);
   };
 
   const handleOpenAdd = () => {
@@ -165,6 +238,19 @@ const Employees = () => {
         return emp;
       });
       setEmployees(updatedList);
+
+      const allUsers = getUsers() || [];
+      let normalizedRole = newEmployee.role.toLowerCase();
+      if (normalizedRole === "manager") normalizedRole = "admin";
+      if (normalizedRole === "waiter") normalizedRole = "staff";
+
+      const updatedUsers = allUsers.map(u => 
+        u.username === newEmployee.username 
+          ? { ...u, role: normalizedRole, ...(newEmployee.password ? { password: newEmployee.password } : {}) } 
+          : u
+      );
+      saveUsers(updatedUsers);
+
       setShowModal(false);
     } else {
       if (!newEmployee.username || !newEmployee.password || !newEmployee.role) {
@@ -173,11 +259,26 @@ const Employees = () => {
       }
       const newEmpWithId = { ...newEmployee, tempId: `temp-${Date.now()}` };
       setEmployees([...employees, newEmpWithId]);
+      
+      const allUsers = getUsers() || [];
+      let normalizedRole = newEmployee.role.toLowerCase();
+      if (normalizedRole === "manager") normalizedRole = "admin";
+      if (normalizedRole === "waiter") normalizedRole = "staff";
+
+      saveUsers([
+        ...allUsers, 
+        { 
+          username: newEmployee.username, 
+          password: newEmployee.password, 
+          role: normalizedRole 
+        }
+      ]);
+
       setShowModal(false);
     }
   };
 
-  const filteredEmployees = employees.filter((employee) => {
+  const processedEmployees = employees.filter((employee) => {
     const safeName = employee?.name || "";
     const safeEmail = employee?.email || "";
     const safeRole = employee?.role || "";
@@ -194,6 +295,14 @@ const Employees = () => {
 
     return matchesSearch && matchesRole && matchesStatus;
   });
+
+  if (sortBy === "Name (A - Z)") {
+    processedEmployees.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  } else if (sortBy === "Name (Z - A)") {
+    processedEmployees.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+  } else if (sortBy === "Newest First") {
+    processedEmployees.reverse();
+  }
 
   // Metric Computations
   const totalEmployees = employees.length;
@@ -219,19 +328,24 @@ const Employees = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all">
-              <Filter size={16} /> Filter
-            </button>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2.5 outline-none font-semibold shadow-sm cursor-pointer"
+        >
+          <option value="All">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
               className="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2.5 outline-none font-semibold shadow-sm cursor-pointer"
             >
               <option value="All">All Departments</option>
-              <option value="Manager">Management</option>
-              <option value="Chef">Kitchen</option>
-              <option value="Cashier">Front of House</option>
-              <option value="Waiter">Waitstaff</option>
+              <option value="Chef">Chef</option>
+              <option value="Cashier">Cashier</option>
+              <option value="Staff">Staff</option>
             </select>
             <button
               onClick={handleOpenAdd}
@@ -242,8 +356,75 @@ const Employees = () => {
           </div>
         </div>
 
+        {pendingApplications.length > 0 && (
+          <div className="mb-8 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Pending Employee Applications</h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  New registration requests submitted by prospective staff.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {pendingApplications.map((application) => (
+                <div
+                  key={application.id}
+                  className="rounded-3xl border border-slate-200 p-5 bg-slate-50 shadow-sm"
+                >
+                  <div className="flex justify-between items-start gap-4 mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900">
+                        {application.name}
+                      </h3>
+                      <p className="text-slate-500 text-sm">
+                        @{application.username} · {application.role}
+                      </p>
+                    </div>
+                    <span className="text-[11px] uppercase tracking-[0.2em] font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-2xl">
+                      Pending
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-sm text-slate-600 mb-4">
+                    <div>
+                      <p className="font-semibold text-slate-800">Email</p>
+                      <p>{application.email}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800">Phone</p>
+                      <p>{application.phone}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800">Requested On</p>
+                      <p>{new Date(application.requestedAt).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800">Role</p>
+                      <p>{application.role}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={() => handleApproveApplication(application.id)}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl px-4 py-2 text-sm font-semibold transition"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleRejectApplication(application.id)}
+                      className="bg-white border border-slate-200 text-slate-700 rounded-2xl px-4 py-2 text-sm font-semibold hover:bg-slate-100 transition"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* METRICS & STATS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-5 mb-8">
           <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
             <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
               <Users size={24} />
@@ -274,6 +455,23 @@ const Employees = () => {
               </h2>
               <p className="text-xs font-medium text-slate-400 mt-1">
                 Currently working
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+              <AlertTriangle size={24} />
+            </div>
+            <div>
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-0.5">
+                Pending Requests
+              </h4>
+              <h2 className="text-2xl font-black text-slate-900 leading-none">
+                {pendingApplications.length}
+              </h2>
+              <p className="text-xs font-medium text-slate-400 mt-1">
+                Waiting for approval
               </p>
             </div>
           </div>
@@ -334,10 +532,14 @@ const Employees = () => {
               <span className="text-sm font-semibold text-slate-500">
                 Sort By
               </span>
-              <select className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2 outline-none font-medium shadow-sm cursor-pointer">
-                <option>Name (A - Z)</option>
-                <option>Name (Z - A)</option>
-                <option>Newest First</option>
+            <select 
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2 outline-none font-medium shadow-sm cursor-pointer"
+            >
+              <option value="Newest First">Newest First</option>
+              <option value="Name (A - Z)">Name (A - Z)</option>
+              <option value="Name (Z - A)">Name (Z - A)</option>
               </select>
             </div>
 
@@ -370,7 +572,7 @@ const Employees = () => {
         {viewMode === "grid" ? (
           // --- GRID VIEW (New UI) ---
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredEmployees.map((employee) => (
+            {processedEmployees.map((employee) => (
               <div
                 key={employee._id || employee.tempId}
                 className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm relative group hover:shadow-md transition-all"
@@ -462,7 +664,7 @@ const Employees = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
-                  {filteredEmployees.length === 0 ? (
+              {processedEmployees.length === 0 ? (
                     <tr>
                       <td
                         colSpan="7"
@@ -472,7 +674,7 @@ const Employees = () => {
                       </td>
                     </tr>
                   ) : (
-                    filteredEmployees.map((employee) => (
+                processedEmployees.map((employee) => (
                       <tr
                         key={employee._id || employee.tempId}
                         className="hover:bg-slate-50/50 transition-colors group"
@@ -549,7 +751,7 @@ const Employees = () => {
         {/* PAGINATION FOOTER */}
         <div className="flex flex-col sm:flex-row justify-between items-center mt-8 text-sm text-slate-500 font-medium">
           <p>
-            Showing 1 to {filteredEmployees.length} of {totalEmployees}{" "}
+            Showing 1 to {processedEmployees.length} of {totalEmployees}{" "}
             employees
           </p>
           <div className="flex items-center gap-1 mt-4 sm:mt-0">
@@ -672,13 +874,16 @@ const Employees = () => {
                     Phone Number
                   </label>
                   <input
-                    type="text"
+                    type="tel"
+                    pattern="[0-9]{10}"
+                    maxLength="10"
+                    title="Please enter exactly 10 digits"
                     value={newEmployee.phone}
                     onChange={(e) =>
-                      setNewEmployee({ ...newEmployee, phone: e.target.value })
+                      setNewEmployee({ ...newEmployee, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })
                     }
                     className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
-                    placeholder="+977 98..."
+                    placeholder="e.g. 9812345678"
                   />
                 </div>
                 <div>
@@ -713,10 +918,9 @@ const Employees = () => {
                     <option value="" disabled>
                       Select Role
                     </option>
-                    <option value="Manager">Manager</option>
                     <option value="Chef">Chef</option>
                     <option value="Cashier">Cashier</option>
-                    <option value="Waiter">Waiter</option>
+                    <option value="Staff">Staff</option>
                   </select>
                 </div>
                 <div>

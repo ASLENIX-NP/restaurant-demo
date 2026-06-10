@@ -573,15 +573,16 @@ const AdminTables = () => {
             <form onSubmit={handleAddTable} className="p-6 space-y-4">
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                  Table Name / Number *
+                  Table Number *
                 </label>
                 <input
                   type="text"
+                  inputMode="numeric"
                   required
                   value={newTableName}
-                  onChange={(e) => setNewTableName(e.target.value)}
+                  onChange={(e) => setNewTableName(e.target.value.replace(/\D/g, ''))}
                   className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
-                  placeholder="e.g. Table 8 or VIP 3"
+                  placeholder="e.g. 8"
                 />
               </div>
 
@@ -637,16 +638,18 @@ const AdminTables = () => {
             <form onSubmit={handleSaveEdit} className="p-6 space-y-4">
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                  Table Name / Number *
+                  Table Number *
                 </label>
                 <input
                   type="text"
+                  inputMode="numeric"
                   required
                   value={editTableData.name}
                   onChange={(e) =>
-                    setEditTableData({ ...editTableData, name: e.target.value })
+                    setEditTableData({ ...editTableData, name: e.target.value.replace(/\D/g, '') })
                   }
                   className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-all font-medium text-sm"
+                  placeholder="e.g. 8"
                 />
               </div>
 

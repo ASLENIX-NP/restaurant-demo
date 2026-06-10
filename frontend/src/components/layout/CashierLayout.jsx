@@ -1,133 +1,159 @@
-import { Outlet, NavLink } from "react-router-dom";
-
-import Navbar from "./Navbar";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import {
+  LayoutDashboard,
+  Receipt,
+  ShoppingCart,
+  Utensils,
+  QrCode,
+  LayoutGrid,
+  CreditCard,
+  FileText,
+  LineChart,
+  CalendarDays,
+  Wallet,
+  LogOut,
+  Store
+} from "lucide-react";
 
 import "../../styles/layout.css";
 
 const CashierLayout = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
-
     <div className="layout">
-
       {/* SIDEBAR */}
-
       <div className="sidebar">
-
-        <h1 className="logo">
-          ASLENIX
-        </h1>
+        <div className="sidebar-header">
+          <div className="brand-logo">
+            <Store size={28} className="brand-icon" />
+            <h1 className="logo-text">ASLENIX</h1>
+          </div>
+          <p className="brand-subtitle">Cashier Panel</p>
+        </div>
 
         <nav className="sidebar-menu">
-
           {/* DASHBOARD */}
-
           <NavLink
             to="/cashier"
             end
             className="menu-item"
           >
-            📊 Dashboard
+            <LayoutDashboard size={20} />
+            <span>Dashboard</span>
           </NavLink>
 
           {/* PENDING BILLS */}
-
           <NavLink
             to="/cashier/pending-bills"
             className="menu-item"
           >
-            🧾 Pending Bills
+            <Receipt size={20} />
+            <span>Pending Bills</span>
           </NavLink>
 
           {/* POS */}
-
           <NavLink
             to="/cashier/pos"
             className="menu-item"
           >
-            🛒 POS Screen
+            <ShoppingCart size={20} />
+            <span>POS Screen</span>
           </NavLink>
 
           {/* MENU */}
-
           <NavLink
             to="/cashier/menu"
             className="menu-item"
           >
-            🍔 Menu
+            <Utensils size={20} />
+            <span>Menu</span>
           </NavLink>
 
           {/* QR MENU */}
-
           <NavLink
             to="/cashier/qr-menu"
             className="menu-item"
           >
-            📱 QR Menu
+            <QrCode size={20} />
+            <span>QR Menu</span>
           </NavLink>
 
           {/* TABLES */}
-
           <NavLink
             to="/cashier/tables"
             className="menu-item"
           >
-            🍽️ Tables
+            <LayoutGrid size={20} />
+            <span>Tables</span>
+          </NavLink>
+
+          {/* RESERVATIONS */}
+          <NavLink
+            to="/cashier/reservations"
+            className="menu-item"
+          >
+            <CalendarDays size={20} />
+            <span>Reservations</span>
           </NavLink>
 
           {/* PAYMENTS */}
-
           <NavLink
             to="/cashier/payments"
             className="menu-item"
           >
-            💳 Payments
+            <CreditCard size={20} />
+            <span>Payments</span>
           </NavLink>
 
           {/* INVOICES */}
-
           <NavLink
             to="/cashier/invoices"
             className="menu-item"
           >
-            📄 Invoices
+            <FileText size={20} />
+            <span>Invoices</span>
           </NavLink>
 
           {/* SALES */}
-
           <NavLink
             to="/cashier/sales"
             className="menu-item"
           >
-            📈 Sales
+            <LineChart size={20} />
+            <span>Sales</span>
           </NavLink>
 
           {/* SHIFT */}
-
           <NavLink
             to="/cashier/shift"
             className="menu-item"
           >
-            🏦 Shift & Drawer
+            <Wallet size={20} />
+            <span>Shift & Drawer</span>
           </NavLink>
-
         </nav>
 
+        {/* LOGOUT */}
+        <button className="logout-btn" onClick={handleLogout}>
+          <LogOut size={18} />
+          <span>Logout</span>
+        </button>
       </div>
 
       {/* MAIN */}
-
       <div className="main">
-
-        <Navbar title="Cashier Panel" />
-
         <div className="content">
-
           <Outlet />
-
         </div>
-
       </div>
-
     </div>
   );
 };

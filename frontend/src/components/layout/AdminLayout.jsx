@@ -8,7 +8,21 @@ import {
   useAuth,
 } from "../../context/AuthContext";
 
-import Navbar from "./Navbar";
+import {
+  LayoutDashboard,
+  Utensils,
+  QrCode,
+  ClipboardList,
+  ChefHat,
+  Receipt,
+  Package,
+  LineChart,
+  LayoutGrid,
+  Users,
+  Settings,
+  LogOut,
+  Store
+} from "lucide-react";
 
 import "../../styles/layout.css";
 
@@ -34,10 +48,14 @@ const AdminLayout = () => {
       {/* SIDEBAR */}
 
       <div className="sidebar">
-
-        <h1 className="logo">
-          ASLENIX
-        </h1>
+        
+        <div className="sidebar-header">
+          <div className="brand-logo">
+            <Store size={28} className="brand-icon" />
+            <h1 className="logo-text">ASLENIX</h1>
+          </div>
+          <p className="brand-subtitle">ERP System</p>
+        </div>
 
         <nav className="sidebar-menu">
 
@@ -48,7 +66,8 @@ const AdminLayout = () => {
             end
             className="menu-item"
           >
-            📊 Dashboard
+            <LayoutDashboard size={20} />
+            <span>Dashboard</span>
           </NavLink>
 
           {/* MENU */}
@@ -57,7 +76,8 @@ const AdminLayout = () => {
             to="/admin/menu"
             className="menu-item"
           >
-            🍔 Menu
+            <Utensils size={20} />
+            <span>Menu</span>
           </NavLink>
 
           {/* QR MENU (NEW) */}
@@ -66,7 +86,8 @@ const AdminLayout = () => {
             to="/admin/qr-menu"
             className="menu-item"
           >
-            📱 QR Menu
+            <QrCode size={20} />
+            <span>QR Menu</span>
           </NavLink>
 
           {/* ORDERS */}
@@ -75,7 +96,8 @@ const AdminLayout = () => {
             to="/admin/orders"
             className="menu-item"
           >
-            📦 Orders
+            <ClipboardList size={20} />
+            <span>Orders</span>
           </NavLink>
 
           {/* KITCHEN */}
@@ -84,7 +106,8 @@ const AdminLayout = () => {
             to="/admin/kitchen"
             className="menu-item"
           >
-            👨‍🍳 Kitchen
+            <ChefHat size={20} />
+            <span>Kitchen</span>
           </NavLink>
 
           {/* BILLING */}
@@ -93,7 +116,8 @@ const AdminLayout = () => {
             to="/admin/billing"
             className="menu-item"
           >
-            💰 Billing
+            <Receipt size={20} />
+            <span>Billing</span>
           </NavLink>
 
           {/* INVENTORY */}
@@ -102,7 +126,8 @@ const AdminLayout = () => {
             to="/admin/inventory"
             className="menu-item"
           >
-            📦 Inventory
+            <Package size={20} />
+            <span>Inventory</span>
           </NavLink>
 
           {/* REPORTS */}
@@ -111,7 +136,8 @@ const AdminLayout = () => {
             to="/admin/reports"
             className="menu-item"
           >
-            📈 Reports
+            <LineChart size={20} />
+            <span>Reports</span>
           </NavLink>
 
           {/* TABLES */}
@@ -120,7 +146,8 @@ const AdminLayout = () => {
             to="/admin/tables"
             className="menu-item"
           >
-            🍽️ Tables
+            <LayoutGrid size={20} />
+            <span>Tables</span>
           </NavLink>
 
           {/* EMPLOYEES */}
@@ -129,7 +156,8 @@ const AdminLayout = () => {
             to="/admin/employees"
             className="menu-item"
           >
-            👥 Employees
+            <Users size={20} />
+            <span>Employees</span>
           </NavLink>
 
           {/* SETTINGS */}
@@ -138,7 +166,8 @@ const AdminLayout = () => {
             to="/admin/settings"
             className="menu-item"
           >
-            ⚙️ Settings
+            <Settings size={20} />
+            <span>Settings</span>
           </NavLink>
 
         </nav>
@@ -149,7 +178,8 @@ const AdminLayout = () => {
           className="logout-btn"
           onClick={handleLogout}
         >
-          🚪 Logout
+          <LogOut size={18} />
+          <span>Logout</span>
         </button>
 
       </div>
@@ -157,8 +187,6 @@ const AdminLayout = () => {
       {/* MAIN */}
 
       <div className="main">
-
-        <Navbar title="Admin Panel" />
 
         <div className="content">
 
