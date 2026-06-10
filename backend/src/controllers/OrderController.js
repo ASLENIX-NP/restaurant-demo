@@ -6,9 +6,6 @@ const Table = require("../models/Table");
 // @access  Private
 exports.getOrders = async (req, res) => {
   try {
-    // Use .lean() to get plain JavaScript objects for easier manipulation
-    const orders = await Order.find({}).sort({ createdAt: -1 }).lean();
-
     // Safety check: ensure the protect middleware is actually providing req.user
     if (!req.user) {
       return res.status(401).json({
@@ -17,14 +14,26 @@ exports.getOrders = async (req, res) => {
       });
     }
 
+    // 1. Database-Level Filtering (Memory Optimization)
+    // Let MongoDB filter the data instead of loading everything into Node.js RAM
+    let dbQuery = {};
+    if (req.user.role === "Chef") {
+      dbQuery.status = { $nin: ["Completed", "Served"] };
+    } else if (req.user.role === "Staff") {
+      dbQuery.status = { $ne: "Completed" };
+    }
+
+    // Support optional frontend query filters (e.g., /api/orders?status=Pending)
+    if (req.query.status && req.query.status !== "All") {
+      dbQuery.status = req.query.status;
+    }
+
+    // Use .lean() to get plain JavaScript objects for easier manipulation
+    const orders = await Order.find(dbQuery).sort({ createdAt: -1 }).lean();
+
     // If the user requesting the orders is a Chef, strip out pricing details, filter, and sort
     if (req.user.role === "Chef") {
-      // Filter out completed/served orders so the kitchen only gets active queue
-      let chefOrders = orders.filter(
-        (order) => order.status !== "Completed" && order.status !== "Served"
-      );
-
-      chefOrders = chefOrders.map((order) => {
+      const chefOrders = orders.map((order) => {
         const elapsedMinutes = order.createdAt
           ? Math.floor((new Date() - new Date(order.createdAt)) / 60000)
           : 0;
@@ -86,10 +95,7 @@ exports.getOrders = async (req, res) => {
 
     // If the user is a Staff member, they should only see active orders, not payment history
     if (req.user.role === "Staff") {
-      const staffOrders = orders.filter(
-        (order) => order.status !== "Completed"
-      );
-      return res.status(200).json(staffOrders);
+      return res.status(200).json(orders);
     }
 
     // Admin gets the fully unedited order details (including completed payment history)
@@ -108,6 +114,71 @@ exports.createOrder = async (req, res) => {
     // Staff don't ask for customer name, so default it to "Guest"
     req.body.customer = "Guest";
 
+    // 1. Check Table Availability BEFORE creating the order
+    if (
+      req.body.table &&
+      req.body.table.trim() !== "Walk-in" &&
+      req.body.table.trim() !== "Queue"
+    ) {
+      const targetTable = await Table.findOne({
+        name: { $regex: new RegExp(`^${req.body.table.trim()}$`, "i") },
+      });
+
+      if (!targetTable) {
+        return res.status(404).json({
+          message: `Table '${req.body.table}' not found. Please check the table name.`,
+        });
+      }
+
+      if (targetTable.status === "Occupied") {
+        // 🚀 MERGE LOGIC: Instead of rejecting, find the active order and append the new items!
+        const activeOrder = await Order.findOne({
+          table: { $regex: new RegExp(`^${req.body.table.trim()}$`, "i") },
+          status: { $nin: ["Completed", "Cancelled"] },
+        });
+
+        if (activeOrder) {
+          // Append new items and calculate the new combined totals
+          activeOrder.items.push(...(req.body.items || []));
+          activeOrder.total = (activeOrder.total || 0) + (req.body.total || 0);
+          if (activeOrder.amount !== undefined)
+            activeOrder.amount = activeOrder.total;
+
+          // Bump status back to Pending so the kitchen sees the new items
+          activeOrder.status = "Pending";
+
+          const updatedOrder = await activeOrder.save();
+
+          // 📢 Broadcast to all clients that an existing order was updated
+          if (req.io) req.io.emit("orderUpdated", updatedOrder);
+
+          return res.status(200).json(updatedOrder);
+        }
+      }
+    }
+
+    // 2. Automatically generate a sequential Order ID (e.g., #ORD-0001)
+    // We do this here so the frontend (or Postman) never has to provide one manually.
+    const lastOrder = await Order.findOne().sort({ createdAt: -1 });
+    let nextSeq = 1;
+    if (lastOrder && lastOrder.id && lastOrder.id.startsWith("#ORD-")) {
+      const lastSeq = parseInt(lastOrder.id.replace("#ORD-", ""), 10);
+      if (!isNaN(lastSeq)) {
+        nextSeq = lastSeq + 1;
+      }
+    }
+    req.body.id = `#ORD-${nextSeq.toString().padStart(4, "0")}`;
+
+    // 3. Automatically generate the server-side timestamp, date, and time
+    const now = new Date();
+    req.body.timestamp = now;
+    req.body.date = now.toISOString().split("T")[0];
+    req.body.time = now.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+
     const order = new Order(req.body);
     const createdOrder = await order.save();
 
@@ -117,7 +188,10 @@ exports.createOrder = async (req, res) => {
       order.table.trim() !== "Walk-in" &&
       order.table.trim() !== "Queue"
     ) {
-      const updateData = { status: "Occupied" };
+      const updateData = {
+        status: "Occupied",
+        currentCustomer: order.customer,
+      };
 
       const updatedTable = await Table.findOneAndUpdate(
         { name: { $regex: new RegExp(`^${order.table.trim()}$`, "i") } }, // Case-insensitive match
@@ -131,6 +205,9 @@ exports.createOrder = async (req, res) => {
         );
       }
     }
+
+    // 📢 Broadcast to all clients (like the Kitchen screen) that a brand new order arrived!
+    if (req.io) req.io.emit("newOrder", createdOrder);
 
     res.status(201).json(createdOrder);
   } catch (error) {
@@ -161,6 +238,10 @@ exports.updateOrderStatus = async (req, res) => {
 
     if (!updatedOrder)
       return res.status(404).json({ message: "Order not found" });
+
+    // 📢 Broadcast to all clients that an order status changed (Kitchen -> Waiter)
+    if (req.io) req.io.emit("orderStatusUpdated", updatedOrder);
+
     res.status(200).json(updatedOrder);
   } catch (error) {
     console.error("Error updating order status:", error);
@@ -173,7 +254,8 @@ exports.updateOrderStatus = async (req, res) => {
 // @access  Private (Cashier/Admin)
 exports.completeOrder = async (req, res) => {
   try {
-    const finalDetails = req.body; // e.g., paymentMethod, amount, discount, etc.
+    // Secure checkout: Extract only financial fields to prevent object injection
+    const { paymentMethod, discountAmount, serviceCharge, amount } = req.body;
 
     // Support querying by either MongoDB _id or custom string id
     const query = req.params.id.match(/^[0-9a-fA-F]{24}$/)
@@ -182,7 +264,13 @@ exports.completeOrder = async (req, res) => {
 
     const updatedOrder = await Order.findOneAndUpdate(
       query,
-      { ...finalDetails, status: "Completed" },
+      {
+        paymentMethod: paymentMethod || "Cash",
+        discountAmount: discountAmount || 0,
+        serviceCharge: serviceCharge || 0,
+        paidAmount: amount || 0,
+        status: "Completed",
+      },
       { new: true }
     );
     if (!updatedOrder)
@@ -200,6 +288,9 @@ exports.completeOrder = async (req, res) => {
         { new: true }
       );
     }
+
+    // 📢 Broadcast that an order is complete (removes it from Kitchen/Staff screens)
+    if (req.io) req.io.emit("orderCompleted", updatedOrder);
 
     res.status(200).json(updatedOrder);
   } catch (error) {
@@ -224,6 +315,25 @@ exports.cancelOrder = async (req, res) => {
     );
     if (!cancelledOrder)
       return res.status(404).json({ message: "Order not found" });
+
+    // Free up the table since the order was cancelled
+    if (
+      cancelledOrder.table &&
+      cancelledOrder.table.trim() !== "Walk-in" &&
+      cancelledOrder.table.trim() !== "Queue"
+    ) {
+      await Table.findOneAndUpdate(
+        {
+          name: { $regex: new RegExp(`^${cancelledOrder.table.trim()}$`, "i") },
+        }, // Case-insensitive match
+        { status: "Available", currentCustomer: "No Customer" },
+        { new: true }
+      );
+    }
+
+    // 📢 Broadcast cancellation
+    if (req.io) req.io.emit("orderCancelled", cancelledOrder);
+
     res.status(200).json(cancelledOrder);
   } catch (error) {
     res.status(500).json({ message: "Server error cancelling order" });
