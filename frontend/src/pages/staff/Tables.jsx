@@ -126,14 +126,13 @@ const Tables = () => {
   // --- Form Submissions ---
   const saveAddTable = (e) => {
     e.preventDefault();
-    if (!formSeats || formSeats <= 0) return alert("Please enter valid seats.");
 
     const newId =
       tables.length > 0 ? Math.max(...tables.map((t) => t.id)) + 1 : 1;
     const newTable = {
       id: newId,
       name: `Table ${newId}`,
-      seats: parseInt(formSeats, 10),
+      seats: 4, // Default fallback
       status: formStatus,
       currentCustomer:
         formStatus === "Available" || formStatus === "Cleaning"
@@ -152,7 +151,7 @@ const Tables = () => {
         t.id === selectedTable.id
           ? {
               ...t,
-              seats: parseInt(formSeats, 10),
+                seats: selectedTable.seats || 4,
               status: formStatus,
               currentCustomer:
                 formStatus === "Available" || formStatus === "Cleaning"
@@ -270,20 +269,6 @@ const Tables = () => {
                   <div className="flex flex-col gap-3 mb-2">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
-                        <Users size={14} />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                          Capacity
-                        </p>
-                        <p className="text-sm font-bold text-slate-900">
-                          {table.seats} Seats
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
                         <User size={14} />
                       </div>
                       <div>
@@ -351,14 +336,6 @@ const Tables = () => {
                       } ${getStatusConfig(selectedTable.status).text}`}
                     >
                       {selectedTable.status}
-                    </span>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Capacity
-                    </span>
-                    <span className="text-sm font-black text-slate-900">
-                      {selectedTable.seats} Seats
                     </span>
                   </div>
                   <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col gap-1">
@@ -437,21 +414,6 @@ const Tables = () => {
                 </div>
 
                 <div className="p-6 space-y-4">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                      Number of Seats *
-                    </label>
-                    <input
-                      type="number"
-                      value={formSeats}
-                      onChange={(e) => setFormSeats(e.target.value)}
-                      required
-                      min="1"
-                      className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900"
-                      placeholder="e.g. 4"
-                    />
-                  </div>
-
                   <div>
                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       Current Status

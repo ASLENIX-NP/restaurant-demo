@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AlarmClock,
   Bell,
@@ -7,6 +8,7 @@ import {
   ChefHat,
   ClipboardList,
   Flame,
+  LogOut,
   Maximize2,
   PackageCheck,
   Salad,
@@ -15,12 +17,7 @@ import {
 } from "lucide-react";
 import "../../styles/chef.css";
 import { useOrders } from "../../context/OrderContext";
-
-const completedHistory = [
-  { id: "#TH1245", channel: "Dine In", itemsCount: 4, clearedAt: "10:22 AM" },
-  { id: "#TH1244", channel: "Delivery", itemsCount: 2, clearedAt: "10:11 AM" },
-  { id: "#TH1243", channel: "Takeaway", itemsCount: 1, clearedAt: "09:58 AM" },
-];
+import { useAuth } from "../../context/AuthContext";
 
 const stationOptions = [
   "All Stations",
@@ -43,6 +40,8 @@ const Dashboard = () => {
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { orders, startCooking, markReady } = useOrders();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const prevOrdersRef = useRef(orders);
 
   // Play notification sound when a new incoming order is detected
@@ -72,6 +71,11 @@ const Dashboard = () => {
 
     document.exitFullscreen();
     setIsFullscreen(false);
+  };
+
+  const handleLogout = () => {
+    if (logout) logout();
+    navigate("/login");
   };
 
   const metrics = useMemo(() => {
@@ -125,6 +129,20 @@ const Dashboard = () => {
         return timeA - timeB;
       });
   }, [activeStation, orders, statusFilter]);
+
+  const dynamicCompletedHistory = useMemo(() => {
+    return orders
+      .filter((o) => o.status === "Ready" || o.status === "Served" || o.status === "Completed")
+      .map((o) => ({
+        id: o.id,
+        channel: o.channel || o.table || "System",
+        itemsCount: (o.items || []).reduce((sum, item) => sum + item.qty, 0),
+        clearedAt: o.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: o.timestamp
+      }))
+      .sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime())
+      .slice(0, 5); // Show the 5 most recently finished orders
+  }, [orders]);
 
   return (
     <div className="chef-dashboard-container">
@@ -194,6 +212,10 @@ const Dashboard = () => {
           <button className="util-btn" onClick={toggleFullscreen} type="button">
             <Maximize2 size={15} />
             {isFullscreen ? "Exit KDS" : "Fullscreen"}
+          </button>
+          <button className="util-btn muted" onClick={handleLogout} type="button" title="Sign Out">
+            <LogOut size={15} />
+            Logout
           </button>
         </div>
       </section>
@@ -464,7 +486,7 @@ const Dashboard = () => {
           <div className="sidebar-card completions-card">
             <h3>Passed to Waitstaff Feed</h3>
             <div className="mini-history-list">
-              {completedHistory.map((historyItem) => (
+              {dynamicCompletedHistory.map((historyItem) => (
                 <div className="history-item-row" key={historyItem.id}>
                   <div>
                     <span className="history-ticket-id">{historyItem.id}</span>

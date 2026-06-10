@@ -314,12 +314,6 @@ const Dashboard = () => {
                             <strong className="text-slate-700">Guest:</strong>{" "}
                             {table.customer}
                           </p>
-                          <p className="text-[11px] font-medium text-slate-500">
-                            <strong className="text-slate-700">
-                              Capacity:
-                            </strong>{" "}
-                            {table.seats} Seats
-                          </p>
                         </div>
                       </div>
                     </div>
@@ -533,22 +527,13 @@ const Dashboard = () => {
             </div>
 
             <div className="p-6">
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 gap-4 mb-6">
                 <div className="bg-slate-50 border border-slate-100 rounded-xl p-3.5">
                   <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                     Guest Assignee
                   </span>
                   <p className="font-bold text-slate-900 text-sm truncate">
                     {selectedTableDetails.customer}
-                  </p>
-                </div>
-                <div className="bg-slate-50 border border-slate-100 rounded-xl p-3.5">
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                    Capacity
-                  </span>
-                  <p className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                    <Users size={14} className="text-slate-400" />{" "}
-                    {selectedTableDetails.seats} People max
                   </p>
                 </div>
                 {selectedTableDetails.status === "Reserved" && (
