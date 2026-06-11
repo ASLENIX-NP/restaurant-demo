@@ -180,12 +180,12 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
+    <div className="min-h-screen bg-slate-50 p-4 sm:p-6 md:p-8 text-slate-800 font-sans">
       <main className="max-w-[1600px] mx-auto pb-12">
         {/* HEADER SECTION */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl md:text-[28px] font-bold text-slate-900 tracking-tight">
               Welcome Back 👋
             </h1>
             <p className="text-slate-400 text-sm mt-0.5 font-medium">
@@ -194,14 +194,14 @@ const Dashboard = () => {
           </div>
           <button
             onClick={() => navigate("/staff/take-order")}
-            className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
+            className="w-full sm:w-auto justify-center bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
           >
             <Plus size={16} /> Take New Order
           </button>
         </div>
 
         {/* STATS OVERVIEW CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 md:mb-8">
           <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
               <Utensils size={22} />
@@ -264,10 +264,10 @@ const Dashboard = () => {
         </div>
 
         {/* WORKSPACE FLEX SPLIT */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
           {/* LEFT: TABLES BLOCK MONITOR */}
           <div className="lg:col-span-8 xl:col-span-9">
-            <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <h2 className="text-lg font-black text-slate-900">
                 Restaurant Tables
               </h2>

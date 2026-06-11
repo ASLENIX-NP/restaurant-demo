@@ -170,12 +170,12 @@ const Tables = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
+    <div className="min-h-screen bg-slate-50 p-4 sm:p-6 md:p-8 text-slate-800 font-sans">
       <main className="max-w-[1600px] mx-auto">
         {/* HEADER SECTION */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl md:text-[28px] font-bold text-slate-900 tracking-tight">
               Restaurant Tables
             </h1>
             <p className="text-slate-400 text-sm mt-0.5 font-medium">
@@ -184,14 +184,14 @@ const Tables = () => {
           </div>
           <button
             onClick={handleOpenAdd}
-            className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
+            className="w-full sm:w-auto justify-center bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
           >
             <Plus size={16} /> Add Table
           </button>
         </div>
 
         {/* DYNAMIC STATS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 md:mb-8">
           <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
               <Utensils size={22} />
@@ -250,7 +250,7 @@ const Tables = () => {
         </div>
 
         {/* MAIN GRID LAYOUT */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
           {tablesList.map((table) => {
             const config = getStatusConfig(table.status);
             return (
@@ -312,7 +312,7 @@ const Tables = () => {
           onClick={closeModal}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-slide-in"
+            className="bg-white rounded-2xl shadow-xl w-[95%] max-w-sm sm:max-w-md overflow-hidden animate-slide-in"
             onClick={(e) => e.stopPropagation()}
           >
             {/* VIEW MODAL */}

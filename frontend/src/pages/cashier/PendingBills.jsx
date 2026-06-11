@@ -126,6 +126,7 @@ export default function PendingBillsPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
+  const [activeMetric, setActiveMetric] = useState("totalDue");
 
   const selectedInvoice = pendingBillsData.find(
     (bill) => bill.id === selectedInvoiceId
@@ -374,7 +375,18 @@ export default function PendingBillsPage() {
         </section>
 
         <section className="pending-metrics">
-          <div className="pending-metric-card dark">
+          <div
+            className="pending-metric-card"
+            onClick={() => setActiveMetric("totalDue")}
+            style={{
+              cursor: "pointer",
+              backgroundColor: activeMetric === "totalDue" ? "#ffffff" : "#f8fafc",
+              boxShadow: activeMetric === "totalDue" ? "0 10px 25px -5px rgba(59, 130, 246, 0.15), 0 0 0 2px #3b82f6" : "0 1px 3px 0 rgba(0,0,0,0.1)",
+              transform: activeMetric === "totalDue" ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
+              opacity: activeMetric === "totalDue" ? 1 : 0.6,
+              transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+            }}
+          >
             <span className="metric-icon">
               <Wallet size={22} />
             </span>
@@ -383,7 +395,18 @@ export default function PendingBillsPage() {
               <strong>Rs. {metrics.totalDue.toLocaleString()}</strong>
             </div>
           </div>
-          <div className="pending-metric-card">
+          <div
+            className="pending-metric-card"
+            onClick={() => setActiveMetric("unpaid")}
+            style={{
+              cursor: "pointer",
+              backgroundColor: activeMetric === "unpaid" ? "#ffffff" : "#f8fafc",
+              boxShadow: activeMetric === "unpaid" ? "0 10px 25px -5px rgba(244, 63, 94, 0.15), 0 0 0 2px #f43f5e" : "0 1px 3px 0 rgba(0,0,0,0.1)",
+              transform: activeMetric === "unpaid" ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
+              opacity: activeMetric === "unpaid" ? 1 : 0.6,
+              transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+            }}
+          >
             <span className="metric-icon red">
               <Receipt size={22} />
             </span>
@@ -392,16 +415,18 @@ export default function PendingBillsPage() {
               <strong>{metrics.unpaid}</strong>
             </div>
           </div>
-          <div className="pending-metric-card">
-            <span className="metric-icon amber">
-              <Coins size={22} />
-            </span>
-            <div>
-              <p>Partial Bills</p>
-              <strong>{metrics.partial}</strong>
-            </div>
-          </div>
-          <div className="pending-metric-card">
+          <div
+            className="pending-metric-card"
+            onClick={() => setActiveMetric("largest")}
+            style={{
+              cursor: "pointer",
+              backgroundColor: activeMetric === "largest" ? "#ffffff" : "#f8fafc",
+              boxShadow: activeMetric === "largest" ? "0 10px 25px -5px rgba(16, 185, 129, 0.15), 0 0 0 2px #10b981" : "0 1px 3px 0 rgba(0,0,0,0.1)",
+              transform: activeMetric === "largest" ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
+              opacity: activeMetric === "largest" ? 1 : 0.6,
+              transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+            }}
+          >
             <span className="metric-icon green">
               <ChefHat size={22} />
             </span>
