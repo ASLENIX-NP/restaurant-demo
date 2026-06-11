@@ -22,7 +22,7 @@ const filters = ["All", "Completed", "Cancelled"];
 const avatarColors = ["blue", "violet", "green"];
 
 const History = () => {
-  const { orders = [], fetchOrders } = useOrders();
+  const { orders = [] } = useOrders();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("All");
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -31,15 +31,8 @@ const History = () => {
   const exportMenuRef = useRef(null);
 
   useEffect(() => {
-    if (fetchOrders) fetchOrders();
-  }, [fetchOrders]);
-
-  useEffect(() => {
     const handleOutsideClick = (event) => {
-      if (
-        exportMenuRef.current &&
-        !exportMenuRef.current.contains(event.target)
-      ) {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
         setIsExportMenuOpen(false);
       }
     };
@@ -55,7 +48,10 @@ const History = () => {
           (sum, i) => sum + i.qty * (parseFloat(i.price) || 0),
           0
         );
-        const amount = o.amount || subtotal + (subtotal > 0 ? 50 : 0);
+        const amount =
+          o.amount !== undefined
+            ? o.amount
+            : subtotal + (subtotal > 0 ? 50 : 0);
         return {
           id: o.id,
           table: o.table || "Walk-in",
@@ -129,13 +125,11 @@ const History = () => {
       "Amount",
       "Status",
       "Payment Method",
-      "Server",
+      "Server"
     ];
 
     const csvRows = filteredOrders.map((order) => {
-      const itemsBreakdown = order.breakdown
-        .map((i) => `${i.qty}x ${i.name}`)
-        .join("; ");
+      const itemsBreakdown = order.breakdown.map(i => `${i.qty}x ${i.name}`).join("; ");
       return [
         order.id,
         order.date || "N/A",
@@ -147,7 +141,7 @@ const History = () => {
         order.amount,
         order.status,
         order.paymentMethod || "Cash",
-        `"${order.server || "System"}"`,
+        `"${order.server || "System"}"`
       ].join(",");
     });
 
@@ -156,12 +150,7 @@ const History = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `Order_History_${activeTab.replace(/\s+/g, "_")}_${
-        new Date().toISOString().split("T")[0]
-      }.csv`
-    );
+    link.setAttribute("download", `Order_History_${activeTab.replace(/\s+/g, "_")}_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -174,7 +163,7 @@ const History = () => {
       alert("No data to export based on current filters.");
       return;
     }
-
+    
     setTimeout(() => {
       window.print();
     }, 100);
@@ -207,145 +196,36 @@ const History = () => {
         `}
       </style>
 
-      <section
-        className="history-hero"
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "20px",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "32px",
-          backgroundColor: "#fff",
-          padding: "32px",
-          borderRadius: "24px",
-          border: "1px solid #f1f5f9",
-          boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02)",
-        }}
-      >
+      <section className="history-hero" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', backgroundColor: '#fff', padding: '24px', borderRadius: '20px', border: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
         <div>
-          <span
-            className="history-eyebrow"
-            style={{
-              display: "flex",
-              gap: "8px",
-              alignItems: "center",
-              color: "#64748b",
-              fontSize: "13px",
-              fontWeight: "bold",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              marginBottom: "12px",
-            }}
-          >
+          <span className="history-eyebrow" style={{ display: 'flex', gap: '8px', alignItems: 'center', color: '#64748b', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
             <Receipt size={16} />
             Staff Order Ledger
           </span>
-          <h1
-            style={{
-              fontSize: "32px",
-              fontWeight: "900",
-              color: "#0f172a",
-              margin: "0 0 8px 0",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Order History
-          </h1>
-          <p style={{ color: "#64748b", fontSize: "15px", margin: 0 }}>
+          <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#0f172a', margin: '0 0 8px 0', letterSpacing: '-0.02em' }}>Order History</h1>
+          <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>
             Track completed and cancelled restaurant orders with receipt-level
             detail.
           </p>
         </div>
 
-        <div style={{ position: "relative" }} ref={exportMenuRef}>
+        <div style={{ position: "relative", width: "100%", maxWidth: "max-content" }} ref={exportMenuRef}>
           <button
             className={`export-btn ${isExporting ? "loading" : ""}`}
             onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
             disabled={isExporting}
             type="button"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              padding: "14px 24px",
-              backgroundColor: "#0f172a",
-              color: "#fff",
-              border: "none",
-              borderRadius: "12px",
-              fontSize: "14px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              opacity: isExporting ? 0.7 : 1,
-            }}
+            style={{ display: 'flex', width: "100%", justifyContent: 'center', alignItems: 'center', gap: '10px', padding: '12px 20px', backgroundColor: '#0f172a', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s', opacity: isExporting ? 0.7 : 1 }}
           >
             <Download size={16} />
             {isExporting ? "Preparing..." : "Export History"}
           </button>
           {isExportMenuOpen && (
-            <div
-              style={{
-                position: "absolute",
-                top: "calc(100% + 5px)",
-                right: 0,
-                background: "white",
-                border: "1px solid #e2e8f0",
-                borderRadius: "12px",
-                padding: "8px",
-                boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-                zIndex: 50,
-                minWidth: "180px",
-              }}
-            >
-              <button
-                onClick={() => {
-                  handleExportPDF();
-                  setIsExportMenuOpen(false);
-                }}
-                style={{
-                  width: "100%",
-                  background: "none",
-                  border: "none",
-                  padding: "10px 12px",
-                  textAlign: "left",
-                  cursor: "pointer",
-                  borderRadius: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  color: "#334155",
-                  transition: "0.2s",
-                }}
-                className="export-dropdown-item"
-              >
+            <div style={{ position: "absolute", top: "calc(100% + 5px)", right: 0, background: "white", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "8px", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)", zIndex: 50, minWidth: "180px" }}>
+              <button onClick={() => { handleExportPDF(); setIsExportMenuOpen(false); }} style={{ width: "100%", background: "none", border: "none", padding: "10px 12px", textAlign: "left", cursor: "pointer", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", fontWeight: "600", color: "#334155", transition: "0.2s" }} className="export-dropdown-item">
                 <Printer size={16} /> Print / Save PDF
               </button>
-              <button
-                onClick={() => {
-                  handleExportCSV();
-                  setIsExportMenuOpen(false);
-                }}
-                style={{
-                  width: "100%",
-                  background: "none",
-                  border: "none",
-                  padding: "10px 12px",
-                  textAlign: "left",
-                  cursor: "pointer",
-                  borderRadius: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  color: "#334155",
-                  transition: "0.2s",
-                }}
-                className="export-dropdown-item"
-              >
+              <button onClick={() => { handleExportCSV(); setIsExportMenuOpen(false); }} style={{ width: "100%", background: "none", border: "none", padding: "10px 12px", textAlign: "left", cursor: "pointer", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", fontWeight: "600", color: "#334155", transition: "0.2s" }} className="export-dropdown-item">
                 <FileText size={16} /> Download CSV
               </button>
             </div>
@@ -353,183 +233,85 @@ const History = () => {
         </div>
       </section>
 
-      <section
-        className="history-summary-cards"
-        style={{
-          display: "flex",
-          gap: "24px",
-          marginBottom: "32px",
-          flexWrap: "wrap",
-        }}
-      >
+      <section className="history-summary-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
         <div
           className="summary-card"
+          onClick={() => setActiveTab("All")}
           style={{
-            flex: "1",
-            minWidth: "250px",
-            background: "#fff",
+            cursor: "pointer",
+            background: activeTab === "All" ? "#ffffff" : "#f8fafc",
             borderRadius: "20px",
-            padding: "24px",
+            padding: "20px",
             display: "flex",
             alignItems: "center",
-            gap: "20px",
+            gap: "16px",
             border: "1px solid #f1f5f9",
-            boxShadow:
-              "0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.02)",
+            boxShadow: activeTab === "All" ? "0 10px 25px -5px rgba(71, 85, 105, 0.15), 0 0 0 2px #475569" : "0 1px 3px 0 rgba(0,0,0,0.1)",
+            transform: activeTab === "All" ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
+            opacity: activeTab === "All" ? 1 : 0.6,
+            transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
           }}
         >
-          <span
-            className="card-icon"
-            style={{
-              width: "60px",
-              height: "60px",
-              borderRadius: "16px",
-              backgroundColor: "#f1f5f9",
-              color: "#475569",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <span className="card-icon" style={{ width: '60px', height: '60px', borderRadius: '16px', backgroundColor: '#f1f5f9', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FileText size={28} />
           </span>
           <div>
-            <h3
-              style={{
-                fontSize: "28px",
-                fontWeight: "900",
-                color: "#0f172a",
-                margin: "0 0 4px 0",
-              }}
-            >
-              {stats.totalItems}
-            </h3>
-            <p
-              style={{
-                margin: 0,
-                fontSize: "13px",
-                fontWeight: "600",
-                color: "#64748b",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-              }}
-            >
-              Items Processed
-            </p>
+            <h3 style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a', margin: '0 0 4px 0' }}>{stats.totalItems}</h3>
+            <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Items Processed</p>
           </div>
         </div>
 
         <div
           className="summary-card"
+          onClick={() => setActiveTab("Completed")}
           style={{
-            flex: "1",
-            minWidth: "250px",
-            background: "#fff",
+            cursor: "pointer",
+            background: activeTab === "Completed" ? "#ffffff" : "#f8fafc",
             borderRadius: "20px",
-            padding: "24px",
+            padding: "20px",
             display: "flex",
             alignItems: "center",
-            gap: "20px",
+            gap: "16px",
             border: "1px solid #f1f5f9",
-            boxShadow:
-              "0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.02)",
+            boxShadow: activeTab === "Completed" ? "0 10px 25px -5px rgba(16, 185, 129, 0.15), 0 0 0 2px #10b981" : "0 1px 3px 0 rgba(0,0,0,0.1)",
+            transform: activeTab === "Completed" ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
+            opacity: activeTab === "Completed" ? 1 : 0.6,
+            transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
           }}
         >
-          <span
-            className="card-icon green"
-            style={{
-              width: "60px",
-              height: "60px",
-              borderRadius: "16px",
-              backgroundColor: "#ecfdf5",
-              color: "#10b981",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <span className="card-icon green" style={{ width: '60px', height: '60px', borderRadius: '16px', backgroundColor: '#ecfdf5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CheckCircle2 size={28} />
           </span>
           <div>
-            <h3
-              style={{
-                fontSize: "28px",
-                fontWeight: "900",
-                color: "#0f172a",
-                margin: "0 0 4px 0",
-              }}
-            >
-              {stats.completedCount}
-            </h3>
-            <p
-              style={{
-                margin: 0,
-                fontSize: "13px",
-                fontWeight: "600",
-                color: "#64748b",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-              }}
-            >
-              Completed Orders
-            </p>
+            <h3 style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a', margin: '0 0 4px 0' }}>{stats.completedCount}</h3>
+            <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Completed Orders</p>
           </div>
         </div>
 
         <div
           className="summary-card"
+          onClick={() => setActiveTab("Cancelled")}
           style={{
-            flex: "1",
-            minWidth: "250px",
-            background: "#fff",
+            cursor: "pointer",
+            background: activeTab === "Cancelled" ? "#ffffff" : "#f8fafc",
             borderRadius: "20px",
-            padding: "24px",
+            padding: "20px",
             display: "flex",
             alignItems: "center",
-            gap: "20px",
+            gap: "16px",
             border: "1px solid #f1f5f9",
-            boxShadow:
-              "0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.02)",
+            boxShadow: activeTab === "Cancelled" ? "0 10px 25px -5px rgba(244, 63, 94, 0.15), 0 0 0 2px #f43f5e" : "0 1px 3px 0 rgba(0,0,0,0.1)",
+            transform: activeTab === "Cancelled" ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
+            opacity: activeTab === "Cancelled" ? 1 : 0.6,
+            transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
           }}
         >
-          <span
-            className="card-icon red"
-            style={{
-              width: "60px",
-              height: "60px",
-              borderRadius: "16px",
-              backgroundColor: "#fff1f2",
-              color: "#f43f5e",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <span className="card-icon red" style={{ width: '60px', height: '60px', borderRadius: '16px', backgroundColor: '#fff1f2', color: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <XCircle size={28} />
           </span>
           <div>
-            <h3
-              style={{
-                fontSize: "28px",
-                fontWeight: "900",
-                color: "#0f172a",
-                margin: "0 0 4px 0",
-              }}
-            >
-              {stats.cancelledCount}
-            </h3>
-            <p
-              style={{
-                margin: 0,
-                fontSize: "13px",
-                fontWeight: "600",
-                color: "#64748b",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-              }}
-            >
-              Cancelled Orders
-            </p>
+            <h3 style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a', margin: '0 0 4px 0' }}>{stats.cancelledCount}</h3>
+            <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cancelled Orders</p>
           </div>
         </div>
       </section>
@@ -559,7 +341,7 @@ const History = () => {
         </div>
       </section>
 
-      <section className="history-table-wrapper">
+      <section className="history-table-wrapper" style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}>
         {filteredOrders.length === 0 ? (
           <div className="empty-search-state">
             <FileText size={30} />
@@ -614,21 +396,9 @@ const History = () => {
                     <small>{order.time}</small>
                   </td>
                   <td>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "2px",
-                        maxHeight: "60px",
-                        overflowY: "auto",
-                        fontSize: "12px",
-                      }}
-                    >
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxHeight: "60px", overflowY: "auto", fontSize: "12px" }}>
                       {order.breakdown.map((item, i) => (
-                        <span
-                          key={i}
-                          style={{ color: "#475569", whiteSpace: "nowrap" }}
-                        >
+                        <span key={i} style={{ color: "#475569", whiteSpace: "nowrap" }}>
                           <strong>{item.qty}x</strong> {item.name}
                         </span>
                       ))}
@@ -744,47 +514,17 @@ const History = () => {
       {/* DEDICATED PRINTABLE PDF REPORT LAYOUT */}
       <div id="printable-order-history">
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <h2 style={{ fontSize: "22px", margin: "0 0 8px 0" }}>
-            ASLENIX RESTAURANT
-          </h2>
-          <h3
-            style={{ fontSize: "16px", margin: "0 0 5px 0", color: "#475569" }}
-          >
-            Order History Report
-          </h3>
-          <p style={{ margin: "3px 0", fontSize: "13px" }}>
-            <strong>Filter Status:</strong> {activeTab}
-          </p>
-          <p style={{ margin: "3px 0", fontSize: "13px" }}>
-            <strong>Generated On:</strong> {new Date().toLocaleString()}
-          </p>
+          <h2 style={{ fontSize: "22px", margin: "0 0 8px 0" }}>ASLENIX RESTAURANT</h2>
+          <h3 style={{ fontSize: "16px", margin: "0 0 5px 0", color: "#475569" }}>Order History Report</h3>
+          <p style={{ margin: "3px 0", fontSize: "13px" }}><strong>Filter Status:</strong> {activeTab}</p>
+          <p style={{ margin: "3px 0", fontSize: "13px" }}><strong>Generated On:</strong> {new Date().toLocaleString()}</p>
         </div>
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "20px",
-            fontSize: "13px",
-            backgroundColor: "#f8fafc",
-            padding: "12px",
-            border: "1px solid #e2e8f0",
-            borderRadius: "8px",
-            WebkitPrintColorAdjust: "exact",
-          }}
-        >
-          <div>
-            <strong>Orders Displayed:</strong> {filteredOrders.length}
-          </div>
-          <div>
-            <strong>Items Processed:</strong> {stats.totalItems}
-          </div>
-          <div>
-            <strong>Completed Orders:</strong> {stats.completedCount}
-          </div>
-          <div>
-            <strong>Cancelled Orders:</strong> {stats.cancelledCount}
-          </div>
+        
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", fontSize: "13px", backgroundColor: "#f8fafc", padding: "12px", border: "1px solid #e2e8f0", borderRadius: "8px", WebkitPrintColorAdjust: "exact" }}>
+          <div><strong>Orders Displayed:</strong> {filteredOrders.length}</div>
+          <div><strong>Items Processed:</strong> {stats.totalItems}</div>
+          <div><strong>Completed Orders:</strong> {stats.completedCount}</div>
+          <div><strong>Cancelled Orders:</strong> {stats.cancelledCount}</div>
         </div>
 
         <table className="print-table">
@@ -800,15 +540,11 @@ const History = () => {
           </thead>
           <tbody>
             {filteredOrders.map((order, idx) => {
-              const itemsBreakdown = order.breakdown
-                .map((i) => `${i.qty}x ${i.name}`)
-                .join("; ");
+              const itemsBreakdown = order.breakdown.map(i => `${i.qty}x ${i.name}`).join("; ");
               return (
                 <tr key={idx}>
                   <td style={{ fontWeight: "bold" }}>{order.id}</td>
-                  <td>
-                    {order.date || "N/A"} {order.time || ""}
-                  </td>
+                  <td>{order.date || "N/A"} {order.time || ""}</td>
                   <td>{order.customer || "Guest"}</td>
                   <td>{order.table || "Walk-in"}</td>
                   <td>{itemsBreakdown}</td>

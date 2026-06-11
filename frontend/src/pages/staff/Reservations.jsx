@@ -88,13 +88,13 @@ const Reservations = () => {
   const vipCount = reservationsData.filter(r => r.status === "VIP").length;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
+    <div className="min-h-screen bg-slate-50 p-4 sm:p-6 md:p-8 text-slate-800 font-sans">
       <main className="max-w-[1600px] mx-auto pb-12">
         
         {/* HEADER SECTION */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">Reservations</h1>
+            <h1 className="text-2xl md:text-[28px] font-bold text-slate-900 tracking-tight">Reservations</h1>
             <p className="text-slate-400 text-sm mt-0.5 font-medium">
               Dashboard <span className="mx-1.5 text-slate-300">&gt;</span> Reservations
             </p>
@@ -102,7 +102,7 @@ const Reservations = () => {
         </div>
 
         {/* METRICS & STATS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 md:mb-8">
           <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
             <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
               <CalendarCheck size={22} />

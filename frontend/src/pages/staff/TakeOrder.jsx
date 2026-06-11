@@ -6,8 +6,8 @@ import {
   CheckCircle2,
   UtensilsCrossed,
   XCircle,
+  User,
 } from "lucide-react";
-import { io } from "socket.io-client";
 import "../../styles/takeorders.css"; // Kept for any global custom overrides
 import { useOrders } from "../../context/OrderContext";
 import { useAuth } from "../../context/AuthContext";
@@ -16,13 +16,12 @@ import { useTables } from "../../context/TableContext";
 export default function TakeOrder() {
   const { addOrder } = useOrders();
   const { user } = useAuth();
-  const { tables, updateTableStatus, fetchTables } = useTables() || {
-    tables: [],
-  };
+  const { tables, updateTableStatus } = useTables() || { tables: [] };
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedTable, setSelectedTable] = useState("All Tables");
   const [cart, setCart] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
+  const [orderNote, setOrderNote] = useState("");
 
   const dynamicTables = [
     "All Tables",
@@ -38,34 +37,28 @@ export default function TakeOrder() {
     }
   };
 
+  // Load dynamic menu data synced with Admin Menu Management
   useEffect(() => {
-    if (fetchTables) fetchTables();
-  }, [fetchTables]);
-
-  const loadProducts = async () => {
-    try {
-      const response = await fetch("http://localhost:5001/api/menu");
-      if (response.ok) {
-        const data = await response.json();
+    const loadProducts = () => {
+      const data = localStorage.getItem("restaurant_menu");
+      if (data) {
         setMenuItems(
-          data
+          JSON.parse(data)
             .filter((item) => item.isAvailable !== false)
             .map((item) => ({ ...item, id: item._id || item.id }))
         );
       }
-    } catch (error) {
-      console.error("Error fetching menu items:", error);
-    }
-  };
-
-  // Load dynamic menu data synced with Admin Menu Management
-  useEffect(() => {
+    };
     loadProducts();
 
-    const socket = io("http://localhost:5001");
-    socket.on("menuUpdated", loadProducts);
-
-    return () => socket.disconnect();
+    // Listen for real-time cross-tab updates triggered by Admin
+    const handleStorageChange = (e) => {
+      if (e.key === "restaurant_menu_updated") {
+        loadProducts();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   const categories = [
@@ -109,7 +102,7 @@ export default function TakeOrder() {
     setCart(cart.filter((item) => item.id !== id));
   };
 
-  const handleSendToKitchen = async () => {
+  const handleSendToKitchen = () => {
     if (cart.length === 0) {
       showNotification(
         "Your cart is empty! Please add items before sending to the kitchen.",
@@ -122,13 +115,23 @@ export default function TakeOrder() {
       return;
     }
 
+    const orderTime = new Date().toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+    const orderDate = new Date().toISOString().split("T")[0];
+    const orderId = `#ORD-${Math.floor(1000 + Math.random() * 9000)}`; // Generate ID here
+
     const orderData = {
+      id: orderId,
       table: selectedTable,
-      server: user?.name || "Staff Member",
+      server: user?.name || user?.username || "Staff Member",
       channel: selectedTable === "Pickup" ? "Takeaway" : "Dine In",
       priority: "Normal",
       station: "Hot Line",
-      notes: "",
+      notes: orderNote,
+      elapsedMinutes: 0,
       items: cart.map(({ id, name, qty, price, category }) => ({
         id,
         name,
@@ -138,62 +141,50 @@ export default function TakeOrder() {
         station: "Hot Line",
       })),
       subtotal,
+      vat: 0, // VAT was removed previously, so we default it to 0
       total: parseFloat(total.toFixed(2)),
+      amount: parseFloat(total.toFixed(2)),
+      time: orderTime,
+      date: orderDate,
+      timestamp: new Date().toISOString(),
       status: "Pending",
     };
 
-    try {
-      const token = sessionStorage.getItem("token");
-      const response = await fetch("http://localhost:5001/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(orderData),
-      });
+    addOrder(orderData);
 
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.message || "Failed to create order");
+    // Mark the table as Occupied globally
+    const tableObj = tables.find(
+      (t) => (t.name || `Table ${t.id}`) === selectedTable
+    );
+    if (tableObj) {
+      updateTableStatus(tableObj.id, "Occupied", "Dining In");
+    } else {
+      const match = selectedTable.match(/\d+/);
+      if (match) {
+        updateTableStatus(parseInt(match[0], 10), "Occupied", "Dining In");
       }
-
-      const savedOrder = await response.json();
-      addOrder(savedOrder);
-
-      // Mark the table as Occupied globally
-      const tableObj = tables.find(
-        (t) => (t.name || `Table ${t.id}`) === selectedTable
-      );
-      if (tableObj) {
-        updateTableStatus(tableObj.id, "Occupied", "Dining In");
-      } else {
-        const match = selectedTable.match(/\d+/);
-        if (match)
-          updateTableStatus(parseInt(match[0], 10), "Occupied", "Dining In");
-      }
-
-      showNotification(
-        `Order for ${selectedTable} successfully sent to the kitchen!`,
-        "success"
-      );
-      setCart([]);
-      setSelectedTable("All Tables");
-    } catch (error) {
-      console.error("Error creating order:", error);
-      showNotification(error.message, "error");
     }
+
+    console.log("Sending enriched order to kitchen API...", orderData);
+    showNotification(
+      `Order for ${selectedTable} successfully sent to the kitchen at ${orderTime}!`,
+      "success"
+    );
+
+    setCart([]);
+    setSelectedTable("All Tables");
+    setOrderNote("");
   };
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
   const total = subtotal; // VAT is already included in the menu price
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
+    <div className="min-h-screen bg-slate-50 p-4 sm:p-6 md:p-8 text-slate-800 font-sans">
       {/* CENTERED NOTIFICATION MODAL */}
       {notification && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[99999] flex justify-center items-center p-4 transition-opacity">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center flex flex-col items-center gap-4 animate-slide-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-[90%] max-w-sm overflow-hidden p-6 text-center flex flex-col items-center gap-4 animate-slide-in">
             <div
               className={`w-16 h-16 rounded-full flex items-center justify-center ${
                 notification.type === "error"
@@ -233,7 +224,7 @@ export default function TakeOrder() {
 
       <main className="max-w-[1600px] mx-auto">
         {/* TABLE SELECTION BAR */}
-        <div className="mb-8">
+        <div className="mb-6 md:mb-8">
           <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 px-1">
             Select Table
           </h3>
@@ -258,7 +249,7 @@ export default function TakeOrder() {
         </div>
 
         {/* MAIN WORKSPACE SPLIT */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           {/* LEFT: CATEGORIES SIDEBAR */}
           <div className="lg:col-span-2 flex flex-col gap-2">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 px-1">
@@ -283,7 +274,7 @@ export default function TakeOrder() {
 
           {/* MIDDLE: MENU ITEMS GRID */}
           <div className="lg:col-span-7">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
               {filteredItems.map((item) => (
                 <div
                   className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col h-full group"
@@ -332,15 +323,20 @@ export default function TakeOrder() {
           </div>
 
           {/* RIGHT: CURRENT ORDER / CART */}
-          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col h-[calc(100vh-140px)] sticky top-6">
+          <div className="w-full lg:col-span-3 bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-5 flex flex-col h-auto max-h-[60vh] lg:max-h-none lg:h-[calc(100vh-140px)] lg:sticky top-6 order-last mb-6 lg:mb-0">
             {/* Cart Header */}
-            <div className="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
-              <h3 className="font-black text-slate-900 text-lg">
-                Current Order
-              </h3>
-              <span className="bg-purple-50 text-purple-600 font-bold text-xs px-3 py-1 rounded-lg border border-purple-100">
-                {selectedTable}
-              </span>
+            <div className="mb-5 pb-4 border-b border-slate-100">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-black text-slate-900 text-lg">
+                  Current Order
+                </h3>
+                <span className="bg-purple-50 text-purple-600 font-bold text-xs px-3 py-1 rounded-lg border border-purple-100">
+                  {selectedTable}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+                <User size={14} /> Server: {user?.name || user?.username || "Staff Member"}
+              </div>
             </div>
 
             {/* Cart Items List */}
@@ -411,6 +407,15 @@ export default function TakeOrder() {
 
             {/* Cart Summary & Actions */}
             <div className="mt-4 pt-4 border-t border-slate-100 space-y-2 bg-white">
+              <div className="mb-3">
+                <textarea
+                  value={orderNote}
+                  onChange={(e) => setOrderNote(e.target.value)}
+                  placeholder="Add special instructions or notes..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-purple-400 transition-all resize-none"
+                  rows="2"
+                />
+              </div>
               <div className="flex justify-between text-sm font-medium text-slate-500">
                 <span>Subtotal</span>
                 <span className="text-slate-900 font-bold">Rs. {subtotal}</span>

@@ -17,20 +17,20 @@ const ReadyOrders = () => {
   const readyOrders = orders.filter((order) => order.status === "Ready");
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-6 lg:p-10 text-slate-800 font-sans relative overflow-hidden z-0">
+    <div className="min-h-screen bg-[#f8fafc] p-4 sm:p-6 lg:p-10 text-slate-800 font-sans relative overflow-hidden z-0">
       {/* Decorative background blurs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-300/10 rounded-full blur-[100px] -z-10" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-300/10 rounded-full blur-[100px] -z-10" />
 
       <main className="max-w-[1400px] mx-auto">
         {/* HEADER SECTION */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 md:mb-10 gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2.5 bg-emerald-100 text-emerald-600 rounded-xl shadow-sm">
                 <BellRing size={24} />
               </div>
-              <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
                 Ready for Service
               </h1>
             </div>
@@ -39,7 +39,7 @@ const ReadyOrders = () => {
               finished these orders. Awaiting waitstaff pickup.
             </p>
           </div>
-          <div className="bg-white/80 backdrop-blur-md text-emerald-700 px-5 py-3 rounded-2xl font-bold flex items-center gap-3 border border-emerald-100 shadow-sm">
+          <div className="bg-white/80 w-full sm:w-auto justify-center backdrop-blur-md text-emerald-700 px-5 py-3 rounded-2xl font-bold flex items-center gap-3 border border-emerald-100 shadow-sm">
             <div className="relative flex h-3 w-3">
               {readyOrders.length > 0 && (
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -66,7 +66,7 @@ const ReadyOrders = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 xl:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 xl:gap-8">
             {readyOrders.map((order) => (
               <div
                 key={order.id}
