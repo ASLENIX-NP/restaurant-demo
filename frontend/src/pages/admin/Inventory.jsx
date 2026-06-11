@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Search,
   Plus,
@@ -15,69 +15,13 @@ import {
   Truck,
   X,
 } from "lucide-react";
+import { io } from "socket.io-client";
 
 import "../../styles/inventory.css";
 
-const initialInventoryItems = [
-  {
-    code: "INV-001",
-    image:
-      "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=120&auto=format&fit=crop",
-    name: "Olive Oil",
-    category: "Oils & Sauces",
-    unit: "Ltr",
-    qty: "12.50",
-    status: "In Stock",
-    updated: "10:30 AM",
-  },
-  {
-    code: "INV-002",
-    image:
-      "https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=120&auto=format&fit=crop",
-    name: "Basmati Rice",
-    category: "Grains",
-    unit: "Kg",
-    qty: "45.00",
-    status: "In Stock",
-    updated: "09:45 AM",
-  },
-  {
-    code: "INV-003",
-    image:
-      "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?q=80&w=120&auto=format&fit=crop",
-    name: "Chicken Breast",
-    category: "Meat & Poultry",
-    unit: "Kg",
-    qty: "8.20",
-    status: "Low Stock",
-    updated: "09:20 AM",
-  },
-  {
-    code: "INV-004",
-    image:
-      "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?q=80&w=120&auto=format&fit=crop",
-    name: "Tomatoes",
-    category: "Vegetables",
-    unit: "Kg",
-    qty: "3.00",
-    status: "Low Stock",
-    updated: "09:10 AM",
-  },
-  {
-    code: "INV-005",
-    image:
-      "https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?q=80&w=120&auto=format&fit=crop",
-    name: "Mozzarella Cheese",
-    category: "Dairy",
-    unit: "Kg",
-    qty: "0.00",
-    status: "Out of Stock",
-    updated: "08:55 AM",
-  },
-];
-
 const Inventory = () => {
-  const [items, setItems] = useState(initialInventoryItems);
+  const [items, setItems] = useState([]);
+  const [purchaseHistory, setPurchaseHistory] = useState([]);
   const [categories, setCategories] = useState(["Oils & Sauces", "Grains", "Meat & Poultry", "Vegetables", "Dairy"]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,10 +37,6 @@ const Inventory = () => {
   const [adjustmentQty, setAdjustmentQty] = useState("");
 
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  const [purchaseHistory, setPurchaseHistory] = useState([
-    { id: 1, date: "Oct 25, 10:00 AM", item: "Olive Oil", qty: "5 Ltr", action: "Stock Added" },
-    { id: 2, date: "Oct 24, 02:30 PM", item: "Basmati Rice", qty: "20 Kg", action: "Stock Added" }
-  ]);
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -109,12 +49,48 @@ const Inventory = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("All Categories");
 
-  const getStatus = (qty) => {
-    const q = parseFloat(qty);
-    if (q <= 0) return "Out of Stock";
-    if (q <= 10) return "Low Stock";
-    return "In Stock";
-  };
+  const fetchInventory = useCallback(async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const res = await fetch("http://localhost:5001/api/inventory", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setItems(data.map(item => ({
+          ...item,
+          updated: new Date(item.updatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        })));
+      }
+    } catch (err) { console.error(err); }
+  }, []);
+
+  const fetchLogs = useCallback(async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const res = await fetch("http://localhost:5001/api/inventory/logs", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPurchaseHistory(data.map(log => ({
+          id: log._id,
+          date: new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' }),
+          item: log.itemName,
+          qty: log.qtyString,
+          action: log.action
+        })));
+      }
+    } catch (err) { console.error(err); }
+  }, []);
+
+  useEffect(() => {
+    fetchInventory();
+    fetchLogs();
+    const socket = io("http://localhost:5001");
+    socket.on("inventoryUpdated", () => { fetchInventory(); fetchLogs(); });
+    return () => socket.disconnect();
+  }, [fetchInventory, fetchLogs]);
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -144,39 +120,36 @@ const Inventory = () => {
     setIsModalOpen(true);
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    const currentTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    try {
+      const token = sessionStorage.getItem("token");
+      const method = isEditing ? "PUT" : "POST";
+      const url = isEditing 
+        ? `http://localhost:5001/api/inventory/${currentItemCode}`
+        : `http://localhost:5001/api/inventory`;
 
-    if (isEditing) {
-      setItems(items.map((item) =>
-        item.code === currentItemCode
-          ? {
-              ...item,
-              name: formName,
-              category: formCategory,
-              unit: formUnit,
-              qty: parseFloat(formQty).toFixed(2),
-              status: getStatus(formQty),
-              updated: currentTime,
-            }
-          : item
-      ));
-    } else {
-      const newCode = `INV-00${items.length + 1}`;
-      const newItem = {
-        code: newCode,
-        image: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=120&auto=format&fit=crop",
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
         name: formName,
         category: formCategory,
         unit: formUnit,
-        qty: parseFloat(formQty).toFixed(2),
-        status: getStatus(formQty),
-        updated: currentTime,
-      };
-      setItems([...items, newItem]);
+          qty: formQty,
+          image: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=120&auto=format&fit=crop"
+        })
+      });
+
+      if (response.ok) {
+        setIsModalOpen(false);
+      } else {
+        const err = await response.json();
+        alert(err.message);
+      }
+    } catch (error) {
+      console.error(error);
     }
-    setIsModalOpen(false);
   };
 
   const handleDeleteClick = (code) => {
@@ -184,10 +157,20 @@ const Inventory = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    setItems(items.filter((item) => item.code !== itemToDelete));
-    setIsDeleteModalOpen(false);
-    setItemToDelete(null);
+  const handleConfirmDelete = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await fetch(`http://localhost:5001/api/inventory/${itemToDelete}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setIsDeleteModalOpen(false);
+        setItemToDelete(null);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleOpenAdjustmentModal = () => {
@@ -197,36 +180,22 @@ const Inventory = () => {
     setIsAdjustmentModalOpen(true);
   };
 
-  const handleAdjustmentSubmit = (e) => {
+  const handleAdjustmentSubmit = async (e) => {
     e.preventDefault();
     if (!adjustmentItemCode || !adjustmentQty || parseFloat(adjustmentQty) <= 0) return;
-
-    setItems(items.map(item => {
-      if (item.code === adjustmentItemCode) {
-        let currentQty = parseFloat(item.qty);
-        let adjQty = parseFloat(adjustmentQty);
-        let newQty = adjustmentType === "add" ? currentQty + adjQty : currentQty - adjQty;
-        if (newQty < 0) newQty = 0;
-        
-        const newHistory = {
-          id: Date.now(),
-          date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' }),
-          item: item.name,
-          qty: `${adjQty} ${item.unit}`,
-          action: adjustmentType === "add" ? "Stock Added" : "Stock Deducted"
-        };
-        setPurchaseHistory([newHistory, ...purchaseHistory]);
-
-        return {
-          ...item,
-          qty: newQty.toFixed(2),
-          status: getStatus(newQty),
-          updated: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-        };
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await fetch(`http://localhost:5001/api/inventory/${adjustmentItemCode}/adjust`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ type: adjustmentType, qty: adjustmentQty })
+      });
+      if (response.ok) {
+        setIsAdjustmentModalOpen(false);
       }
-      return item;
-    }));
-    setIsAdjustmentModalOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleCategorySubmit = (e) => {
