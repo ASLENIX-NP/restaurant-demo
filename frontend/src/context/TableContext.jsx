@@ -1,99 +1,129 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import { io } from "socket.io-client";
 
 const TableContext = createContext();
 
 export const useTables = () => useContext(TableContext);
 
 export const TableProvider = ({ children }) => {
-  const [tables, setTables] = useState(() => {
-    const savedTables = localStorage.getItem("restaurant_tables");
-    if (savedTables) {
-      return JSON.parse(savedTables);
-    }
-    return [
-      {
-        id: 1,
-        name: "Table 1",
-        seats: 4,
-        status: "Available",
-        currentCustomer: "No Customer",
-      },
-      {
-        id: 2,
-        name: "Table 2",
-        seats: 2,
-        status: "Available",
-        currentCustomer: "No Customer",
-      },
-      {
-        id: 3,
-        name: "Table 3",
-        seats: 6,
-        status: "Available",
-        currentCustomer: "No Customer",
-      },
-      {
-        id: 4,
-        name: "Table 4",
-        seats: 4,
-        status: "Available",
-        currentCustomer: "No Customer",
-      },
-      {
-        id: 5,
-        name: "Table 5",
-        seats: 8,
-        status: "Available",
-        currentCustomer: "No Customer",
-      },
-      {
-        id: 6,
-        name: "Table 6",
-        seats: 2,
-        status: "Available",
-        currentCustomer: "No Customer",
-      },
-    ];
-  });
+  const [tables, setTables] = useState([]);
 
-  useEffect(() => {
-    localStorage.setItem("restaurant_tables", JSON.stringify(tables));
-  }, [tables]);
-
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === "restaurant_tables") {
-        setTables(e.newValue ? JSON.parse(e.newValue) : []);
+  const fetchTables = useCallback(async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      if (!token) return;
+      const res = await fetch("http://localhost:5001/api/tables", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTables(data.map((t) => ({ ...t, id: t._id || t.id })));
       }
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    } catch (err) {
+      console.error("Error fetching tables", err);
+    }
   }, []);
 
-  const updateTableStatus = (id, newStatus, customerName = "No Customer") => {
-    setTables((prevTables) =>
-      prevTables.map((table) =>
-        table.id === id
-          ? { ...table, status: newStatus, currentCustomer: customerName }
-          : table
-      )
-    );
+  useEffect(() => {
+    fetchTables();
+
+    const socket = io("http://localhost:5001");
+
+    // Listen for the event from the backend and re-fetch
+    socket.on("tablesUpdated", fetchTables);
+
+    return () => socket.disconnect();
+  }, [fetchTables]);
+
+  const updateTableStatus = async (
+    id,
+    newStatus,
+    customerName = "No Customer"
+  ) => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const res = await fetch(`http://localhost:5001/api/tables/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status: newStatus,
+          currentCustomer: customerName,
+        }),
+      });
+      if (res.ok) {
+        fetchTables();
+      }
+    } catch (err) {
+      console.error("Error updating table status", err);
+    }
   };
 
-  const addTable = (newTable) => {
-    setTables((prev) => [...prev, { ...newTable, id: Date.now() }]);
+  const addTable = async (newTable) => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const res = await fetch("http://localhost:5001/api/tables", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newTable),
+      });
+      if (res.ok) {
+        fetchTables();
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.message || "Failed to add table");
+      }
+    } catch (err) {
+      console.error("Error adding table", err);
+      throw err;
+    }
   };
 
-  const deleteTable = (id) => {
-    setTables((prev) => prev.filter((table) => table.id !== id));
+  const deleteTable = async (id) => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const res = await fetch(`http://localhost:5001/api/tables/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        fetchTables();
+      }
+    } catch (err) {
+      console.error("Error deleting table", err);
+    }
   };
 
-  const editTable = (id, updatedTableData) => {
-    setTables((prevTables) =>
-      prevTables.map((table) =>
-        table.id === id ? { ...table, ...updatedTableData } : table
-      )
-    );
+  const editTable = async (id, updatedTableData) => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const res = await fetch(`http://localhost:5001/api/tables/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedTableData),
+      });
+      if (res.ok) {
+        fetchTables();
+      }
+    } catch (err) {
+      console.error("Error editing table", err);
+    }
   };
 
   return (
@@ -105,6 +135,7 @@ export const TableProvider = ({ children }) => {
         addTable,
         deleteTable,
         editTable,
+        fetchTables,
       }}
     >
       {children}

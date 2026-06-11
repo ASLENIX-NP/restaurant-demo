@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Search,
   Filter,
@@ -14,8 +14,12 @@ import {
 import { useOrders } from "../../context/OrderContext";
 
 export default function Payments() {
-  const { orders = [] } = useOrders() || {};
+  const { orders = [], fetchOrders } = useOrders() || {};
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    if (fetchOrders) fetchOrders();
+  }, [fetchOrders]);
 
   // Dynamically generate payments from completed orders
   const paymentsData = useMemo(() => {
@@ -26,10 +30,7 @@ export default function Payments() {
           (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
           0
         );
-        const rawAmount =
-          order.amount !== undefined
-            ? order.amount
-            : subtotal + (subtotal > 0 ? 50 : 0);
+        const rawAmount = order.amount || subtotal + (subtotal > 0 ? 50 : 0);
 
         return {
           paymentId: `PAY-${String(order.id).replace(/\D/g, "")}`,

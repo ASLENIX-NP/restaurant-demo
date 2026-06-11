@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -14,10 +14,14 @@ import { useOrders } from "../../context/OrderContext";
 import "../../styles/orders.css"; // Kept for any global custom overrides
 
 const Orders = () => {
-  const { orders = [] } = useOrders();
+  const { orders = [], fetchOrders } = useOrders();
   const [activeFilter, setActiveFilter] = useState("All Orders");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  useEffect(() => {
+    if (fetchOrders) fetchOrders();
+  }, [fetchOrders]);
 
   const formattedOrders = orders
     .map((o, i) => {
@@ -25,8 +29,7 @@ const Orders = () => {
         (sum, item) => sum + item.qty * item.price,
         0
       );
-      const total =
-        o.amount !== undefined ? o.amount : subtotal + (subtotal > 0 ? 50 : 0);
+      const total = o.amount || subtotal + (subtotal > 0 ? 50 : 0);
       const avatarColors = [
         "bg-blue-500",
         "bg-emerald-500",
@@ -359,7 +362,10 @@ const Orders = () => {
                         {item.qty}
                       </td>
                       <td className="py-3 pr-2 text-right font-black text-slate-900">
-                        Rs. {(item.qty * (parseFloat(item.price) || 0)).toLocaleString()}
+                        Rs.{" "}
+                        {(
+                          item.qty * (parseFloat(item.price) || 0)
+                        ).toLocaleString()}
                       </td>
                     </tr>
                   ))}

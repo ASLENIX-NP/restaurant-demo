@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Download,
@@ -13,10 +13,14 @@ import { useOrders } from "../../context/OrderContext";
 import "../../styles/billing.css"; // Kept for any global custom overrides
 
 const Billing = () => {
-  const { orders = [] } = useOrders();
+  const { orders = [], fetchOrders } = useOrders();
   const [activeTab, setActiveTab] = useState("All Bills");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBillId, setSelectedBillId] = useState(null);
+
+  useEffect(() => {
+    if (fetchOrders) fetchOrders();
+  }, [fetchOrders]);
 
   const billsData = orders
     .filter((o) => o.status === "Completed")
@@ -25,8 +29,7 @@ const Billing = () => {
         (sum, item) => sum + item.qty * item.price,
         0
       );
-      const total =
-        o.amount !== undefined ? o.amount : subtotal + (subtotal > 0 ? 50 : 0);
+      const total = o.amount || subtotal + (subtotal > 0 ? 50 : 0);
       return {
         billNo: o.id,
         orderId: o.id,

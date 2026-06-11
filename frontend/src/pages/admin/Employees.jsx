@@ -6,11 +6,11 @@ import {
   Users,
   CheckCircle2,
   ChefHat,
-  XCircle,
-  Edit2,
   Trash2,
+  Edit2,
   X,
   AlertTriangle,
+  XCircle as XCircleIcon,
   Mail,
   Phone,
   Clock,
@@ -19,96 +19,36 @@ import {
   List,
   Filter,
 } from "lucide-react";
-import {
-  getPendingApplications,
-  savePendingApplications,
-  getUsers,
-  saveUsers,
-} from "../../utils/users";
 
 import "../../styles/employees.css"; // Kept for any global custom overrides
 
 const Employees = () => {
   const navigate = useNavigate();
 
-  const [employees, setEmployees] = useState(() => {
-    const savedEmployees = localStorage.getItem("restaurant_employees");
-    if (savedEmployees) {
-      return JSON.parse(savedEmployees);
-    }
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    return [
-      {
-        tempId: "emp-1",
-        username: "johndoe",
-        name: "John Doe",
-        role: "Manager",
-        shift: "Morning",
-        email: "john.doe@example.com",
-        phone: "+977 9812345678",
-        salary: "Rs. 45,000",
-        status: "Active",
-        image: "https://randomuser.me/api/portraits/men/1.jpg",
-      },
-      {
-        tempId: "emp-2",
-        username: "sarahsmith",
-        name: "Sarah Smith",
-        role: "Chef",
-        shift: "Evening",
-        email: "sarah.smith@example.com",
-        phone: "+977 9823456789",
-        salary: "Rs. 60,000",
-        status: "Active",
-        image: "https://randomuser.me/api/portraits/women/2.jpg",
-      },
-      {
-        tempId: "emp-3",
-        username: "mikejones",
-        name: "Mike Jones",
-        role: "Waiter",
-        shift: "Day",
-        email: "mike.jones@example.com",
-        phone: "+977 9834567890",
-        salary: "Rs. 25,000",
-        status: "Inactive",
-        image: "https://randomuser.me/api/portraits/men/3.jpg",
-      },
-      {
-        tempId: "emp-4",
-        username: "emilydavis",
-        name: "Emily Davis",
-        role: "Cashier",
-        shift: "Morning",
-        email: "emily.davis@example.com",
-        phone: "+977 9845678901",
-        salary: "Rs. 30,000",
-        status: "Active",
-        image: "https://randomuser.me/api/portraits/women/4.jpg",
-      },
-    ];
-  });
-
-  const [pendingApplications, setPendingApplications] = useState([]);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
-  const [sortBy, setSortBy] = useState("Newest First");
 
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [employeeToReject, setEmployeeToReject] = useState(null);
 
-  useEffect(() => {
-    setPendingApplications(getPendingApplications() || []);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("restaurant_employees", JSON.stringify(employees));
-  }, [employees]);
+  // Custom Popup Notification State
+  const [notification, setNotification] = useState(null);
+  const showNotification = (message, type = "success") => {
+    setNotification({ message, type });
+    if (type === "success") {
+      setTimeout(() => setNotification(null), 4000); // Auto-close success after 4s
+    }
+  };
 
   const [newEmployee, setNewEmployee] = useState({
     username: "",
@@ -123,68 +63,104 @@ const Employees = () => {
     image: "https://randomuser.me/api/portraits/men/1.jpg",
   });
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const token = sessionStorage.getItem("token");
+        const response = await fetch("http://localhost:5001/api/auth/users", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setEmployees(data);
+        } else {
+          console.error("Failed to fetch users");
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+      setLoading(false);
+    };
+    fetchUsers();
+  }, []);
+
   const handleDeleteClick = (employeeId) => {
     setEmployeeToDelete(employeeId);
     setShowDeleteModal(true);
   };
 
   const handleConfirmDelete = async () => {
-    const updated = employees.filter(
-      (emp) => (emp._id || emp.id || emp.tempId) !== employeeToDelete
-    );
-    setEmployees(updated);
-    setShowDeleteModal(false);
-    setEmployeeToDelete(null);
-  };
-
-  const handleApproveApplication = (applicationId) => {
-    const application = pendingApplications.find((app) => app.id === applicationId);
-    if (!application) return;
-
-    const updatedPending = pendingApplications.filter((app) => app.id !== applicationId);
-    savePendingApplications(updatedPending);
-    setPendingApplications(updatedPending);
-
-    let normalizedRole = application.role?.toLowerCase() || "staff";
-    if (normalizedRole === "manager") normalizedRole = "admin";
-    if (normalizedRole === "waiter") normalizedRole = "staff";
-
-    const users = getUsers() || [];
-    const updatedUsers = [
-      ...users,
-      {
-        username: application.username,
-        password: application.password,
-        role: normalizedRole,
-      },
-    ];
-    
-    saveUsers(updatedUsers);
     try {
-      // Fallback direct storage sync
-      localStorage.setItem("users", JSON.stringify(updatedUsers));
-    } catch(e) {}
+      const token = sessionStorage.getItem("token");
+      // We use the 'update status' endpoint to deactivate, which is safer than deleting.
+      const response = await fetch(
+        `http://localhost:5001/api/auth/users/${employeeToDelete}/status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: "Inactive" }),
+        }
+      );
 
-    const approvedEmployee = {
-      tempId: `app-${Date.now()}`,
-      username: application.username,
-      name: application.name,
-      role: application.role,
-      shift: application.shift || "Day",
-      email: application.email,
-      phone: application.phone,
-      salary: application.salary || "Rs. 25,000",
-      status: "Active",
-      image: application.image || "https://randomuser.me/api/portraits/lego/1.jpg",
-    };
+      if (!response.ok) throw new Error("Failed to deactivate employee.");
 
-    setEmployees((prev) => [...prev, approvedEmployee]);
+      // Update the employee's status in the local state to reflect the change
+      setEmployees(
+        employees.map((emp) =>
+          (emp._id || emp.tempId) === employeeToDelete
+            ? { ...emp, status: "Inactive" }
+            : emp
+        )
+      );
+      setShowDeleteModal(false);
+      setEmployeeToDelete(null);
+    } catch (error) {
+      showNotification(error.message, "error");
+    }
   };
 
-  const handleRejectApplication = (applicationId) => {
-    const updatedPending = pendingApplications.filter((app) => app.id !== applicationId);
-    savePendingApplications(updatedPending);
-    setPendingApplications(updatedPending);
+  const handleRejectClick = (employeeId) => {
+    setEmployeeToReject(employeeId);
+    setShowRejectModal(true);
+  };
+
+  const handleConfirmReject = async () => {
+    if (!employeeToReject) return;
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:5001/api/auth/users/${employeeToReject}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to reject user.");
+      }
+
+      setEmployees(
+        employees.filter((emp) => (emp._id || emp.tempId) !== employeeToReject)
+      );
+      setShowRejectModal(false);
+      setEmployeeToReject(null);
+      showNotification(
+        "User rejected and data deleted successfully.",
+        "success"
+      );
+    } catch (error) {
+      showNotification(error.message, "error");
+    }
   };
 
   const handleOpenAdd = () => {
@@ -227,58 +203,81 @@ const Employees = () => {
     e.preventDefault();
 
     if (isEditing) {
-      const updatedList = employees.map((emp) => {
-        if ((emp._id || emp.id || emp.tempId) === editingId) {
-          const updatedEmp = { ...emp, ...newEmployee };
-          if (!newEmployee.password) {
-            updatedEmp.password = emp.password;
+      // Connect editing to the backend to update user status
+      try {
+        const token = sessionStorage.getItem("token");
+        const response = await fetch(
+          `http://localhost:5001/api/auth/users/${editingId}/status`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ status: newEmployee.status }),
           }
-          return updatedEmp;
+        );
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to update status.");
         }
-        return emp;
-      });
-      setEmployees(updatedList);
 
-      const allUsers = getUsers() || [];
-      let normalizedRole = newEmployee.role.toLowerCase();
-      if (normalizedRole === "manager") normalizedRole = "admin";
-      if (normalizedRole === "waiter") normalizedRole = "staff";
-
-      const updatedUsers = allUsers.map(u => 
-        u.username === newEmployee.username 
-          ? { ...u, role: normalizedRole, ...(newEmployee.password ? { password: newEmployee.password } : {}) } 
-          : u
-      );
-      saveUsers(updatedUsers);
-
-      setShowModal(false);
+        // Update the employee in the local state
+        setEmployees(
+          employees.map((emp) =>
+            (emp._id || emp.tempId) === editingId
+              ? { ...emp, status: newEmployee.status }
+              : emp
+          )
+        );
+        setShowModal(false);
+        showNotification(data.message, "success");
+      } catch (error) {
+        console.error("Update Error:", error);
+        showNotification(error.message, "error");
+      }
     } else {
       if (!newEmployee.username || !newEmployee.password || !newEmployee.role) {
-        alert("Username, password, and role are required");
+        showNotification("Username, password, and role are required", "error");
         return;
       }
-      const newEmpWithId = { ...newEmployee, tempId: `temp-${Date.now()}` };
-      setEmployees([...employees, newEmpWithId]);
-      
-      const allUsers = getUsers() || [];
-      let normalizedRole = newEmployee.role.toLowerCase();
-      if (normalizedRole === "manager") normalizedRole = "admin";
-      if (normalizedRole === "waiter") normalizedRole = "staff";
 
-      saveUsers([
-        ...allUsers, 
-        { 
-          username: newEmployee.username, 
-          password: newEmployee.password, 
-          role: normalizedRole 
+      // Connect to the backend registration endpoint
+      try {
+        const response = await fetch(
+          "http://localhost:5001/api/auth/register",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              ...newEmployee,
+              confirmPassword: newEmployee.password, // The backend expects this
+            }),
+          }
+        );
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to register employee.");
         }
-      ]);
 
-      setShowModal(false);
+        setEmployees([...employees, data.user]); // Add the new user to the state
+        setShowModal(false);
+        showNotification(
+          "Employee added successfully! They are currently Pending approval.",
+          "success"
+        );
+      } catch (error) {
+        console.error("Registration Error:", error);
+        showNotification(error.message, "error");
+      }
     }
   };
 
-  const processedEmployees = employees.filter((employee) => {
+  const filteredEmployees = employees.filter((employee) => {
     const safeName = employee?.name || "";
     const safeEmail = employee?.email || "";
     const safeRole = employee?.role || "";
@@ -296,14 +295,6 @@ const Employees = () => {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  if (sortBy === "Name (A - Z)") {
-    processedEmployees.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-  } else if (sortBy === "Name (Z - A)") {
-    processedEmployees.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
-  } else if (sortBy === "Newest First") {
-    processedEmployees.reverse();
-  }
-
   // Metric Computations
   const totalEmployees = employees.length;
   const activeEmployees = employees.filter((e) => e.status === "Active").length;
@@ -314,6 +305,45 @@ const Employees = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
+      {/* CENTERED NOTIFICATION MODAL */}
+      {notification && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[99999] flex justify-center items-center p-4 transition-opacity">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center flex flex-col items-center gap-4 animate-slide-in">
+            <div
+              className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                notification.type === "error"
+                  ? "bg-rose-100 text-rose-500"
+                  : "bg-emerald-100 text-emerald-500"
+              }`}
+            >
+              {notification.type === "error" ? (
+                <XCircleIcon size={32} />
+              ) : (
+                <CheckCircle2 size={32} />
+              )}
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-900">
+                {notification.type === "error" ? "Action Failed" : "Success!"}
+              </h3>
+              <p className="text-sm font-medium text-slate-500 mt-2 leading-relaxed">
+                {notification.message}
+              </p>
+            </div>
+            <button
+              onClick={() => setNotification(null)}
+              className={`mt-3 w-full font-bold py-3.5 rounded-xl transition-all ${
+                notification.type === "error"
+                  ? "bg-rose-500 hover:bg-rose-600 text-white"
+                  : "bg-emerald-500 hover:bg-emerald-600 text-white"
+              }`}
+            >
+              {notification.type === "error" ? "Got it" : "Continue"}
+            </button>
+          </div>
+        </div>
+      )}
+
       <main className="max-w-[1600px] mx-auto">
         {/* HEADER SECTION */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
@@ -328,24 +358,19 @@ const Employees = () => {
           </div>
 
           <div className="flex items-center gap-3">
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2.5 outline-none font-semibold shadow-sm cursor-pointer"
-        >
-          <option value="All">All Status</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
+            <button className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all">
+              <Filter size={16} /> Filter
+            </button>
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
               className="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2.5 outline-none font-semibold shadow-sm cursor-pointer"
             >
               <option value="All">All Departments</option>
-              <option value="Chef">Chef</option>
-              <option value="Cashier">Cashier</option>
-              <option value="Staff">Staff</option>
+              <option value="Manager">Management</option>
+              <option value="Chef">Kitchen</option>
+              <option value="Cashier">Front of House</option>
+              <option value="Waiter">Waitstaff</option>
             </select>
             <button
               onClick={handleOpenAdd}
@@ -356,75 +381,8 @@ const Employees = () => {
           </div>
         </div>
 
-        {pendingApplications.length > 0 && (
-          <div className="mb-8 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">Pending Employee Applications</h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  New registration requests submitted by prospective staff.
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {pendingApplications.map((application) => (
-                <div
-                  key={application.id}
-                  className="rounded-3xl border border-slate-200 p-5 bg-slate-50 shadow-sm"
-                >
-                  <div className="flex justify-between items-start gap-4 mb-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900">
-                        {application.name}
-                      </h3>
-                      <p className="text-slate-500 text-sm">
-                        @{application.username} · {application.role}
-                      </p>
-                    </div>
-                    <span className="text-[11px] uppercase tracking-[0.2em] font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-2xl">
-                      Pending
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 text-sm text-slate-600 mb-4">
-                    <div>
-                      <p className="font-semibold text-slate-800">Email</p>
-                      <p>{application.email}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-800">Phone</p>
-                      <p>{application.phone}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-800">Requested On</p>
-                      <p>{new Date(application.requestedAt).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-800">Role</p>
-                      <p>{application.role}</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      onClick={() => handleApproveApplication(application.id)}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl px-4 py-2 text-sm font-semibold transition"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => handleRejectApplication(application.id)}
-                      className="bg-white border border-slate-200 text-slate-700 rounded-2xl px-4 py-2 text-sm font-semibold hover:bg-slate-100 transition"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* METRICS & STATS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-5 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
           <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
             <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
               <Users size={24} />
@@ -461,23 +419,6 @@ const Employees = () => {
 
           <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
             <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
-              <AlertTriangle size={24} />
-            </div>
-            <div>
-              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-0.5">
-                Pending Requests
-              </h4>
-              <h2 className="text-2xl font-black text-slate-900 leading-none">
-                {pendingApplications.length}
-              </h2>
-              <p className="text-xs font-medium text-slate-400 mt-1">
-                Waiting for approval
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
-            <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
               <ChefHat size={24} />
             </div>
             <div>
@@ -495,7 +436,7 @@ const Employees = () => {
 
           <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
             <div className="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
-              <XCircle size={24} />
+              <XCircleIcon size={24} />
             </div>
             <div>
               <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-0.5">
@@ -532,14 +473,10 @@ const Employees = () => {
               <span className="text-sm font-semibold text-slate-500">
                 Sort By
               </span>
-            <select 
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2 outline-none font-medium shadow-sm cursor-pointer"
-            >
-              <option value="Newest First">Newest First</option>
-              <option value="Name (A - Z)">Name (A - Z)</option>
-              <option value="Name (Z - A)">Name (Z - A)</option>
+              <select className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2 outline-none font-medium shadow-sm cursor-pointer">
+                <option>Name (A - Z)</option>
+                <option>Name (Z - A)</option>
+                <option>Newest First</option>
               </select>
             </div>
 
@@ -572,7 +509,7 @@ const Employees = () => {
         {viewMode === "grid" ? (
           // --- GRID VIEW (New UI) ---
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {processedEmployees.map((employee) => (
+            {filteredEmployees.map((employee) => (
               <div
                 key={employee._id || employee.tempId}
                 className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm relative group hover:shadow-md transition-all"
@@ -626,23 +563,44 @@ const Employees = () => {
                 </div>
 
                 {/* Footer Actions */}
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                  <button
-                    onClick={() => handleOpenEdit(employee)}
-                    className="flex items-center gap-2 text-slate-600 font-bold text-xs uppercase tracking-wide hover:text-blue-600 transition-colors bg-white px-4 py-2 rounded-lg border border-slate-200 hover:border-blue-200 hover:bg-blue-50 shadow-sm"
-                  >
-                    <Edit2 size={14} /> Edit
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleDeleteClick(
-                        employee._id || employee.id || employee.tempId
-                      )
-                    }
-                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 shadow-sm transition-colors"
-                  >
-                    <Trash2 size={15} />
-                  </button>
+                <div className="pt-4 border-t border-slate-100">
+                  {employee.status === "Pending" ? (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() =>
+                          handleRejectClick(employee._id || employee.tempId)
+                        }
+                        className="flex-1 flex items-center justify-center gap-2 text-rose-600 font-bold text-xs uppercase tracking-wide bg-rose-50 hover:bg-rose-100 transition-colors px-4 py-2 rounded-lg border border-rose-200 shadow-sm"
+                      >
+                        <XCircleIcon size={14} /> Reject
+                      </button>
+                      <button
+                        onClick={() => handleOpenEdit(employee)}
+                        className="flex-1 flex items-center justify-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-wide bg-emerald-50 hover:bg-emerald-100 transition-colors px-4 py-2 rounded-lg border border-emerald-200 shadow-sm"
+                      >
+                        <CheckCircle2 size={14} /> Approve
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => handleOpenEdit(employee)}
+                        className="flex items-center gap-2 text-slate-600 font-bold text-xs uppercase tracking-wide hover:text-blue-600 transition-colors bg-white px-4 py-2 rounded-lg border border-slate-200 hover:border-blue-200 hover:bg-blue-50 shadow-sm"
+                      >
+                        <Edit2 size={14} /> Edit
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleDeleteClick(
+                            employee._id || employee.id || employee.tempId
+                          )
+                        }
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-slate-200 shadow-sm transition-colors"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -664,7 +622,7 @@ const Employees = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
-              {processedEmployees.length === 0 ? (
+                  {filteredEmployees.length === 0 ? (
                     <tr>
                       <td
                         colSpan="7"
@@ -674,7 +632,7 @@ const Employees = () => {
                       </td>
                     </tr>
                   ) : (
-                processedEmployees.map((employee) => (
+                    filteredEmployees.map((employee) => (
                       <tr
                         key={employee._id || employee.tempId}
                         className="hover:bg-slate-50/50 transition-colors group"
@@ -720,13 +678,34 @@ const Employees = () => {
                           </span>
                         </td>
                         <td className="p-4 pr-6">
-                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => handleOpenEdit(employee)}
-                              className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                            >
-                              <Edit2 size={16} />
-                            </button>
+                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            {employee.status === "Pending" ? (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() =>
+                                    handleRejectClick(
+                                      employee._id || employee.tempId
+                                    )
+                                  }
+                                  className="px-3 py-1 text-xs font-bold rounded-md bg-rose-100 text-rose-700 hover:bg-rose-200 transition"
+                                >
+                                  Reject
+                                </button>
+                                <button
+                                  onClick={() => handleOpenEdit(employee)}
+                                  className="px-3 py-1 text-xs font-bold rounded-md bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition"
+                                >
+                                  Approve
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => handleOpenEdit(employee)}
+                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                              >
+                                <Edit2 size={16} />
+                              </button>
+                            )}
                             <button
                               onClick={() =>
                                 handleDeleteClick(
@@ -751,7 +730,7 @@ const Employees = () => {
         {/* PAGINATION FOOTER */}
         <div className="flex flex-col sm:flex-row justify-between items-center mt-8 text-sm text-slate-500 font-medium">
           <p>
-            Showing 1 to {processedEmployees.length} of {totalEmployees}{" "}
+            Showing 1 to {filteredEmployees.length} of {totalEmployees}{" "}
             employees
           </p>
           <div className="flex items-center gap-1 mt-4 sm:mt-0">
@@ -874,16 +853,13 @@ const Employees = () => {
                     Phone Number
                   </label>
                   <input
-                    type="tel"
-                    pattern="[0-9]{10}"
-                    maxLength="10"
-                    title="Please enter exactly 10 digits"
+                    type="text"
                     value={newEmployee.phone}
                     onChange={(e) =>
-                      setNewEmployee({ ...newEmployee, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })
+                      setNewEmployee({ ...newEmployee, phone: e.target.value })
                     }
                     className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
-                    placeholder="e.g. 9812345678"
+                    placeholder="+977 98..."
                   />
                 </div>
                 <div>
@@ -918,9 +894,10 @@ const Employees = () => {
                     <option value="" disabled>
                       Select Role
                     </option>
+                    <option value="Manager">Manager</option>
                     <option value="Chef">Chef</option>
                     <option value="Cashier">Cashier</option>
-                    <option value="Staff">Staff</option>
+                    <option value="Waiter">Waiter</option>
                   </select>
                 </div>
                 <div>
@@ -958,6 +935,7 @@ const Employees = () => {
                     className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm cursor-pointer"
                   >
                     <option value="Active">Active</option>
+                    <option value="Pending">Pending</option>
                     <option value="Inactive">Inactive</option>
                   </select>
                 </div>
@@ -994,6 +972,41 @@ const Employees = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* REJECT CONFIRMATION MODAL */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex justify-center items-center p-4 transition-opacity">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-slide-in">
+            <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle size={28} className="text-rose-500" />
+            </div>
+            <h2 className="text-xl font-black text-slate-900 mb-2">
+              Reject Application?
+            </h2>
+            <p className="text-sm text-slate-500 font-medium mb-6">
+              Are you sure you want to reject this user? Their data will be
+              permanently deleted.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setEmployeeToReject(null);
+                }}
+                className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmReject}
+                className="flex-1 bg-rose-500 text-white font-bold py-3 rounded-xl hover:bg-rose-600 shadow-md shadow-rose-200 transition"
+              >
+                Yes, Reject & Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

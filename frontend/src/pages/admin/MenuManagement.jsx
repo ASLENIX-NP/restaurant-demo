@@ -12,8 +12,8 @@ import {
   Trash2,
   X,
   Image as ImageIcon,
-  Database,
 } from "lucide-react";
+import { io } from "socket.io-client";
 
 import "../../styles/menu.css"; // Kept for any global custom overrides
 
@@ -37,13 +37,30 @@ const Menu = () => {
 
   useEffect(() => {
     loadProducts();
+
+    const socket = io("http://localhost:5001");
+    socket.on("menuUpdated", loadProducts);
+
+    return () => socket.disconnect();
   }, []);
 
-  const loadProducts = () => {
+  const loadProducts = async () => {
     setLoading(true);
-    const data = localStorage.getItem("restaurant_menu");
-    setMenuItems(data ? JSON.parse(data) : []);
-    setLoading(false);
+    try {
+      const response = await fetch("http://localhost:5001/api/menu");
+      if (response.ok) {
+        const data = await response.json();
+        setMenuItems(data);
+      } else {
+        console.error("Failed to fetch menu items");
+        setMenuItems([]);
+      }
+    } catch (error) {
+      console.error("Error fetching menu:", error);
+      setMenuItems([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredItems = menuItems.filter((item) =>
@@ -100,7 +117,7 @@ const Menu = () => {
   };
 
   // Actions
-  const handleSaveItem = (e) => {
+  const handleSaveItem = async (e) => {
     e.preventDefault();
     if (!newItem.name || !newItem.category || !newItem.price) {
       alert("Please fill all required fields");
@@ -108,109 +125,67 @@ const Menu = () => {
     }
 
     setSaving(true);
-    let updatedList = [...menuItems];
+    const token = sessionStorage.getItem("token");
+    const method = isEditing ? "PUT" : "POST";
+    const url = isEditing
+      ? `http://localhost:5001/api/menu/${editId}`
+      : "http://localhost:5001/api/menu";
 
-    if (isEditing) {
-      updatedList = updatedList.map((item) =>
-        (item._id || item.id) === editId ? { ...item, ...newItem } : item
-      );
-    } else {
-      updatedList.push({ ...newItem, id: Date.now().toString() });
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newItem),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to save item.");
+      }
+
+      if (isEditing) {
+        setMenuItems(
+          menuItems.map((item) =>
+            (item._id || item.id) === editId ? data : item
+          )
+        );
+      } else {
+        setMenuItems([...menuItems, data]);
+      }
+
+      setShowAddModal(false);
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    } finally {
+      setSaving(false);
     }
-
-    setMenuItems(updatedList);
-    localStorage.setItem("restaurant_menu", JSON.stringify(updatedList));
-    localStorage.setItem("restaurant_menu_updated", Date.now().toString());
-
-    setIsEditing(false);
-    setEditId(null);
-    setShowAddModal(false);
-    setSaving(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this menu item?")) {
-      const updatedList = menuItems.filter(
-        (item) => (item._id || item.id) !== id
-      );
-      setMenuItems(updatedList);
-      localStorage.setItem("restaurant_menu", JSON.stringify(updatedList));
-      localStorage.setItem("restaurant_menu_updated", Date.now().toString());
+      const token = sessionStorage.getItem("token");
+      try {
+        const response = await fetch(`http://localhost:5001/api/menu/${id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || "Failed to delete item.");
+        }
+
+        setMenuItems(menuItems.filter((item) => (item._id || item.id) !== id));
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
     }
-  };
-
-  // Seed Initial Diverse Menu Data
-  const handleSeedData = () => {
-    if (!window.confirm("Load sample menu items into the database?")) return;
-
-    setSaving(true);
-    const sampleItems = [
-      {
-        id: "s1",
-        name: "Classic Cheeseburger",
-        category: "Fast Food",
-        price: 450,
-        description: "Juicy beef patty with melted cheddar cheese.",
-        image:
-          "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80",
-        isAvailable: true,
-      },
-      {
-        id: "s2",
-        name: "Pepperoni Pizza",
-        category: "Italian",
-        price: 850,
-        description: "Wood-fired pizza with crispy pepperoni slices.",
-        image:
-          "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&q=80",
-        isAvailable: true,
-      },
-      {
-        id: "s3",
-        name: "Chicken Momo",
-        category: "Nepali",
-        price: 250,
-        description: "Authentic steamed dumplings filled with minced chicken.",
-        image:
-          "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&q=80",
-        isAvailable: true,
-      },
-      {
-        id: "s4",
-        name: "Caesar Salad",
-        category: "Healthy",
-        price: 350,
-        description: "Fresh romaine lettuce tossed in Caesar dressing.",
-        image:
-          "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=400&q=80",
-        isAvailable: true,
-      },
-      {
-        id: "s5",
-        name: "Caramel Macchiato",
-        category: "Beverages",
-        price: 280,
-        description: "Chilled espresso mixed with caramel and milk.",
-        image:
-          "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=400&q=80",
-        isAvailable: true,
-      },
-      {
-        id: "s6",
-        name: "Chocolate Lava Cake",
-        category: "Desserts",
-        price: 320,
-        description: "Warm chocolate cake with a gooey molten center.",
-        image:
-          "https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400&q=80",
-        isAvailable: true,
-      },
-    ];
-
-    setMenuItems(sampleItems);
-    localStorage.setItem("restaurant_menu", JSON.stringify(sampleItems));
-    localStorage.setItem("restaurant_menu_updated", Date.now().toString());
-    setSaving(false);
   };
 
   return (
@@ -228,13 +203,6 @@ const Menu = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleSeedData}
-              disabled={saving}
-              className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
-            >
-              <Database size={16} /> Load Samples
-            </button>
             <button
               onClick={handleOpenAdd}
               className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
@@ -399,7 +367,11 @@ const Menu = () => {
                         className="hover:bg-slate-50/50 transition-colors group"
                       >
                         <td className="p-4 pl-6 font-bold text-slate-400 text-xs">
-                          {(item._id || item.id)?.toString().slice(-6)}
+                          #MNU-
+                          {(item._id || item.id)
+                            ?.toString()
+                            .slice(-5)
+                            .toUpperCase()}
                         </td>
 
                         <td className="p-4">

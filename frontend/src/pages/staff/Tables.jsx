@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Utensils,
@@ -27,8 +27,13 @@ const Tables = () => {
   const [formStatus, setFormStatus] = useState("Available");
   const [formCustomer, setFormCustomer] = useState("");
 
-  const { tables, setTables, updateTableStatus } = useTables();
-  const { orders, cancelOrder, completeOrder } = useOrders();
+  const { tables, setTables, updateTableStatus, fetchTables } = useTables();
+  const { orders, cancelOrder, completeOrder, fetchOrders } = useOrders();
+
+  useEffect(() => {
+    if (fetchTables) fetchTables();
+    if (fetchOrders) fetchOrders();
+  }, [fetchTables, fetchOrders]);
 
   const tablesList = tables.map((t) => {
     const tableOrders = orders.filter(
@@ -151,7 +156,7 @@ const Tables = () => {
         t.id === selectedTable.id
           ? {
               ...t,
-                seats: selectedTable.seats || 4,
+              seats: selectedTable.seats || 4,
               status: formStatus,
               currentCustomer:
                 formStatus === "Available" || formStatus === "Cleaning"

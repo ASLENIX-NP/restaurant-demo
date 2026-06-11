@@ -1,11 +1,15 @@
 // src/pages/cashier/Dashboard.jsx
 
-import React from "react";
+import React, { useEffect } from "react";
 import "../../styles/cashierDashboard.css";
 import { useOrders } from "../../context/OrderContext";
 
 const Dashboard = () => {
-  const { orders = [] } = useOrders() || {};
+  const { orders = [], fetchOrders } = useOrders() || {};
+
+  useEffect(() => {
+    if (fetchOrders) fetchOrders();
+  }, [fetchOrders]);
 
   const completedSales = orders.filter((order) => order.status === "Completed");
   const pendingBills = orders.filter((order) => order.status !== "Completed");
@@ -15,12 +19,7 @@ const Dashboard = () => {
       (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
       0
     );
-    return (
-      acc +
-      (order.amount !== undefined
-        ? order.amount
-        : subtotal + (subtotal > 0 ? 50 : 0))
-    );
+    return acc + (order.amount || subtotal + (subtotal > 0 ? 50 : 0));
   }, 0);
 
   const pendingBillsAmount = pendingBills.reduce((acc, order) => {
@@ -28,12 +27,7 @@ const Dashboard = () => {
       (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
       0
     );
-    return (
-      acc +
-      (order.amount !== undefined
-        ? order.amount
-        : subtotal + (subtotal > 0 ? 50 : 0))
-    );
+    return acc + (order.amount || subtotal + (subtotal > 0 ? 50 : 0));
   }, 0);
 
   const totalOrders = orders.length;
@@ -333,56 +327,51 @@ const Dashboard = () => {
                     </td>
                   </tr>
                 ) : (
-                  [...orders]
-                    .reverse()
-                    .slice(0, 5)
-                    .map((order) => {
-                      const subtotal = (order.items || []).reduce(
-                        (sum, item) =>
-                          sum + item.qty * (parseFloat(item.price) || 0),
-                        0
-                      );
-                      const total =
-                        order.amount !== undefined
-                          ? order.amount
-                          : subtotal + (subtotal > 0 ? 50 : 0);
-                      const itemCount = (order.items || []).reduce(
-                        (sum, item) => sum + item.qty,
-                        0
-                      );
-                      return (
-                        <tr key={order.id}>
-                          <td>{order.id}</td>
-                          <td>
-                            <div style={{ fontWeight: 600, color: "#1e293b" }}>
-                              {order.table || "Walk-in"}
-                            </div>
-                            <div style={{ fontSize: "12px", color: "#64748b" }}>
-                              {order.customer || order.server || "Guest"}
-                            </div>
-                          </td>
-                          <td>{itemCount}</td>
-                          <td>
-                            Rs.{" "}
-                            {total.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </td>
-                          <td>{order.paymentMethod || "Cash"}</td>
-                          <td>
-                            <span
-                              className={`status-badge ${order.status
-                                .toLowerCase()
-                                .replace(" ", "-")}`}
-                            >
-                              {order.status}
-                            </span>
-                          </td>
-                          <td>{order.time || "N/A"}</td>
-                        </tr>
-                      );
-                    })
+                  [...orders].slice(0, 5).map((order) => {
+                    const subtotal = (order.items || []).reduce(
+                      (sum, item) =>
+                        sum + item.qty * (parseFloat(item.price) || 0),
+                      0
+                    );
+                    const total =
+                      order.amount || subtotal + (subtotal > 0 ? 50 : 0);
+                    const itemCount = (order.items || []).reduce(
+                      (sum, item) => sum + item.qty,
+                      0
+                    );
+                    return (
+                      <tr key={order.id}>
+                        <td>{order.id}</td>
+                        <td>
+                          <div style={{ fontWeight: 600, color: "#1e293b" }}>
+                            {order.table || "Walk-in"}
+                          </div>
+                          <div style={{ fontSize: "12px", color: "#64748b" }}>
+                            {order.customer || order.server || "Guest"}
+                          </div>
+                        </td>
+                        <td>{itemCount}</td>
+                        <td>
+                          Rs.{" "}
+                          {total.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </td>
+                        <td>{order.paymentMethod || "Cash"}</td>
+                        <td>
+                          <span
+                            className={`status-badge ${order.status
+                              .toLowerCase()
+                              .replace(" ", "-")}`}
+                          >
+                            {order.status}
+                          </span>
+                        </td>
+                        <td>{order.time || "N/A"}</td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -408,45 +397,39 @@ const Dashboard = () => {
                 No recent sales.
               </div>
             ) : (
-              [...completedSales]
-                .reverse()
-                .slice(0, 5)
-                .map((order) => {
-                  const subtotal = (order.items || []).reduce(
-                    (sum, item) =>
-                      sum + item.qty * (parseFloat(item.price) || 0),
-                    0
-                  );
-                  const total =
-                    order.amount !== undefined
-                      ? order.amount
-                      : subtotal + (subtotal > 0 ? 50 : 0);
-                  return (
-                    <div
-                      key={order.id}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        padding: "1rem",
-                        borderBottom: "1px solid #f1f5f9",
-                      }}
-                    >
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <strong style={{ color: "#0f172a" }}>{order.id}</strong>
-                        <span style={{ fontSize: "12px", color: "#64748b" }}>
-                          {order.time}
-                        </span>
-                      </div>
-                      <strong style={{ color: "#0f172a" }}>
-                        Rs.{" "}
-                        {total.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </strong>
+              [...completedSales].slice(0, 5).map((order) => {
+                const subtotal = (order.items || []).reduce(
+                  (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
+                  0
+                );
+                const total =
+                  order.amount || subtotal + (subtotal > 0 ? 50 : 0);
+                return (
+                  <div
+                    key={order.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: "1rem",
+                      borderBottom: "1px solid #f1f5f9",
+                    }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <strong style={{ color: "#0f172a" }}>{order.id}</strong>
+                      <span style={{ fontSize: "12px", color: "#64748b" }}>
+                        {order.time}
+                      </span>
                     </div>
-                  );
-                })
+                    <strong style={{ color: "#0f172a" }}>
+                      Rs.{" "}
+                      {total.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </strong>
+                  </div>
+                );
+              })
             )}
           </div>
 

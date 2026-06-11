@@ -23,6 +23,11 @@ router.get("/users", protect, authorize("Admin"), authController.getUsers);
 // @access  Private (Admin only)
 router.put("/users/:id/status", protect, authorize("Admin"), authController.updateUserStatus);
 
+// @route   DELETE /api/auth/users/:id
+// @desc    Delete a user permanently
+// @access  Private (Admin only)
+router.delete("/users/:id", protect, authorize("Admin"), authController.deleteUser);
+
 // @route   GET /api/auth/profile
 // @desc    Get current user profile
 // @access  Private (Any logged-in user)

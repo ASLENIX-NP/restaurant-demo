@@ -45,6 +45,9 @@ exports.createTable = async (req, res) => {
     });
     const createdTable = await table.save();
 
+    // 📢 Broadcast that the table list has changed
+    if (req.io) req.io.emit("tablesUpdated");
+
     res.status(201).json(createdTable);
   } catch (error) {
     console.error("Error creating table:", error);
@@ -89,6 +92,10 @@ exports.updateTable = async (req, res) => {
     );
     if (!updatedTable)
       return res.status(404).json({ message: "Table not found" });
+
+    // 📢 Broadcast that the table list has changed
+    if (req.io) req.io.emit("tablesUpdated");
+
     res.status(200).json(updatedTable);
   } catch (error) {
     res.status(500).json({ message: "Server error updating table" });
@@ -103,6 +110,10 @@ exports.deleteTable = async (req, res) => {
     const deletedTable = await Table.findByIdAndDelete(req.params.id);
     if (!deletedTable)
       return res.status(404).json({ message: "Table not found" });
+
+    // 📢 Broadcast that the table list has changed
+    if (req.io) req.io.emit("tablesUpdated");
+
     res.status(200).json({ message: "Table removed successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server error deleting table" });

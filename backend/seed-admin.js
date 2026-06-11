@@ -1,27 +1,28 @@
 require("dotenv").config();
 const connectDB = require("./src/db");
-const User = require("./src/models/User");
+const Admin = require("./src/models/Admin");
 
 const seedAdmin = async () => {
   await connectDB();
 
   try {
-    let admin = await User.findOne({ username: "safal" });
+    let admin = await Admin.findOne({ username: "admin" });
 
     if (!admin) {
-      admin = new User({
-        username: "safal",
-        password: "password123",
+      admin = new Admin({
+        username: "admin",
+        name: "Admin User",
+        password: "admin123",
         role: "Admin",
         status: "Active",
       });
       await admin.save();
-      console.log("✅ Admin user 'safal' created successfully!");
+      console.log("✅ Admin user created successfully!");
     } else {
-      admin.password = "password123";
+      admin.password = "admin123";
       admin.status = "Active";
       await admin.save();
-      console.log("✅ Admin user 'safal' password updated successfully!");
+      console.log("✅ Admin user password updated successfully!");
     }
   } catch (error) {
     console.error("❌ Seeding error:", error);

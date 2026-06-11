@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   TrendingUp,
   ShoppingBag,
@@ -29,11 +29,30 @@ import { useTables } from "../../context/TableContext";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { orders = [] } = useOrders() || {};
-  const { tables = [] } = useTables() || {};
+  const { orders = [], fetchOrders } = useOrders() || {};
+  const { tables = [], fetchTables } = useTables() || {};
+  const [loading, setLoading] = useState(true);
 
-  const reservedCount = tables.filter((t) => (t.status || "").toLowerCase() === "reserved").length;
-  const pendingPaymentsCount = orders.filter((o) => o.status !== "Completed" && o.status !== "Cancelled").length;
+  useEffect(() => {
+    if (fetchOrders) fetchOrders();
+    if (fetchTables) fetchTables();
+  }, [fetchOrders, fetchTables]);
+
+  const reservedCount = tables.filter(
+    (t) => (t.status || "").toLowerCase() === "reserved"
+  ).length;
+  const pendingPaymentsCount = orders.filter(
+    (o) => o.status !== "Completed" && o.status !== "Cancelled"
+  ).length;
+
+  useEffect(() => {
+    // Consider loading complete once both orders and tables have been fetched (even if empty)
+    // A more robust solution might involve a loading state in the contexts themselves.
+    if (orders && tables) {
+      // A small delay can help ensure containers are sized before charts render
+      setTimeout(() => setLoading(false), 200);
+    }
+  }, [orders, tables]);
 
   const completedSales = orders.filter((order) => order.status === "Completed");
 
@@ -42,12 +61,7 @@ export default function AdminDashboard() {
       (sum, item) => sum + item.qty * item.price,
       0
     );
-    return (
-      acc +
-      (order.amount !== undefined
-        ? order.amount
-        : subtotal + (subtotal > 0 ? 50 : 0))
-    );
+    return acc + (order.amount || subtotal + (subtotal > 0 ? 50 : 0));
   }, 0);
 
   const totalOrders = orders.length;
@@ -93,23 +107,19 @@ export default function AdminDashboard() {
       revenue: `Rs. ${item.revenue.toLocaleString()}`,
     }));
 
-  const recentOrders = [...orders]
-    .reverse()
-    .slice(0, 5)
-    .map((o) => {
-      const subtotal = (o.items || []).reduce(
-        (sum, item) => sum + item.qty * item.price,
-        0
-      );
-      const amount =
-        o.amount !== undefined ? o.amount : subtotal + (subtotal > 0 ? 50 : 0);
-      return {
-        id: o.id,
-        customer: o.customer || "Guest",
-        amount: `Rs. ${amount.toLocaleString()}`,
-        status: o.status,
-      };
-    });
+  const recentOrders = [...orders].slice(0, 5).map((o) => {
+    const subtotal = (o.items || []).reduce(
+      (sum, item) => sum + item.qty * item.price,
+      0
+    );
+    const amount = o.amount || subtotal + (subtotal > 0 ? 50 : 0);
+    return {
+      id: o.id,
+      customer: o.customer || "Guest",
+      amount: `Rs. ${amount.toLocaleString()}`,
+      status: o.status,
+    };
+  });
 
   // Dynamic Revenue Trend Data (Last 7 Days)
   const revenueTrendData = [];
@@ -133,10 +143,7 @@ export default function AdminDashboard() {
         (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
         0
       );
-      dayData.revenue +=
-        order.amount !== undefined
-          ? order.amount
-          : subtotal + (subtotal > 0 ? 50 : 0);
+      dayData.revenue += order.amount || subtotal + (subtotal > 0 ? 50 : 0);
     }
   });
 
@@ -158,6 +165,15 @@ export default function AdminDashboard() {
     day: "2-digit",
     year: "numeric",
   });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-400">
+        <div className="w-10 h-10 border-4 border-slate-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
+        <p className="font-semibold">Loading Dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
@@ -255,8 +271,13 @@ export default function AdminDashboard() {
               </button>
             </div>
 
-            <div className="flex-1 w-full text-xs">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="flex-1 w-full text-xs min-h-[250px]">
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                minWidth={1}
+                minHeight={1}
+              >
                 <AreaChart
                   data={revenueTrendData}
                   margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
@@ -329,7 +350,12 @@ export default function AdminDashboard() {
             </div>
 
             <div className="flex-1 w-full h-[220px] relative my-2">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer
+                width="100%"
+                height="100%"
+                minWidth={1}
+                minHeight={1}
+              >
                 <PieChart>
                   <Pie
                     data={orderDistributionData}
@@ -387,7 +413,7 @@ export default function AdminDashboard() {
               <h2 className="text-base font-bold text-slate-900">
                 Top Selling Items
               </h2>
-              <button 
+              <button
                 onClick={() => navigate("/admin/reports")}
                 className="text-purple-600 hover:text-purple-700 font-bold text-xs transition"
               >
@@ -452,7 +478,7 @@ export default function AdminDashboard() {
               <h2 className="text-base font-bold text-slate-900">
                 Recent Orders
               </h2>
-              <button 
+              <button
                 onClick={() => navigate("/admin/orders")}
                 className="text-purple-600 hover:text-purple-700 font-bold text-xs transition"
               >
@@ -529,14 +555,14 @@ export default function AdminDashboard() {
                   icon: <Calendar size={15} />,
                   color: "bg-purple-50 text-purple-600 border-purple-100",
                   action: () => navigate("/admin/tables"),
-                  count: reservedCount > 0 ? reservedCount : null
+                  count: reservedCount > 0 ? reservedCount : null,
                 },
                 {
                   label: "Low Stock Items",
                   icon: <AlertTriangle size={15} />,
                   color: "bg-red-50 text-red-600 border-red-100",
                   action: () => navigate("/admin/inventory"),
-                  count: 2 // Sample static value until inventory is linked to context
+                  count: 2, // Sample static value until inventory is linked to context
                 },
                 {
                   label: "New Reviews Pending",
@@ -549,7 +575,7 @@ export default function AdminDashboard() {
                   icon: <CreditCard size={15} />,
                   color: "bg-blue-50 text-blue-600 border-blue-100",
                   action: () => navigate("/admin/billing"),
-                  count: pendingPaymentsCount > 0 ? pendingPaymentsCount : null
+                  count: pendingPaymentsCount > 0 ? pendingPaymentsCount : null,
                 },
               ].map((reminder) => (
                 <button

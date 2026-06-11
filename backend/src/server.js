@@ -49,10 +49,7 @@ app.get("/", (req, res) => {
 
 // Socket.io Connection Logic
 io.on("connection", (socket) => {
-  console.log("🟢 New client connected:", socket.id);
-  socket.on("disconnect", () => {
-    console.log("🔴 Client disconnected:", socket.id);
-  });
+  socket.on("disconnect", () => {});
 });
 
 const PORT = process.env.PORT || 5001;

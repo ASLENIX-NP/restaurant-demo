@@ -36,6 +36,10 @@ exports.createMenuItem = async (req, res) => {
     });
 
     const createdItem = await menuItem.save();
+
+    // 📢 Broadcast that the menu list has changed
+    if (req.io) req.io.emit("menuUpdated");
+
     res.status(201).json(createdItem);
   } catch (error) {
     console.error("Error creating menu item:", error);
@@ -56,6 +60,10 @@ exports.updateMenuItem = async (req, res) => {
 
     if (!updatedItem)
       return res.status(404).json({ message: "Menu item not found" });
+
+    // 📢 Broadcast that the menu list has changed
+    if (req.io) req.io.emit("menuUpdated");
+
     res.status(200).json(updatedItem);
   } catch (error) {
     console.error("Error updating menu item:", error);
@@ -71,6 +79,10 @@ exports.deleteMenuItem = async (req, res) => {
     const menuItem = await MenuItem.findByIdAndDelete(req.params.id);
     if (!menuItem)
       return res.status(404).json({ message: "Menu item not found" });
+
+    // 📢 Broadcast that the menu list has changed
+    if (req.io) req.io.emit("menuUpdated");
+
     res.status(200).json({ message: "Menu item successfully removed" });
   } catch (error) {
     console.error("Error deleting menu item:", error);

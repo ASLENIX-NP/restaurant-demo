@@ -15,12 +15,12 @@ import {
   Smartphone,
   Table2,
   User,
-  Users,
   Wallet,
   X,
   XCircle,
 } from "lucide-react";
 import "../../styles/pendingBills.css";
+import { useEffect } from "react";
 import { useOrders } from "../../context/OrderContext";
 import { useTables } from "../../context/TableContext";
 
@@ -34,8 +34,18 @@ const paymentMethods = [
 const filters = ["All", "Pending", "Cooking", "Ready", "Served"];
 
 export default function PendingBillsPage() {
-  const { orders = [], completeOrder, cancelOrder } = useOrders() || {};
-  const { tables = [], updateTableStatus } = useTables() || {};
+  const {
+    orders = [],
+    completeOrder,
+    cancelOrder,
+    fetchOrders,
+  } = useOrders() || {};
+  const { tables = [], updateTableStatus, fetchTables } = useTables() || {};
+
+  useEffect(() => {
+    if (fetchOrders) fetchOrders();
+    if (fetchTables) fetchTables();
+  }, [fetchOrders, fetchTables]);
 
   // Dynamically generate pending bills from live global orders
   const pendingBillsData = useMemo(() => {
@@ -108,16 +118,11 @@ export default function PendingBillsPage() {
     });
   }, [orders]);
 
-  const defaultTaxSettings = useMemo(() => {
-    const saved = localStorage.getItem("restaurant_tax_settings");
-    return saved ? JSON.parse(saved) : { vat: 13, serviceCharge: 10, defaultDiscount: 0 };
-  }, []);
-
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [discountType, setDiscountType] = useState("percentage");
-  const [discountValue, setDiscountValue] = useState(defaultTaxSettings.defaultDiscount);
-  const [serviceCharge, setServiceCharge] = useState(defaultTaxSettings.serviceCharge);
+  const [discountValue, setDiscountValue] = useState(0);
+  const [serviceCharge, setServiceCharge] = useState(0);
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
@@ -144,26 +149,22 @@ export default function PendingBillsPage() {
   }, [activeFilter, searchTerm, pendingBillsData]);
 
   const metrics = useMemo(() => {
-    const pending = pendingBillsData.filter(
-      (bill) => bill.kitchenStatus === "Pending"
+    const totalDue = pendingBillsData.reduce(
+      (sum, bill) => sum + bill.amount,
+      0
+    );
+    const unpaid = pendingBillsData.filter(
+      (bill) => bill.paymentStatus === "Unpaid"
     ).length;
-    const cooking = pendingBillsData.filter(
-      (bill) => bill.kitchenStatus === "Cooking"
+    const partial = pendingBillsData.filter(
+      (bill) => bill.paymentStatus === "Partial"
     ).length;
-    const ready = pendingBillsData.filter(
-      (bill) => bill.kitchenStatus === "Ready"
-    ).length;
-    const served = pendingBillsData.filter(
-      (bill) => bill.kitchenStatus === "Served"
-    ).length;
+    const largestBill =
+      pendingBillsData.length > 0
+        ? Math.max(...pendingBillsData.map((bill) => bill.amount))
+        : 0;
 
-    return {
-      total: pendingBillsData.length,
-      pending,
-      cooking,
-      ready,
-      served,
-    };
+    return { totalDue, unpaid, partial, largestBill };
   }, [pendingBillsData]);
 
   const subtotal = selectedInvoice
@@ -184,8 +185,8 @@ export default function PendingBillsPage() {
 
   const handleSelectInvoice = (billId) => {
     setSelectedInvoiceId(billId);
-    setDiscountValue(defaultTaxSettings.defaultDiscount);
-    setServiceCharge(defaultTaxSettings.serviceCharge); // Default service charge when opening a bill
+    setDiscountValue(0);
+    setServiceCharge(0); // Default service charge when opening a bill
     setIsPaymentSuccess(false);
   };
 
@@ -338,113 +339,91 @@ export default function PendingBillsPage() {
             font-size: 16px !important;
             border-radius: 12px !important;
           }
-          .pending-metric-card.active {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(30, 41, 59, 0.1), 0 4px 6px -2px rgba(30, 41, 59, 0.05);
-            border-color: #4f46e5;
-          }
         }
         `}
       </style>
 
-      <main className="pending-shell" style={{ padding: '32px', backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
-        <section className="pending-hero" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', backgroundColor: '#fff', padding: '32px', borderRadius: '24px', border: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
+      <main className="pending-shell">
+        <section className="pending-hero">
           <div>
-            <span className="pending-eyebrow" style={{ display: 'flex', gap: '8px', alignItems: 'center', color: '#6366f1', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
+            <span className="pending-eyebrow">
               <Receipt size={16} />
               Cashier Checkout Desk
             </span>
-            <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#0f172a', margin: '0 0 8px 0', letterSpacing: '-0.02em' }}>Pending Bills</h1>
-            <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>
+            <h1>Pending Bills</h1>
+            <p>
               Settle open restaurant checks, apply discounts, and close tables
               faster.
             </p>
           </div>
 
-          <div className="pending-hero-actions" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div className="pending-search" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
-              <Search size={17} color="#64748b" />
+          <div className="pending-hero-actions">
+            <div className="pending-search">
+              <Search size={17} />
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search table, guest or ID..."
-                style={{ border: 'none', background: 'transparent', outline: 'none', color: '#0f172a', fontSize: '14px', width: '220px' }}
+                placeholder="Search table, guest, or invoice"
               />
             </div>
-            <button className="pending-date-btn" type="button" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 24px', backgroundColor: '#0f172a', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+            <button className="pending-date-btn" type="button">
               <CalendarDays size={17} />
               Today
             </button>
           </div>
         </section>
 
-        <section className="pending-metrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '32px' }}>
-          <button
-            type="button"
-            onClick={() => setActiveFilter("All")}
-            style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '24px', backgroundColor: '#fff', borderRadius: '20px', border: activeFilter === 'All' ? '2px solid #6366f1' : '1px solid #e2e8f0', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', boxShadow: activeFilter === 'All' ? '0 10px 15px -3px rgba(99, 102, 241, 0.1)' : '0 4px 6px -1px rgba(0,0,0,0.02)' }}
-          >
-            <span className="metric-icon" style={{ width: '60px', height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', color: '#475569' }}>
-              <Wallet size={28} />
+        <section className="pending-metrics">
+          <div className="pending-metric-card dark">
+            <span className="metric-icon">
+              <Wallet size={22} />
             </span>
             <div>
-              <p style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>All Bills</p>
-              <strong style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a' }}>{metrics.total}</strong>
+              <p>Total Due</p>
+              <strong>Rs. {metrics.totalDue.toLocaleString()}</strong>
             </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveFilter("Pending")}
-            style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '24px', backgroundColor: '#fff', borderRadius: '20px', border: activeFilter === 'Pending' ? '2px solid #ef4444' : '1px solid #e2e8f0', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', boxShadow: activeFilter === 'Pending' ? '0 10px 15px -3px rgba(239, 68, 68, 0.1)' : '0 4px 6px -1px rgba(0,0,0,0.02)' }}
-          >
-            <span className="metric-icon red" style={{ width: '60px', height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff1f2', color: '#ef4444' }}>
-              <Clock size={28} />
+          </div>
+          <div className="pending-metric-card">
+            <span className="metric-icon red">
+              <Receipt size={22} />
             </span>
             <div>
-              <p style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pending</p>
-              <strong style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a' }}>{metrics.pending}</strong>
+              <p>Unpaid Checks</p>
+              <strong>{metrics.unpaid}</strong>
             </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveFilter("Cooking")}
-            style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '24px', backgroundColor: '#fff', borderRadius: '20px', border: activeFilter === 'Cooking' ? '2px solid #f59e0b' : '1px solid #e2e8f0', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', boxShadow: activeFilter === 'Cooking' ? '0 10px 15px -3px rgba(245, 158, 11, 0.1)' : '0 4px 6px -1px rgba(0,0,0,0.02)' }}
-          >
-            <span className="metric-icon amber" style={{ width: '60px', height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fffbeb', color: '#f59e0b' }}>
-              <ChefHat size={28} />
+          </div>
+          <div className="pending-metric-card">
+            <span className="metric-icon amber">
+              <Coins size={22} />
             </span>
             <div>
-              <p style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cooking</p>
-              <strong style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a' }}>{metrics.cooking}</strong>
+              <p>Partial Bills</p>
+              <strong>{metrics.partial}</strong>
             </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveFilter("Ready")}
-            style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '24px', backgroundColor: '#fff', borderRadius: '20px', border: activeFilter === 'Ready' || activeFilter === 'Served' ? '2px solid #10b981' : '1px solid #e2e8f0', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', boxShadow: activeFilter === 'Ready' || activeFilter === 'Served' ? '0 10px 15px -3px rgba(16, 185, 129, 0.1)' : '0 4px 6px -1px rgba(0,0,0,0.02)' }}
-          >
-            <span className="metric-icon green" style={{ width: '60px', height: '60px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#ecfdf5', color: '#10b981' }}>
-              <CheckCircle size={28} />
+          </div>
+          <div className="pending-metric-card">
+            <span className="metric-icon green">
+              <ChefHat size={22} />
             </span>
             <div>
-              <p style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ready / Served</p>
-              <strong style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a' }}>{metrics.ready + metrics.served}</strong>
+              <p>Largest Table</p>
+              <strong>Rs. {metrics.largestBill.toLocaleString()}</strong>
             </div>
-          </button>
+          </div>
         </section>
 
-        <section className="pending-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <div className="filter-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', color: '#334155' }}>
+        <section className="pending-toolbar">
+          <div className="filter-label">
             <Filter size={16} />
             Bill Queue
           </div>
-          <div className="pending-tabs" style={{ display: 'flex', gap: '8px', backgroundColor: '#f1f5f9', padding: '6px', borderRadius: '12px' }}>
+          <div className="pending-tabs">
             {filters.map((filter) => (
               <button
                 key={filter}
+                className={activeFilter === filter ? "active" : ""}
                 type="button"
                 onClick={() => setActiveFilter(filter)}
-                style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', backgroundColor: activeFilter === filter ? '#fff' : 'transparent', color: activeFilter === filter ? '#2563eb' : '#64748b', boxShadow: activeFilter === filter ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', transition: 'all 0.2s' }}
               >
                 {filter}
               </button>
@@ -452,7 +431,7 @@ export default function PendingBillsPage() {
           </div>
         </section>
 
-        <section className="bill-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+        <section className="bill-card-grid">
           {filteredBills.map((bill) => {
             const isSelected = selectedInvoiceId === bill.id;
 
@@ -461,56 +440,51 @@ export default function PendingBillsPage() {
                 key={bill.id}
                 type="button"
                 onClick={() => handleSelectInvoice(bill.id)}
-                style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#fff', border: isSelected ? '2px solid #6366f1' : '1px solid #e2e8f0', borderRadius: '20px', padding: '24px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s', boxShadow: isSelected ? '0 10px 25px -5px rgba(99, 102, 241, 0.15)' : '0 4px 6px -1px rgba(0,0,0,0.02)', position: 'relative', overflow: 'hidden' }}
+                className={`restaurant-bill-card ${
+                  isSelected ? "selected" : ""
+                } status-${bill.kitchenStatus.toLowerCase()}`}
               >
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', backgroundColor: bill.kitchenStatus === 'Pending' ? '#ef4444' : bill.kitchenStatus === 'Cooking' ? '#f59e0b' : bill.kitchenStatus === 'Ready' ? '#10b981' : '#64748b' }} />
-
-                <div className="bill-card-top" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '20px', alignItems: 'center' }}>
-                  <span className="invoice-pill" style={{ backgroundColor: '#f1f5f9', color: '#475569', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold' }}>
+                <div className="bill-card-top">
+                  <span className="invoice-pill">
                     {bill.orderIds[0]}{" "}
                     {bill.orderIds.length > 1
                       ? `(+${bill.orderIds.length - 1})`
                       : ""}
                   </span>
                   <span
-                    className={`bill-status`}
-                    style={{ fontSize: '12px', fontWeight: 'bold', padding: '6px 12px', borderRadius: '8px', backgroundColor: bill.kitchenStatus === 'Pending' ? '#fff1f2' : bill.kitchenStatus === 'Cooking' ? '#fffbeb' : bill.kitchenStatus === 'Ready' ? '#ecfdf5' : '#f1f5f9', color: bill.kitchenStatus === 'Pending' ? '#e11d48' : bill.kitchenStatus === 'Cooking' ? '#d97706' : bill.kitchenStatus === 'Ready' ? '#16a34a' : '#475569' }}
+                    className={`bill-status ${bill.kitchenStatus.toLowerCase()}`}
                   >
                     {bill.kitchenStatus}
                   </span>
                 </div>
 
-                <div className="table-focus" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                  <span className="table-icon" style={{ width: '52px', height: '52px', borderRadius: '14px', backgroundColor: '#f8fafc', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Table2 size={24} />
+                <div className="table-focus">
+                  <span className="table-icon">
+                    <Table2 size={22} />
                   </span>
                   <div>
-                    <h2 style={{ fontSize: '20px', fontWeight: '900', color: '#0f172a', margin: '0 0 4px 0' }}>{bill.table}</h2>
-                    <p style={{ fontSize: '13px', color: '#64748b', margin: 0, fontWeight: '600' }}>{bill.section} Section</p>
+                    <h2>{bill.table}</h2>
+                    <p>{bill.section} section</p>
                   </div>
                 </div>
 
-                <div className="bill-meta-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', width: '100%', marginBottom: '24px', backgroundColor: '#f8fafc', padding: '16px', borderRadius: '12px' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#475569', fontWeight: '600' }}>
-                    <User size={14} color="#94a3b8" /> {bill.customer}
+                <div className="bill-meta-grid">
+                  <span>
+                    <User size={14} /> {bill.customer}
                   </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#475569', fontWeight: '600' }}>
-                    <Clock size={14} color="#94a3b8" /> {bill.time}
+                  <span>
+                    <Clock size={14} /> {bill.time}
                   </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#475569', fontWeight: '600' }}>
-                    <Users size={14} color="#94a3b8" /> {bill.guests} Guests
-                  </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#475569', fontWeight: '600' }}>
-                    <ChefHat size={14} color="#94a3b8" /> {bill.server}
-                  </span>
+                  <span>{bill.guests} guests</span>
+                  <span>Server {bill.server}</span>
                 </div>
 
-                <div className="bill-card-bottom" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%', paddingTop: '20px', borderTop: '1px solid #f1f5f9' }}>
+                <div className="bill-card-bottom">
                   <div>
-                    <span className="priority-copy" style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' }}>{bill.priority} Priority</span>
-                    <strong style={{ fontSize: '24px', fontWeight: '900', color: '#0f172a' }}>Rs. {bill.amount.toLocaleString()}</strong>
+                    <span className="priority-copy">{bill.priority}</span>
+                    <strong>Rs. {bill.amount.toLocaleString()}</strong>
                   </div>
-                  <span className="checkout-cta" style={{ fontSize: '14px', fontWeight: 'bold', color: isSelected ? '#fff' : '#6366f1', padding: '10px 20px', backgroundColor: isSelected ? '#6366f1' : '#e0e7ff', borderRadius: '10px', transition: 'all 0.2s' }}>Checkout</span>
+                  <span className="checkout-cta">Checkout</span>
                 </div>
               </button>
             );
@@ -518,10 +492,10 @@ export default function PendingBillsPage() {
         </section>
 
         {filteredBills.length === 0 && (
-          <div className="empty-bill-state" style={{ textAlign: 'center', padding: '64px 20px', backgroundColor: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0', color: '#64748b' }}>
-            <Receipt size={48} style={{ margin: '0 auto 16px auto', color: '#cbd5e1' }} />
-            <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#0f172a', marginBottom: '8px' }}>No bills found</h2>
-            <p style={{ margin: 0, fontSize: '15px' }}>Try another search term or change the bill status filter.</p>
+          <div className="empty-bill-state">
+            <Receipt size={30} />
+            <h2>No bills found</h2>
+            <p>Try another search term or change the bill status filter.</p>
           </div>
         )}
 
@@ -683,17 +657,17 @@ export default function PendingBillsPage() {
                   <span>Subtotal (Excl. VAT)</span>
                   <strong>
                     Rs.{" "}
-                    {(subtotal / (1 + defaultTaxSettings.vat / 100)).toLocaleString(undefined, {
+                    {(subtotal / 1.13).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
                   </strong>
                 </div>
                 <div>
-                  <span>VAT ({defaultTaxSettings.vat}%)</span>
+                  <span>VAT (13%)</span>
                   <strong>
                     Rs.{" "}
-                    {(subtotal - subtotal / (1 + defaultTaxSettings.vat / 100)).toLocaleString(undefined, {
+                    {(subtotal - subtotal / 1.13).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
@@ -950,7 +924,7 @@ export default function PendingBillsPage() {
             }}
           >
             <span>Subtotal (Excl. VAT):</span>{" "}
-            <span>Rs. {(subtotal / (1 + defaultTaxSettings.vat / 100)).toFixed(2)}</span>
+            <span>Rs. {(subtotal / 1.13).toFixed(2)}</span>
           </div>
           <div
             style={{
@@ -959,8 +933,8 @@ export default function PendingBillsPage() {
               marginBottom: "5px",
             }}
           >
-            <span>VAT ({defaultTaxSettings.vat}%):</span>{" "}
-            <span>Rs. {(subtotal - subtotal / (1 + defaultTaxSettings.vat / 100)).toFixed(2)}</span>
+            <span>VAT (13%):</span>{" "}
+            <span>Rs. {(subtotal - subtotal / 1.13).toFixed(2)}</span>
           </div>
           {discountAmount > 0 && (
             <div

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -19,9 +19,14 @@ import { useTables } from "../../context/TableContext";
 import { useOrders } from "../../context/OrderContext";
 
 const AdminTables = () => {
-  const { tables, addTable, deleteTable, editTable, updateTableStatus } =
+  const { tables, addTable, deleteTable, editTable, updateTableStatus, fetchTables } =
     useTables() || { tables: [] };
-  const { orders, completeOrder, cancelOrder } = useOrders() || { orders: [] };
+  const { orders, completeOrder, cancelOrder, fetchOrders } = useOrders() || { orders: [] };
+
+  useEffect(() => {
+    if (fetchTables) fetchTables();
+    if (fetchOrders) fetchOrders();
+  }, [fetchTables, fetchOrders]);
 
   // Application State Hooks
   const [activeFilter, setActiveFilter] = useState("All");
@@ -40,6 +45,10 @@ const AdminTables = () => {
     status: "Available",
     currentCustomer: "",
   });
+
+  // Delete Table Modal States
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [tableToDelete, setTableToDelete] = useState(null);
 
   // Map global context data to Admin Tables specific format
   const mappedTables = tables.map((t) => {
@@ -123,52 +132,80 @@ const AdminTables = () => {
   };
 
   // Action Handlers
-  const handleAddTable = (e) => {
+  const handleAddTable = async (e) => {
     e.preventDefault();
     if (!newTableName.trim()) {
       alert("Please enter a table name.");
       return;
     }
 
-    addTable({
-      name: newTableName,
-      seats: 4,
-      status: "Available",
-      currentCustomer: "No Customer",
-    });
+    // Smart format: If the user only enters numbers, automatically prefix it with "Table "
+    let formattedName = newTableName.trim();
+    if (/^\d+$/.test(formattedName)) {
+      formattedName = `Table ${formattedName}`;
+    }
 
-    setNewTableName("");
-    setShowAddModal(false);
+    try {
+      await addTable({
+        name: formattedName,
+        seats: 4,
+        status: "Available",
+        currentCustomer: "No Customer",
+      });
+      setNewTableName("");
+      setShowAddModal(false);
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
-  const handleDeleteTable = (tableId) => {
-    if (window.confirm("Are you sure you want to remove this table?")) {
-      deleteTable(tableId);
-      if (selectedTableId === tableId) {
-        setSelectedTableId(null);
-      }
+  const handleDeleteClick = (tableId) => {
+    setTableToDelete(tableId);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!tableToDelete) return;
+    await deleteTable(tableToDelete);
+    if (selectedTableId === tableToDelete) {
+      setSelectedTableId(null);
     }
+    setShowDeleteModal(false);
+    setTableToDelete(null);
   };
 
   const handleEditClick = (table) => {
     setEditTableData({
       id: table.id,
-      name: table.name,
+      // Hide "Table " from the input box so you only see the number/name when editing
+      name: table.name.startsWith("Table ")
+        ? table.name.replace("Table ", "")
+        : table.name,
       status: table.status.charAt(0).toUpperCase() + table.status.slice(1),
       currentCustomer: table.customer === "No Customer" ? "" : table.customer,
     });
     setShowEditModal(true);
   };
 
-  const handleSaveEdit = (e) => {
+  const handleSaveEdit = async (e) => {
     e.preventDefault();
     if (!editTableData.name.trim()) return;
-    editTable(editTableData.id, {
-      name: editTableData.name,
-      status: editTableData.status,
-      currentCustomer: editTableData.currentCustomer || "No Customer",
-    });
-    setShowEditModal(false);
+
+    let formattedName = editTableData.name.trim();
+    if (/^\d+$/.test(formattedName)) {
+      formattedName = `Table ${formattedName}`;
+    }
+
+    try {
+      await editTable(editTableData.id, {
+        name: formattedName,
+        status: editTableData.status,
+        currentCustomer: editTableData.currentCustomer || "No Customer",
+      });
+      setShowEditModal(false);
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   return (
@@ -374,7 +411,7 @@ const AdminTables = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteTable(table.id);
+                          handleDeleteClick(table.id);
                         }}
                         className="py-3 text-xs font-bold text-rose-600 hover:bg-rose-50 transition flex items-center justify-center gap-1.5"
                       >
@@ -551,6 +588,41 @@ const AdminTables = () => {
         </div>
       )}
 
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-slide-in">
+            <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle size={28} className="text-rose-500" />
+            </div>
+            <h2 className="text-xl font-black text-slate-900 mb-2">
+              Delete Table?
+            </h2>
+            <p className="text-sm text-slate-500 font-medium mb-6">
+              Are you sure you want to remove this table? This action cannot be
+              undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setTableToDelete(null);
+                }}
+                className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="flex-1 bg-rose-500 text-white font-bold py-3 rounded-xl hover:bg-rose-600 shadow-md shadow-rose-200 transition"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ADD NEW TABLE MODAL OVERLAY */}
       {showAddModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
@@ -580,7 +652,7 @@ const AdminTables = () => {
                   inputMode="numeric"
                   required
                   value={newTableName}
-                  onChange={(e) => setNewTableName(e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => setNewTableName(e.target.value)}
                   className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
                   placeholder="e.g. 8"
                 />
@@ -646,7 +718,10 @@ const AdminTables = () => {
                   required
                   value={editTableData.name}
                   onChange={(e) =>
-                    setEditTableData({ ...editTableData, name: e.target.value.replace(/\D/g, '') })
+                    setEditTableData({
+                      ...editTableData,
+                      name: e.target.value,
+                    })
                   }
                   className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-all font-medium text-sm"
                   placeholder="e.g. 8"

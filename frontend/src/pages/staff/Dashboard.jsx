@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -37,8 +37,14 @@ const Dashboard = () => {
   const [editSeats, setEditSeats] = useState(2);
   const [editTime, setEditTime] = useState("");
 
-  const { orders, serveOrder, cancelOrder, completeOrder } = useOrders();
-  const { tables, setTables, updateTableStatus } = useTables();
+  const { orders, serveOrder, cancelOrder, completeOrder, fetchOrders } =
+    useOrders();
+  const { tables, setTables, updateTableStatus, fetchTables } = useTables();
+
+  useEffect(() => {
+    if (fetchOrders) fetchOrders();
+    if (fetchTables) fetchTables();
+  }, [fetchOrders, fetchTables]);
 
   // Map global context data to Dashboard specific format
   const tablesList = tables.map((t) => {

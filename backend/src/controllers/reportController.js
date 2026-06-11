@@ -18,9 +18,9 @@ exports.getDashboardStats = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalRevenue: { $sum: "$paidAmount" },
+          totalRevenue: { $sum: "$amount" },
           totalOrders: { $sum: 1 },
-          avgOrderValue: { $avg: "$paidAmount" },
+          avgOrderValue: { $avg: "$amount" },
         },
       },
     ]);
@@ -35,7 +35,7 @@ exports.getDashboardStats = async (req, res) => {
       {
         $group: {
           _id: null,
-          todayRevenue: { $sum: "$paidAmount" },
+          todayRevenue: { $sum: "$amount" },
           todayOrders: { $sum: 1 },
         },
       },
@@ -47,7 +47,7 @@ exports.getDashboardStats = async (req, res) => {
       {
         $group: {
           _id: "$paymentMethod",
-          total: { $sum: "$paidAmount" },
+          total: { $sum: "$amount" },
           count: { $sum: 1 },
         },
       },
@@ -55,6 +55,7 @@ exports.getDashboardStats = async (req, res) => {
 
     // 3. Top 5 Most Popular Menu Items
     const popularItems = await Order.aggregate([
+      { $match: { status: "Completed" } },
       { $unwind: "$items" },
       {
         $group: {
@@ -63,11 +64,50 @@ exports.getDashboardStats = async (req, res) => {
           revenueGenerated: {
             $sum: { $multiply: ["$items.qty", "$items.price"] },
           },
+          category: { $first: "$items.category" },
         },
       },
       { $sort: { totalSold: -1 } },
       { $limit: 5 },
     ]);
+
+    // 4. Category Distribution
+    const categoryDistribution = await Order.aggregate([
+      { $match: { status: "Completed" } },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: { $ifNull: ["$items.category", "Other"] },
+          value: { $sum: "$items.qty" },
+        },
+      },
+    ]);
+
+    // 5. Revenue Trend (Last 7 Days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const revenueTrend = await Order.aggregate([
+      {
+        $match: {
+          status: "Completed",
+          createdAt: { $gte: sevenDaysAgo },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          revenue: { $sum: "$amount" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // 6. Total Unique Customers
+    const uniqueCustomers = await Order.distinct("customer", {
+      status: "Completed",
+    });
 
     const summary = {
       overall: salesStats[0] || {
@@ -85,7 +125,17 @@ exports.getDashboardStats = async (req, res) => {
         name: item._id,
         sold: item.totalSold,
         revenue: item.revenueGenerated,
+        category: item.category,
       })),
+      categoryDistribution: categoryDistribution.map((c) => ({
+        name: c._id,
+        value: c.value,
+      })),
+      revenueTrend: revenueTrend.map((r) => ({
+        date: r._id,
+        revenue: r.revenue,
+      })),
+      totalCustomers: uniqueCustomers.length,
     };
 
     res.status(200).json(summary);

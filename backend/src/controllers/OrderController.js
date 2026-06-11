@@ -88,7 +88,12 @@ exports.getOrders = async (req, res) => {
         total: order.total,
         status: order.status,
         time: order.time,
+        date: order.date,
         items: order.items, // Keeps item prices intact
+        amount: order.amount,
+        paymentMethod: order.paymentMethod,
+        discountAmount: order.discountAmount,
+        serviceCharge: order.serviceCharge,
       }));
       return res.status(200).json(cashierOrders);
     }
@@ -262,13 +267,25 @@ exports.completeOrder = async (req, res) => {
       ? { _id: req.params.id }
       : { id: req.params.id };
 
+    const existingOrder = await Order.findOne(query);
+    if (!existingOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // If the frontend forgot to send the amount, automatically calculate it here
+    let finalAmount = amount;
+    if (!finalAmount) {
+      const subtotal = (existingOrder.items || []).reduce((sum, item) => sum + item.qty * (item.price || 0), 0);
+      finalAmount = subtotal + (subtotal > 0 ? 50 : 0);
+    }
+
     const updatedOrder = await Order.findOneAndUpdate(
       query,
       {
         paymentMethod: paymentMethod || "Cash",
         discountAmount: discountAmount || 0,
         serviceCharge: serviceCharge || 0,
-        paidAmount: amount || 0,
+        amount: finalAmount,
         status: "Completed",
       },
       { new: true }

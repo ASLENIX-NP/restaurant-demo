@@ -28,6 +28,8 @@ const orderSchema = new mongoose.Schema(
     vat: { type: Number, default: 0 },
     total: { type: Number, default: 0 },
     amount: { type: Number, default: 0 },
+    discountAmount: { type: Number, default: 0 },
+    serviceCharge: { type: Number, default: 0 },
 
     time: { type: String }, // E.g., 08:30 PM
     date: { type: String }, // E.g., 2024-05-15

@@ -24,8 +24,19 @@ import { useTables } from "../../context/TableContext";
 const ITEMS_PER_PAGE = 5;
 
 const Invoices = () => {
-  const { orders = [], completeOrder, cancelOrder, addOrder } = useOrders() || {};
-  const { updateTableStatus } = useTables() || {};
+  const {
+    orders = [],
+    completeOrder,
+    cancelOrder,
+    addOrder,
+    fetchOrders,
+  } = useOrders() || {};
+  const { updateTableStatus, fetchTables } = useTables() || {};
+
+  useEffect(() => {
+    if (fetchOrders) fetchOrders();
+    if (fetchTables) fetchTables();
+  }, [fetchOrders, fetchTables]);
 
   // Dynamically map global orders into the standard Invoice format
   const invoices = useMemo(() => {
@@ -90,7 +101,10 @@ const Invoices = () => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setActiveDropdownId(null);
       }
-      if (filterMenuRef.current && !filterMenuRef.current.contains(event.target)) {
+      if (
+        filterMenuRef.current &&
+        !filterMenuRef.current.contains(event.target)
+      ) {
         setIsFilterMenuOpen(false);
       }
     };
@@ -109,7 +123,10 @@ const Invoices = () => {
       const matchesStatus =
         statusFilter === "All" || invoice.status === statusFilter;
       const matchesMethod =
-        methodFilter === "All" || (invoice.method || "").toLowerCase().includes(methodFilter.toLowerCase());
+        methodFilter === "All" ||
+        (invoice.method || "")
+          .toLowerCase()
+          .includes(methodFilter.toLowerCase());
       return matchesSearch && matchesStatus && matchesMethod;
     });
   }, [invoices, searchTerm, statusFilter, methodFilter]);
@@ -169,7 +186,8 @@ const Invoices = () => {
 
   // Functions for New Invoice handling
   const handleAddNewItem = () => {
-    if (!newItemInput.name || newItemInput.price < 0 || newItemInput.qty < 1) return;
+    if (!newItemInput.name || newItemInput.price < 0 || newItemInput.qty < 1)
+      return;
     setNewInvoiceData({
       ...newInvoiceData,
       items: [...newInvoiceData.items, newItemInput],
@@ -183,7 +201,10 @@ const Invoices = () => {
       return;
     }
 
-    const subtotal = newInvoiceData.items.reduce((sum, i) => sum + i.qty * i.price, 0);
+    const subtotal = newInvoiceData.items.reduce(
+      (sum, i) => sum + i.qty * i.price,
+      0
+    );
     const newInv = {
       id: `INV-${Math.floor(Math.random() * 90000) + 10000}`,
       customer: newInvoiceData.customer || "Walk-in Customer",
@@ -192,7 +213,10 @@ const Invoices = () => {
       amount: subtotal,
       status: "Completed",
       date: new Date().toLocaleDateString(),
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       table: "Walk-in",
     };
 
@@ -267,27 +291,68 @@ const Invoices = () => {
           </p>
         </div>
         <div className="invoice-actions">
-        <div style={{ position: "relative" }} ref={filterMenuRef}>
-          <button className="filter-btn" onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <Filter size={16} /> Filter
-          </button>
-          {isFilterMenuOpen && (
-            <div style={{ position: "absolute", top: "calc(100% + 5px)", right: 0, background: "white", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", zIndex: 50, minWidth: "160px", textAlign: "left" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "8px", color: "#64748b" }}>Payment Method</label>
-              <select 
-                value={methodFilter} 
-                onChange={(e) => { setMethodFilter(e.target.value); setCurrentPage(1); setIsFilterMenuOpen(false); }}
-                style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #e2e8f0", outline: "none", fontSize: "13px", backgroundColor: "#fff", cursor: "pointer" }}
+          <div style={{ position: "relative" }} ref={filterMenuRef}>
+            <button
+              className="filter-btn"
+              onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
+              style={{ display: "flex", alignItems: "center", gap: "6px" }}
+            >
+              <Filter size={16} /> Filter
+            </button>
+            {isFilterMenuOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 5px)",
+                  right: 0,
+                  background: "white",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "8px",
+                  padding: "12px",
+                  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+                  zIndex: 50,
+                  minWidth: "160px",
+                  textAlign: "left",
+                }}
               >
-                <option value="All">All Methods</option>
-                <option value="Cash">Cash</option>
-                <option value="Card">Card</option>
-                <option value="eSewa">eSewa</option>
-                <option value="Khalti">Khalti</option>
-              </select>
-            </div>
-          )}
-        </div>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                    color: "#64748b",
+                  }}
+                >
+                  Payment Method
+                </label>
+                <select
+                  value={methodFilter}
+                  onChange={(e) => {
+                    setMethodFilter(e.target.value);
+                    setCurrentPage(1);
+                    setIsFilterMenuOpen(false);
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "6px",
+                    border: "1px solid #e2e8f0",
+                    outline: "none",
+                    fontSize: "13px",
+                    backgroundColor: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value="All">All Methods</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
+                  <option value="eSewa">eSewa</option>
+                  <option value="Khalti">Khalti</option>
+                </select>
+              </div>
+            )}
+          </div>
           <button className="new-btn" onClick={() => setIsNewInvoiceOpen(true)}>
             <Plus size={16} /> New Invoice
           </button>
@@ -812,29 +877,77 @@ const Invoices = () => {
               </button>
             </div>
 
-            <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "20px" }}>
+            <div
+              style={{
+                padding: "20px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "20px",
+              }}
+            >
               {/* Customer Info */}
               <div style={{ display: "flex", gap: "15px" }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "6px", color: "#64748b" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      marginBottom: "6px",
+                      color: "#64748b",
+                    }}
+                  >
                     Customer Name
                   </label>
                   <input
                     type="text"
                     value={newInvoiceData.customer}
-                    onChange={(e) => setNewInvoiceData({ ...newInvoiceData, customer: e.target.value })}
-                    style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #e2e8f0", outline: "none", fontSize: "14px" }}
+                    onChange={(e) =>
+                      setNewInvoiceData({
+                        ...newInvoiceData,
+                        customer: e.target.value,
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid #e2e8f0",
+                      outline: "none",
+                      fontSize: "14px",
+                    }}
                     placeholder="Walk-in Customer"
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "6px", color: "#64748b" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      marginBottom: "6px",
+                      color: "#64748b",
+                    }}
+                  >
                     Payment Method
                   </label>
                   <select
                     value={newInvoiceData.method}
-                    onChange={(e) => setNewInvoiceData({ ...newInvoiceData, method: e.target.value })}
-                    style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #e2e8f0", outline: "none", fontSize: "14px", backgroundColor: "#fff" }}
+                    onChange={(e) =>
+                      setNewInvoiceData({
+                        ...newInvoiceData,
+                        method: e.target.value,
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid #e2e8f0",
+                      outline: "none",
+                      fontSize: "14px",
+                      backgroundColor: "#fff",
+                    }}
                   >
                     <option value="Cash">Cash</option>
                     <option value="Card">Card</option>
@@ -846,44 +959,109 @@ const Invoices = () => {
 
               {/* Items Management */}
               <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "8px", color: "#64748b" }}>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                    color: "#64748b",
+                  }}
+                >
                   Add Items
                 </label>
-                <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+                <div
+                  style={{ display: "flex", gap: "10px", marginBottom: "15px" }}
+                >
                   <input
                     type="text"
                     placeholder="Item Name"
                     value={newItemInput.name}
-                    onChange={(e) => setNewItemInput({ ...newItemInput, name: e.target.value })}
-                    style={{ flex: 2, padding: "10px", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "14px", outline: "none" }}
+                    onChange={(e) =>
+                      setNewItemInput({ ...newItemInput, name: e.target.value })
+                    }
+                    style={{
+                      flex: 2,
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid #e2e8f0",
+                      fontSize: "14px",
+                      outline: "none",
+                    }}
                   />
                   <input
                     type="number"
                     placeholder="Qty"
                     min="1"
                     value={newItemInput.qty || ""}
-                    onChange={(e) => setNewItemInput({ ...newItemInput, qty: parseInt(e.target.value) || 0 })}
-                    style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "14px", outline: "none" }}
+                    onChange={(e) =>
+                      setNewItemInput({
+                        ...newItemInput,
+                        qty: parseInt(e.target.value) || 0,
+                      })
+                    }
+                    style={{
+                      flex: 1,
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid #e2e8f0",
+                      fontSize: "14px",
+                      outline: "none",
+                    }}
                   />
                   <input
                     type="number"
                     placeholder="Price"
                     min="0"
                     value={newItemInput.price === 0 ? "" : newItemInput.price}
-                    onChange={(e) => setNewItemInput({ ...newItemInput, price: parseFloat(e.target.value) || 0 })}
-                    style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: "14px", outline: "none" }}
+                    onChange={(e) =>
+                      setNewItemInput({
+                        ...newItemInput,
+                        price: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    style={{
+                      flex: 1,
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid #e2e8f0",
+                      fontSize: "14px",
+                      outline: "none",
+                    }}
                   />
                   <button
                     onClick={handleAddNewItem}
-                    style={{ padding: "10px 16px", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px", cursor: "pointer", fontWeight: "bold", color: "#334155", transition: "0.2s" }}
+                    style={{
+                      padding: "10px 16px",
+                      backgroundColor: "#f8fafc",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                      color: "#334155",
+                      transition: "0.2s",
+                    }}
                   >
                     Add
                   </button>
                 </div>
 
-                <div style={{ maxHeight: "200px", overflowY: "auto", border: "1px solid #e2e8f0", borderRadius: "8px" }}>
+                <div
+                  style={{
+                    maxHeight: "200px",
+                    overflowY: "auto",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "8px",
+                  }}
+                >
                   <table className="modal-items-table" style={{ margin: 0 }}>
-                    <thead style={{ position: "sticky", top: 0, background: "#f8fafc" }}>
+                    <thead
+                      style={{
+                        position: "sticky",
+                        top: 0,
+                        background: "#f8fafc",
+                      }}
+                    >
                       <tr>
                         <th>Item</th>
                         <th className="txt-center">Qty</th>
@@ -896,15 +1074,26 @@ const Invoices = () => {
                         <tr key={idx}>
                           <td>{item.name}</td>
                           <td className="txt-center">{item.qty}</td>
-                          <td className="txt-right">Rs. {item.price.toFixed(2)}</td>
+                          <td className="txt-right">
+                            Rs. {item.price.toFixed(2)}
+                          </td>
                           <td className="txt-center">
                             <button
                               onClick={() => {
                                 const newItems = [...newInvoiceData.items];
                                 newItems.splice(idx, 1);
-                                setNewInvoiceData({ ...newInvoiceData, items: newItems });
+                                setNewInvoiceData({
+                                  ...newInvoiceData,
+                                  items: newItems,
+                                });
                               }}
-                              style={{ color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: "4px" }}
+                              style={{
+                                color: "#ef4444",
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                padding: "4px",
+                              }}
                               title="Remove Item"
                             >
                               <Trash2 size={16} />
@@ -914,7 +1103,14 @@ const Invoices = () => {
                       ))}
                       {newInvoiceData.items.length === 0 && (
                         <tr>
-                          <td colSpan="4" style={{ textAlign: "center", color: "#94a3b8", padding: "20px" }}>
+                          <td
+                            colSpan="4"
+                            style={{
+                              textAlign: "center",
+                              color: "#94a3b8",
+                              padding: "20px",
+                            }}
+                          >
                             No items added yet.
                           </td>
                         </tr>
@@ -925,13 +1121,45 @@ const Invoices = () => {
               </div>
             </div>
 
-            <div style={{ padding: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #f1f5f9", backgroundColor: "#f8fafc", borderBottomLeftRadius: "16px", borderBottomRightRadius: "16px" }}>
-              <div style={{ fontSize: "18px", fontWeight: "900", color: "#0f172a" }}>
-                Total: Rs. {newInvoiceData.items.reduce((sum, i) => sum + i.qty * i.price, 0).toFixed(2)}
+            <div
+              style={{
+                padding: "20px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderTop: "1px solid #f1f5f9",
+                backgroundColor: "#f8fafc",
+                borderBottomLeftRadius: "16px",
+                borderBottomRightRadius: "16px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "900",
+                  color: "#0f172a",
+                }}
+              >
+                Total: Rs.{" "}
+                {newInvoiceData.items
+                  .reduce((sum, i) => sum + i.qty * i.price, 0)
+                  .toFixed(2)}
               </div>
               <button
                 onClick={handleCreateInvoice}
-                style={{ padding: "12px 24px", backgroundColor: "#10b981", color: "white", border: "none", borderRadius: "10px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", boxShadow: "0 4px 6px -1px rgba(16, 185, 129, 0.2)" }}
+                style={{
+                  padding: "12px 24px",
+                  backgroundColor: "#10b981",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "10px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  boxShadow: "0 4px 6px -1px rgba(16, 185, 129, 0.2)",
+                }}
               >
                 <CheckCircle size={18} /> Create & Settle
               </button>
