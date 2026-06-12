@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Plus,
   Minus,
@@ -8,6 +8,7 @@ import {
   XCircle,
   User,
 } from "lucide-react";
+import { io } from "socket.io-client";
 import "../../styles/takeorders.css"; // Kept for any global custom overrides
 import { useOrders } from "../../context/OrderContext";
 import { useAuth } from "../../context/AuthContext";
@@ -16,7 +17,9 @@ import { useTables } from "../../context/TableContext";
 export default function TakeOrder() {
   const { addOrder } = useOrders();
   const { user } = useAuth();
-  const { tables, updateTableStatus } = useTables() || { tables: [] };
+  const { tables, updateTableStatus, fetchTables } = useTables() || {
+    tables: [],
+  };
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedTable, setSelectedTable] = useState("All Tables");
   const [cart, setCart] = useState([]);
@@ -37,29 +40,35 @@ export default function TakeOrder() {
     }
   };
 
-  // Load dynamic menu data synced with Admin Menu Management
   useEffect(() => {
-    const loadProducts = () => {
-      const data = localStorage.getItem("restaurant_menu");
-      if (data) {
+    if (fetchTables) fetchTables();
+  }, [fetchTables]);
+
+  const loadProducts = useCallback(async () => {
+    try {
+      const response = await fetch("http://localhost:5001/api/menu");
+      if (response.ok) {
+        const data = await response.json();
         setMenuItems(
-          JSON.parse(data)
+          data
             .filter((item) => item.isAvailable !== false)
             .map((item) => ({ ...item, id: item._id || item.id }))
         );
       }
-    };
+    } catch (error) {
+      console.error("Error fetching menu items:", error);
+    }
+  }, []);
+
+  // Load dynamic menu data synced with Admin Menu Management
+  useEffect(() => {
     loadProducts();
 
-    // Listen for real-time cross-tab updates triggered by Admin
-    const handleStorageChange = (e) => {
-      if (e.key === "restaurant_menu_updated") {
-        loadProducts();
-      }
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+    const socket = io("http://localhost:5001");
+    socket.on("menuUpdated", loadProducts);
+
+    return () => socket.disconnect();
+  }, [loadProducts]);
 
   const categories = [
     "All Categories",
@@ -102,7 +111,7 @@ export default function TakeOrder() {
     setCart(cart.filter((item) => item.id !== id));
   };
 
-  const handleSendToKitchen = () => {
+  const handleSendToKitchen = async () => {
     if (cart.length === 0) {
       showNotification(
         "Your cart is empty! Please add items before sending to the kitchen.",
@@ -115,23 +124,13 @@ export default function TakeOrder() {
       return;
     }
 
-    const orderTime = new Date().toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-    const orderDate = new Date().toISOString().split("T")[0];
-    const orderId = `#ORD-${Math.floor(1000 + Math.random() * 9000)}`; // Generate ID here
-
     const orderData = {
-      id: orderId,
       table: selectedTable,
       server: user?.name || user?.username || "Staff Member",
       channel: selectedTable === "Pickup" ? "Takeaway" : "Dine In",
       priority: "Normal",
       station: "Hot Line",
       notes: orderNote,
-      elapsedMinutes: 0,
       items: cart.map(({ id, name, qty, price, category }) => ({
         id,
         name,
@@ -141,39 +140,48 @@ export default function TakeOrder() {
         station: "Hot Line",
       })),
       subtotal,
-      vat: 0, // VAT was removed previously, so we default it to 0
       total: parseFloat(total.toFixed(2)),
-      amount: parseFloat(total.toFixed(2)),
-      time: orderTime,
-      date: orderDate,
-      timestamp: new Date().toISOString(),
       status: "Pending",
     };
 
-    addOrder(orderData);
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await fetch("http://localhost:5001/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(orderData),
+      });
 
-    // Mark the table as Occupied globally
-    const tableObj = tables.find(
-      (t) => (t.name || `Table ${t.id}`) === selectedTable
-    );
-    if (tableObj) {
-      updateTableStatus(tableObj.id, "Occupied", "Dining In");
-    } else {
-      const match = selectedTable.match(/\d+/);
-      if (match) {
-        updateTableStatus(parseInt(match[0], 10), "Occupied", "Dining In");
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || "Failed to create order");
       }
+
+      const savedOrder = await response.json();
+      addOrder(savedOrder);
+
+      // Mark the table as Occupied globally
+      const tableObj = tables.find(
+        (t) => (t.name || `Table ${t.id}`) === selectedTable
+      );
+      if (tableObj) {
+        updateTableStatus(tableObj.id, "Occupied", "Dining In");
+      }
+
+      showNotification(
+        `Order for ${selectedTable} successfully sent to the kitchen!`,
+        "success"
+      );
+      setCart([]);
+      setSelectedTable("All Tables");
+      setOrderNote("");
+    } catch (error) {
+      console.error("Error creating order:", error);
+      showNotification(error.message, "error");
     }
-
-    console.log("Sending enriched order to kitchen API...", orderData);
-    showNotification(
-      `Order for ${selectedTable} successfully sent to the kitchen at ${orderTime}!`,
-      "success"
-    );
-
-    setCart([]);
-    setSelectedTable("All Tables");
-    setOrderNote("");
   };
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
@@ -335,7 +343,8 @@ export default function TakeOrder() {
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
-                <User size={14} /> Server: {user?.name || user?.username || "Staff Member"}
+                <User size={14} /> Server:{" "}
+                {user?.name || user?.username || "Staff Member"}
               </div>
             </div>
 

@@ -5,6 +5,20 @@ const Order = require("../models/Order");
 // @access  Private (Admin/Cashier)
 exports.getDashboardStats = async (req, res) => {
   try {
+    // 1. Define the date range for filtering from query parameters
+    const { startDate, endDate } = req.query;
+    let dateFilter = {};
+    if (startDate && endDate) {
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      dateFilter = {
+        createdAt: {
+          $gte: new Date(startDate),
+          $lte: endOfDay,
+        },
+      };
+    }
+
     // Get today's start and end dates for filtering
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
@@ -12,9 +26,9 @@ exports.getDashboardStats = async (req, res) => {
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
 
-    // 1. Calculate Overall Revenue & Averages (All Time vs Today)
+    // 1. Calculate Overall Revenue & Averages for the selected date range
     const salesStats = await Order.aggregate([
-      { $match: { status: "Completed" } },
+      { $match: { status: "Completed", ...dateFilter } },
       {
         $group: {
           _id: null,
@@ -25,6 +39,7 @@ exports.getDashboardStats = async (req, res) => {
       },
     ]);
 
+    // Today's stats are always for today, regardless of the date picker
     const todayStats = await Order.aggregate([
       {
         $match: {
@@ -43,7 +58,7 @@ exports.getDashboardStats = async (req, res) => {
 
     // 2. Calculate Revenue split by Payment Method
     const paymentMethods = await Order.aggregate([
-      { $match: { status: "Completed" } },
+      { $match: { status: "Completed", ...dateFilter } },
       {
         $group: {
           _id: "$paymentMethod",
@@ -55,7 +70,7 @@ exports.getDashboardStats = async (req, res) => {
 
     // 3. Top 5 Most Popular Menu Items
     const popularItems = await Order.aggregate([
-      { $match: { status: "Completed" } },
+      { $match: { status: "Completed", ...dateFilter } },
       { $unwind: "$items" },
       {
         $group: {
@@ -73,7 +88,7 @@ exports.getDashboardStats = async (req, res) => {
 
     // 4. Category Distribution
     const categoryDistribution = await Order.aggregate([
-      { $match: { status: "Completed" } },
+      { $match: { status: "Completed", ...dateFilter } },
       { $unwind: "$items" },
       {
         $group: {
@@ -83,17 +98,10 @@ exports.getDashboardStats = async (req, res) => {
       },
     ]);
 
-    // 5. Revenue Trend (Last 7 Days)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-    sevenDaysAgo.setHours(0, 0, 0, 0);
-
+    // 5. Revenue Trend for the selected date range
     const revenueTrend = await Order.aggregate([
       {
-        $match: {
-          status: "Completed",
-          createdAt: { $gte: sevenDaysAgo },
-        },
+        $match: { status: "Completed", ...dateFilter },
       },
       {
         $group: {
@@ -107,6 +115,7 @@ exports.getDashboardStats = async (req, res) => {
     // 6. Total Unique Customers
     const uniqueCustomers = await Order.distinct("customer", {
       status: "Completed",
+      ...dateFilter,
     });
 
     const summary = {
