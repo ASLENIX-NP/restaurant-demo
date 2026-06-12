@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Search,
   Filter,
@@ -10,16 +10,38 @@ import {
   ChevronLeft,
   ChevronRight,
   MoreVertical,
+  Printer,
+  Eye,
 } from "lucide-react";
 import { useOrders } from "../../context/OrderContext";
 
 export default function Payments() {
   const { orders = [], fetchOrders } = useOrders() || {};
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeDropdownId, setActiveDropdownId] = useState(null);
+  const menuRef = useRef(null);
+  const ITEMS_PER_PAGE = 7;
 
   useEffect(() => {
     if (fetchOrders) fetchOrders();
   }, [fetchOrders]);
+
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setActiveDropdownId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Dynamically generate payments from completed orders
   const paymentsData = useMemo(() => {
@@ -57,6 +79,13 @@ export default function Payments() {
       payment.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payment.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payment.paymentId.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredPayments.length / ITEMS_PER_PAGE) || 1;
+  const paginatedPayments = filteredPayments.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
   const totalCollected = paymentsData.reduce((sum, p) => sum + p.rawAmount, 0);
@@ -273,7 +302,7 @@ export default function Payments() {
                     </td>
                   </tr>
                 ) : (
-                  filteredPayments.map((payment, idx) => (
+                  paginatedPayments.map((payment, idx) => (
                     <tr
                       key={idx}
                       className="hover:bg-slate-50/80 transition-colors group"
@@ -311,10 +340,30 @@ export default function Payments() {
                       <td className="py-4 px-6 border-b border-slate-50 text-slate-500 whitespace-nowrap">
                         {payment.time}
                       </td>
-                      <td className="py-4 px-6 border-b border-slate-50 text-right">
-                        <button className="text-slate-400 hover:text-purple-600 transition-colors p-1 rounded-md hover:bg-purple-50">
+                      <td className="py-4 px-6 border-b border-slate-50 text-right relative">
+                        <button
+                          onClick={() => setActiveDropdownId(activeDropdownId === payment.paymentId ? null : payment.paymentId)}
+                          className={`text-slate-400 hover:text-purple-600 transition-colors p-1.5 rounded-md hover:bg-purple-50 ${
+                            activeDropdownId === payment.paymentId ? "bg-purple-50 text-purple-600" : ""
+                          }`}
+                        >
                           <MoreVertical size={18} />
                         </button>
+
+                        {/* Floating Action Menu */}
+                        {activeDropdownId === payment.paymentId && (
+                          <div ref={menuRef} className="absolute right-12 top-10 bg-white border border-slate-100 shadow-xl rounded-xl w-40 z-50 overflow-hidden animate-slide-in">
+                            <button className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50">
+                              <Eye size={16} className="text-blue-500" /> View Details
+                            </button>
+                            <button 
+                              onClick={() => { setActiveDropdownId(null); window.print(); }} 
+                              className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors"
+                            >
+                              <Printer size={16} className="text-emerald-500" /> Print Receipt
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -325,23 +374,37 @@ export default function Payments() {
 
           <div className="p-4 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500 mt-auto">
             <span>
-              Showing {filteredPayments.length > 0 ? 1 : 0} to{" "}
-              {filteredPayments.length} of {paymentsData.length} entries
+              Showing {filteredPayments.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0} to{" "}
+              {Math.min(currentPage * ITEMS_PER_PAGE, filteredPayments.length)} of {filteredPayments.length} entries
             </span>
             <div className="flex gap-1">
-              <button className="p-1.5 border border-slate-200 rounded-md hover:bg-slate-50 text-slate-400 transition-colors">
+              <button 
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                className="p-1.5 border border-slate-200 rounded-md hover:bg-slate-50 text-slate-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <ChevronLeft size={16} />
               </button>
-              <button className="px-3 py-1.5 bg-purple-600 text-white font-semibold rounded-md shadow-sm">
-                1
-              </button>
-              <button className="px-3 py-1.5 border border-slate-200 rounded-md hover:bg-slate-50 font-semibold text-slate-600 transition-colors">
-                2
-              </button>
-              <button className="px-3 py-1.5 border border-slate-200 rounded-md hover:bg-slate-50 font-semibold text-slate-600 transition-colors">
-                3
-              </button>
-              <button className="p-1.5 border border-slate-200 rounded-md hover:bg-slate-50 text-slate-400 transition-colors">
+              
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-1.5 rounded-md font-semibold transition-colors shadow-sm ${
+                    currentPage === i + 1
+                      ? "bg-purple-600 text-white border-transparent"
+                      : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+
+              <button 
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                className="p-1.5 border border-slate-200 rounded-md hover:bg-slate-50 text-slate-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <ChevronRight size={16} />
               </button>
             </div>

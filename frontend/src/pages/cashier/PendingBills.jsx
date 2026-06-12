@@ -262,41 +262,10 @@ export default function PendingBillsPage() {
         {`
         @media print {
           @page { margin: 0; size: 80mm auto; }
-          html, body {
-            width: 80mm;
-            background: #fff;
-            margin: 0;
-            padding: 0;
-          }
-          body * {
-            visibility: hidden;
-          }
-          /* Completely collapse layout structures that stretch the page width */
-          .sidebar, .navbar, header, footer, .pending-shell, .checkout-popout-backdrop, .print-modal-hide {
-            display: none !important;
-          }
-          .pending-bills-modern {
-            padding: 0 !important;
-            margin: 0 !important;
-            min-height: 0 !important;
-            min-width: 0 !important;
-            background: transparent !important;
-          }
-          #printable-receipt, #printable-receipt * {
-            visibility: visible;
-          }
-          #printable-receipt {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 80mm;
-            margin: 0;
-            padding: 5mm;
-            font-family: 'Courier New', monospace;
-            color: #000;
-            font-size: 12px;
-            background: #fff;
-          }
+          html, body { width: 80mm !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
+          .sidebar, .navbar, header, footer, .pending-shell, .checkout-popout-backdrop, .print-modal-hide { display: none !important; }
+          .pending-bills-modern { padding: 0 !important; margin: 0 !important; background: transparent !important; }
+          #printable-receipt { position: absolute !important; left: 0 !important; top: 0 !important; width: 80mm !important; margin: 0 !important; padding: 5mm !important; font-family: 'Courier New', monospace; color: #000; font-size: 12px; background: #fff; display: block !important; z-index: 99999; }
         }
         @media screen {
           #printable-receipt {
