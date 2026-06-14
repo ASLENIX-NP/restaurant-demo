@@ -107,19 +107,25 @@ export default function AdminDashboard() {
       revenue: `Rs. ${item.revenue.toLocaleString()}`,
     }));
 
-  const recentOrders = [...orders].slice(0, 5).map((o) => {
-    const subtotal = (o.items || []).reduce(
-      (sum, item) => sum + item.qty * item.price,
-      0
-    );
-    const amount = o.amount || subtotal + (subtotal > 0 ? 50 : 0);
-    return {
-      id: o.id,
-      customer: o.customer || "Guest",
-      amount: `Rs. ${amount.toLocaleString()}`,
-      status: o.status,
-    };
-  });
+  const recentOrders = [...orders]
+    .sort((a, b) => {
+      const timeA = new Date(a.timestamp || a.createdAt || 0).getTime();
+      const timeB = new Date(b.timestamp || b.createdAt || 0).getTime();
+      return timeB - timeA;
+    })
+    .slice(0, 5)
+    .map((o) => {
+      const subtotal = (o.items || []).reduce(
+        (sum, item) => sum + item.qty * item.price,
+        0
+      );
+      const amount = o.amount || subtotal + (subtotal > 0 ? 50 : 0);
+      return {
+        id: o.id,
+        amount: `Rs. ${amount.toLocaleString()}`,
+        status: o.status,
+      };
+    });
 
   // Dynamic Revenue Trend Data (Last 7 Days)
   const revenueTrendData = [];
@@ -491,7 +497,6 @@ export default function AdminDashboard() {
                 <thead className="bg-slate-50 font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
                   <tr>
                     <th className="p-3.5 pl-4">Order ID</th>
-                    <th className="p-3.5">Customer</th>
                     <th className="p-3.5">Amount</th>
                     <th className="p-3.5 text-right pr-4">Status</th>
                   </tr>
@@ -500,7 +505,7 @@ export default function AdminDashboard() {
                   {recentOrders.length === 0 ? (
                     <tr>
                       <td
-                        colSpan="4"
+                        colSpan="3"
                         className="p-4 text-center text-slate-400 text-xs"
                       >
                         No recent orders found.
@@ -514,9 +519,6 @@ export default function AdminDashboard() {
                       >
                         <td className="p-3.5 pl-4 font-bold text-purple-600">
                           {order.id}
-                        </td>
-                        <td className="p-3.5 text-slate-900 font-semibold">
-                          {order.customer}
                         </td>
                         <td className="p-3.5 text-slate-600 font-medium">
                           {order.amount}

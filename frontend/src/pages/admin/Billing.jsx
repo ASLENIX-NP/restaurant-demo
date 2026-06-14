@@ -22,7 +22,12 @@ const Billing = () => {
     if (fetchOrders) fetchOrders();
   }, [fetchOrders]);
 
-  const billsData = orders
+  const billsData = [...orders]
+    .sort((a, b) => {
+      const timeA = new Date(a.timestamp || a.createdAt || 0).getTime();
+      const timeB = new Date(b.timestamp || b.createdAt || 0).getTime();
+      return timeB - timeA;
+    })
     .filter((o) => o.status === "Completed")
     .map((o) => {
       const subtotal = (o.items || []).reduce(
@@ -40,8 +45,7 @@ const Billing = () => {
         time: o.time || "N/A",
         items: o.items || [],
       };
-    })
-    .reverse();
+    });
 
   // Filter bills based on search input
   const filteredBills = billsData.filter(

@@ -23,24 +23,20 @@ const Orders = () => {
     if (fetchOrders) fetchOrders();
   }, [fetchOrders]);
 
-  const formattedOrders = orders
+  const formattedOrders = [...orders]
+    .sort((a, b) => {
+      const timeA = new Date(a.timestamp || a.createdAt || 0).getTime();
+      const timeB = new Date(b.timestamp || b.createdAt || 0).getTime();
+      return timeB - timeA;
+    })
     .map((o, i) => {
       const subtotal = (o.items || []).reduce(
         (sum, item) => sum + item.qty * item.price,
         0
       );
       const total = o.amount || subtotal + (subtotal > 0 ? 50 : 0);
-      const avatarColors = [
-        "bg-blue-500",
-        "bg-emerald-500",
-        "bg-purple-500",
-        "bg-orange-500",
-      ];
       return {
         id: o.id,
-        customer: o.customer || "Guest",
-        phone: o.phone || "N/A",
-        avatarColor: avatarColors[i % avatarColors.length],
         itemsList: o.items || [],
         table: o.table || "Walk-in",
         type: o.channel || "Dine In",
@@ -48,8 +44,7 @@ const Orders = () => {
         status: o.status,
         time: o.time || "N/A",
       };
-    })
-    .reverse();
+    });
 
   // Logic to filter the orders based on tabs and search box
   const filteredOrders = formattedOrders.filter((order) => {
@@ -60,9 +55,9 @@ const Orders = () => {
         ? order.status === "Cooking" || order.status === "Ready"
         : order.status === activeFilter;
 
-    const matchesSearch =
-      order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = order.id
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
     return matchesFilter && matchesSearch;
   });
@@ -219,7 +214,6 @@ const Orders = () => {
                   <th className="p-5 pl-6 border-b border-slate-100">
                     Order ID
                   </th>
-                  <th className="p-5 border-b border-slate-100">Customer</th>
                   <th className="p-5 border-b border-slate-100">Table</th>
                   <th className="p-5 border-b border-slate-100">Items</th>
                   <th className="p-5 border-b border-slate-100">Type</th>
@@ -232,7 +226,7 @@ const Orders = () => {
                 {filteredOrders.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="8"
+                      colSpan="7"
                       className="text-center py-12 text-slate-400 font-medium"
                     >
                       No orders found matching your criteria.
@@ -247,25 +241,6 @@ const Orders = () => {
                       {/* ID Column */}
                       <td className="p-5 pl-6 font-bold text-slate-900">
                         {order.id}
-                      </td>
-
-                      {/* Customer Column */}
-                      <td className="p-5">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm ${order.avatarColor} shadow-sm`}
-                          >
-                            {order.customer.charAt(0)}
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-slate-900">
-                              {order.customer}
-                            </h4>
-                            <p className="text-xs text-slate-500 font-medium mt-0.5">
-                              {order.phone}
-                            </p>
-                          </div>
-                        </div>
                       </td>
 
                       {/* Table Column */}
@@ -331,9 +306,6 @@ const Orders = () => {
                 <h2 className="text-xl font-black text-slate-900">
                   Order {selectedOrder.id}
                 </h2>
-                <p className="text-purple-600 font-bold text-xs mt-0.5">
-                  {selectedOrder.customer}
-                </p>
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
