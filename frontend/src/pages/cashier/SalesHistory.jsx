@@ -21,7 +21,9 @@ import {
   Table2,
   Clock,
   Download,
-  FileText
+  FileText,
+  TrendingUp,
+  ShoppingCart
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useOrders } from "../../context/OrderContext";
@@ -38,9 +40,10 @@ export default function SalesHistory() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("All");
   const [paymentFilter, setPaymentFilter] = useState("All");
+  const [viewMode, setViewMode] = useState("ledger"); // 'ledger', 'invoices', 'payments', 'eod'
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
-  const [printMode, setPrintMode] = useState("ledger"); // 'ledger', 'single', or 'batch'
+  const [printMode, setPrintMode] = useState("ledger"); // 'ledger', 'single', 'batch', 'summary', 'eod'
   const [activeDropdownId, setActiveDropdownId] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
@@ -65,7 +68,14 @@ export default function SalesHistory() {
   useEffect(() => {
     setCurrentPage(1);
     setSelectedTxns([]); // Clear selections when filters change
-  }, [searchTerm, activeTab]);
+  }, [searchTerm, activeTab, paymentFilter, viewMode]);
+
+  // Reset search and dropdown filters when changing tabs for a fresh view
+  useEffect(() => {
+    setActiveTab("All");
+    setPaymentFilter("All");
+    setSearchTerm("");
+  }, [viewMode]);
 
   // Keyboard Shortcuts: Close modals on 'Escape'
   useEffect(() => {
@@ -141,10 +151,38 @@ export default function SalesHistory() {
     ].filter(item => item.value > 0); // Only show methods that have sales
   }, [completedSales]);
 
+  // End of Day (Today's) Metrics
+  const eodMetrics = useMemo(() => {
+    const todayStr = new Date().toLocaleDateString();
+    const todayStrISO = new Date().toISOString().split("T")[0];
+    
+    const todayCompleted = completedSales.filter(o => {
+      const oDate = o.date || (o.timestamp ? new Date(o.timestamp).toLocaleDateString() : "");
+      return oDate === todayStr || oDate === todayStrISO || (o.timestamp && new Date(o.timestamp).toLocaleDateString() === new Date().toLocaleDateString());
+    });
+
+    let cash = 0, card = 0, esewa = 0, khalti = 0, total = 0;
+
+    todayCompleted.forEach(order => {
+      const subtotal = (order.items || []).reduce((sum, item) => sum + item.qty * (parseFloat(item.price) || 0), 0);
+      const amt = order.amount || (subtotal + (subtotal > 0 ? 50 : 0));
+      total += amt;
+
+      if (order.paymentMethod === "Card") card += amt;
+      else if (order.paymentMethod === "eSewa") esewa += amt;
+      else if (order.paymentMethod === "Khalti") khalti += amt;
+      else cash += amt; // Default to cash
+    });
+
+    return {
+      ordersCount: todayCompleted.length,
+      total, cash, card, esewa, khalti
+    };
+  }, [completedSales]);
+
   // Map Orders to Unified Ledger Data
   const ledgerData = useMemo(() => {
     return orders
-      .filter(o => o.status === "Completed" || o.status === "Cancelled" || o.status === "Refunded")
       .map(order => {
         const subtotal = (order.items || []).reduce((sum, item) => sum + item.qty * (parseFloat(item.price) || 0), 0);
         const total = order.amount || (subtotal + (subtotal > 0 ? 50 : 0));
@@ -165,9 +203,16 @@ export default function SalesHistory() {
                             (txn.customer || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
                             txn.id.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPayment = paymentFilter === "All" ? true : txn.paymentMethod === paymentFilter;
-      return matchesTab && matchesSearch && matchesPayment;
+      
+      // Apply view mode specific filters
+      let matchesView = true;
+      if (viewMode === "ledger") matchesView = txn.status === "Completed" || txn.status === "Cancelled" || txn.status === "Refunded";
+      if (viewMode === "payments") matchesView = txn.status === "Completed"; // Only show finalized payments
+      if (viewMode === "invoices") matchesView = true; // Show all (including Pending)
+      
+      return matchesTab && matchesSearch && matchesPayment && matchesView;
     });
-  }, [ledgerData, activeTab, searchTerm, paymentFilter]);
+  }, [ledgerData, activeTab, searchTerm, paymentFilter, viewMode]);
 
   // Pagination
   const paginatedData = filteredData.slice(0, currentPage * ITEMS_PER_PAGE);
@@ -198,6 +243,11 @@ export default function SalesHistory() {
 
   const handlePrintLedger = () => {
     setPrintMode("ledger");
+    setTimeout(() => window.print(), 300);
+  };
+
+  const handlePrintSummary = () => {
+    setPrintMode("summary");
     setTimeout(() => window.print(), 300);
   };
 
@@ -311,6 +361,118 @@ export default function SalesHistory() {
     </div>
   );
 
+  const renderSummaryReport = () => (
+    <div key="summary-report" style={{ width: "100%", maxWidth: "800px", margin: "0 auto", padding: "20px", fontFamily: "sans-serif", color: "#000" }}>
+      <div style={{ textAlign: "center", marginBottom: "30px", borderBottom: "2px solid #e2e8f0", paddingBottom: "20px" }}>
+        <h1 style={{ fontSize: "24px", margin: "0 0 10px 0" }}>ASLENIX RESTAURANT</h1>
+        <h2 style={{ fontSize: "18px", margin: "0 0 5px 0", color: "#475569" }}>Sales & Payment Summary Report</h2>
+        <p style={{ margin: 0, color: "#64748b" }}>Generated on: {new Date().toLocaleString()}</p>
+        <p style={{ margin: "5px 0 0 0", color: "#64748b" }}>Current Filter: {activeTab} | Payment Method: {paymentFilter}</p>
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginBottom: "30px" }}>
+        <div style={{ flex: "1 1 45%", padding: "15px", border: "1px solid #e2e8f0", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
+          <h3 style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#64748b", textTransform: "uppercase" }}>Total Revenue</h3>
+          <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>Rs. {totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+        </div>
+        <div style={{ flex: "1 1 45%", padding: "15px", border: "1px solid #e2e8f0", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
+          <h3 style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#64748b", textTransform: "uppercase" }}>Total Orders</h3>
+          <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>{completedSales.length}</p>
+        </div>
+        <div style={{ flex: "1 1 45%", padding: "15px", border: "1px solid #e2e8f0", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
+          <h3 style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#64748b", textTransform: "uppercase" }}>Items Sold</h3>
+          <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>{totalItemsSold}</p>
+        </div>
+        <div style={{ flex: "1 1 45%", padding: "15px", border: "1px solid #e2e8f0", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
+          <h3 style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#64748b", textTransform: "uppercase" }}>Average Order Value</h3>
+          <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>Rs. {avgOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+        </div>
+      </div>
+
+      <h3 style={{ fontSize: "18px", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px", marginBottom: "15px" }}>Payments by Method</h3>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "30px" }}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left", padding: "10px", borderBottom: "2px solid #e2e8f0", color: "#475569" }}>Method</th>
+            <th style={{ textAlign: "right", padding: "10px", borderBottom: "2px solid #e2e8f0", color: "#475569" }}>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {paymentData.map((method, idx) => (
+            <tr key={idx}>
+              <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>{method.name}</td>
+              <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>Rs. {method.value.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            </tr>
+          ))}
+          {paymentData.length === 0 && (
+            <tr>
+              <td colSpan="2" style={{ padding: "15px", textAlign: "center", color: "#64748b" }}>No payment data available</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+      
+      <div style={{ textAlign: "center", marginTop: "40px", fontSize: "12px", color: "#94a3b8" }}>
+        <p>This is a system generated report. No signature required.</p>
+      </div>
+    </div>
+  );
+
+  const renderEODReport = () => (
+    <div key="eod-report" style={{ width: "100%", maxWidth: "800px", margin: "0 auto", padding: "20px", fontFamily: "sans-serif", color: "#000" }}>
+      <div style={{ textAlign: "center", marginBottom: "30px", borderBottom: "2px solid #e2e8f0", paddingBottom: "20px" }}>
+        <h1 style={{ fontSize: "24px", margin: "0 0 10px 0" }}>ASLENIX RESTAURANT</h1>
+        <h2 style={{ fontSize: "18px", margin: "0 0 5px 0", color: "#475569" }}>End of Day Summary (Z-Report)</h2>
+        <p style={{ margin: 0, color: "#64748b" }}>Date: {new Date().toLocaleDateString()}</p>
+      </div>
+
+      <h3 style={{ fontSize: "18px", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px", marginBottom: "15px" }}>Sales Summary</h3>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "30px" }}>
+        <tbody>
+          <tr>
+            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>Total Revenue Today</td>
+            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>Rs. {eodMetrics.total.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+          </tr>
+          <tr>
+            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>Total Orders Today</td>
+            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>{eodMetrics.ordersCount}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style={{ fontSize: "18px", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px", marginBottom: "15px" }}>Payment Breakdown</h3>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "30px" }}>
+        <tbody>
+          <tr>
+            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>Cash</td>
+            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>Rs. {eodMetrics.cash.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+          </tr>
+          <tr>
+            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>Card</td>
+            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>Rs. {eodMetrics.card.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+          </tr>
+          <tr>
+            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>eSewa</td>
+            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>Rs. {eodMetrics.esewa.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+          </tr>
+          <tr>
+            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>Khalti</td>
+            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>Rs. {eodMetrics.khalti.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px", display: "flex", justifyContent: "space-between" }}>
+        <span style={{ fontWeight: "bold", fontSize: "16px" }}>Expected Cash in Drawer:</span>
+        <span style={{ fontWeight: "bold", fontSize: "16px" }}>Rs. {eodMetrics.cash.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: "40px", fontSize: "12px", color: "#94a3b8" }}>
+        <p>End of Day System Report. No signature required.</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="sales-history-page">
       {/* DYNAMIC SMART PRINT-ONLY STYLES */}
@@ -327,6 +489,13 @@ export default function SalesHistory() {
             .print-hide-row { display: none !important; }
             .print-container { display: none !important; }
             .details-btn, .arrow-icon { display: none !important; }
+          ` : printMode === 'summary' || printMode === 'eod' ? `
+            @page { margin: 10mm; size: auto; }
+            html, body { width: 100% !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
+            .sidebar, .navbar, header, footer { display: none !important; }
+            .sales-history-page > *:not(.print-container) { display: none !important; }
+            .sales-history-page { padding: 0 !important; margin: 0 !important; background: transparent !important; }
+            .print-container { position: relative !important; width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; z-index: 99999; }
           ` : `
             @page { margin: 0; size: 80mm auto; }
             html, body { width: 80mm !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
@@ -345,8 +514,18 @@ export default function SalesHistory() {
       {/* HEADER */}
       <div className="sales-top">
         <div>
-          <h1>Sales History</h1>
-          <p>Unified Ledger: Sales, Payments & Custom Invoices</p>
+          <h1>
+            {viewMode === "ledger" && "Sales Ledger"}
+            {viewMode === "invoices" && "Invoices"}
+            {viewMode === "payments" && "Payments History"}
+            {viewMode === "eod" && "End of Day"}
+          </h1>
+          <p>
+            {viewMode === "ledger" && "Unified Ledger: Sales, Payments & Custom Invoices"}
+            {viewMode === "invoices" && "Manage all generated bills and pending invoices"}
+            {viewMode === "payments" && "View all completed and settled transactions"}
+            {viewMode === "eod" && "Review today's total payments and shift metrics"}
+          </p>
         </div>
         <div className="sales-top-actions flex gap-3">
           <button className="date-btn">
@@ -373,6 +552,9 @@ export default function SalesHistory() {
                   </>
                 ) : (
                   <>
+                    <button onClick={() => { setIsExportMenuOpen(false); handlePrintSummary(); }} className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50">
+                      <Printer size={16} className="text-purple-500" /> Print Summary Report
+                    </button>
                     <button onClick={() => { setIsExportMenuOpen(false); handlePrintLedger(); }} className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50">
                       <Printer size={16} className="text-emerald-500" /> Print Ledger Page
                     </button>
@@ -393,41 +575,116 @@ export default function SalesHistory() {
         </div>
       </div>
 
-      {/* METRICS GRID */}
-      <div className="sales-stats">
-        <div className="sales-stat-card">
-          <div className="stat-icon green">📈</div>
-          <div>
-            <h4>Total Sales</h4>
-            <h2>Rs. {totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
-            <span>0% vs yesterday</span>
-          </div>
-        </div>
-        <div className="sales-stat-card">
-          <div className="stat-icon blue">🛒</div>
-          <div>
-            <h4>Total Orders</h4>
-            <h2>{completedSales.length}</h2>
-            <span>0 vs yesterday</span>
-          </div>
-        </div>
-        <div className="sales-stat-card">
-          <div className="stat-icon orange">📦</div>
-          <div>
-            <h4>Items Sold</h4>
-            <h2>{totalItemsSold}</h2>
-            <span>0% vs yesterday</span>
-          </div>
-        </div>
-        <div className="sales-stat-card">
-          <div className="stat-icon purple">💳</div>
-          <div>
-            <h4>Average Order Value</h4>
-            <h2>Rs. {avgOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
-            <span>0% vs yesterday</span>
-          </div>
-        </div>
+      {/* UNIFIED VIEW SWITCHER TABS */}
+      <div className="flex gap-6 border-b border-slate-200 mb-6 px-1 mx-6 mt-6">
+        {["ledger", "invoices", "payments", "eod"].map((mode) => (
+          <button
+            key={mode}
+            onClick={() => setViewMode(mode)}
+            className={`pb-3 px-1 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 ${viewMode === mode ? "border-slate-900 text-slate-900" : "border-transparent text-slate-400 hover:text-slate-700"}`}
+          >
+            {mode === "ledger" ? "All History" : mode === "eod" ? "End of Day" : mode.charAt(0).toUpperCase() + mode.slice(1)}
+          </button>
+        ))}
       </div>
+
+      {viewMode === "eod" ? (
+        <div className="max-w-4xl mx-auto my-8 bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+          <div className="text-center mb-8 pb-8 border-b border-slate-100">
+            <h2 className="text-3xl font-black text-slate-900 mb-2">End of Day Report</h2>
+            <p className="text-slate-500 font-medium">Business Date: {new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6 mb-8">
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+              <span className="text-slate-500 font-bold uppercase tracking-wider text-xs">Total Revenue Today</span>
+              <h3 className="text-4xl font-black text-slate-900 mt-2">Rs. {eodMetrics.total.toLocaleString(undefined, {minimumFractionDigits:2})}</h3>
+            </div>
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+              <span className="text-slate-500 font-bold uppercase tracking-wider text-xs">Total Orders Today</span>
+              <h3 className="text-4xl font-black text-slate-900 mt-2">{eodMetrics.ordersCount}</h3>
+            </div>
+          </div>
+
+          <h3 className="text-lg font-bold text-slate-900 mb-4">Payment Breakdown</h3>
+          <div className="space-y-3 mb-8">
+            <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
+              <div className="flex items-center gap-3"><span className="w-3.5 h-3.5 rounded-full bg-emerald-500"></span><span className="font-bold text-slate-700">Cash Payments</span></div>
+              <span className="font-black text-lg text-slate-900">Rs. {eodMetrics.cash.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+            </div>
+            <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
+              <div className="flex items-center gap-3"><span className="w-3.5 h-3.5 rounded-full bg-blue-500"></span><span className="font-bold text-slate-700">Card Payments</span></div>
+              <span className="font-black text-lg text-slate-900">Rs. {eodMetrics.card.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+            </div>
+            <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
+              <div className="flex items-center gap-3"><span className="w-3.5 h-3.5 rounded-full bg-green-500"></span><span className="font-bold text-slate-700">eSewa</span></div>
+              <span className="font-black text-lg text-slate-900">Rs. {eodMetrics.esewa.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+            </div>
+            <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
+              <div className="flex items-center gap-3"><span className="w-3.5 h-3.5 rounded-full bg-purple-500"></span><span className="font-bold text-slate-700">Khalti</span></div>
+              <span className="font-black text-lg text-slate-900">Rs. {eodMetrics.khalti.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+            </div>
+          </div>
+
+          <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 flex justify-between items-center">
+            <div>
+              <h4 className="text-lg font-bold text-emerald-800">Expected Cash in Drawer</h4>
+              <p className="text-sm text-emerald-600 font-medium mt-1">Sum of all cash payments processed today</p>
+            </div>
+            <span className="text-3xl font-black text-emerald-700">Rs. {eodMetrics.cash.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+          </div>
+          
+          <div className="mt-8 flex gap-4">
+            <button onClick={() => {setPrintMode('eod'); setTimeout(() => window.print(), 300);}} className="flex-1 bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition shadow-md flex items-center justify-center gap-2">
+              <Printer size={18} /> Print End of Day Report
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* METRICS GRID */}
+          <div className="sales-stats">
+            <div className="sales-stat-card">
+              <div className="stat-icon green flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 shadow-sm border border-emerald-200">
+                <TrendingUp size={24} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4>Total Sales</h4>
+                <h2>Rs. {totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
+                <span>0% vs yesterday</span>
+              </div>
+            </div>
+            <div className="sales-stat-card">
+              <div className="stat-icon blue flex items-center justify-center w-12 h-12 rounded-xl bg-blue-100 text-blue-600 shadow-sm border border-blue-200">
+                <ShoppingCart size={24} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4>Total Orders</h4>
+                <h2>{completedSales.length}</h2>
+                <span>0 vs yesterday</span>
+              </div>
+            </div>
+            <div className="sales-stat-card">
+              <div className="stat-icon orange flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100 text-amber-600 shadow-sm border border-amber-200">
+                <Package size={24} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4>Items Sold</h4>
+                <h2>{totalItemsSold}</h2>
+                <span>0% vs yesterday</span>
+              </div>
+            </div>
+            <div className="sales-stat-card">
+              <div className="stat-icon purple flex items-center justify-center w-12 h-12 rounded-xl bg-purple-100 text-purple-600 shadow-sm border border-purple-200">
+                <CreditCard size={24} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4>Average Order Value</h4>
+                <h2>Rs. {avgOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
+                <span>0% vs yesterday</span>
+              </div>
+            </div>
+          </div>
 
       {/* UNIFIED WORKSPACE */}
       <div className="sales-content">
@@ -452,6 +709,7 @@ export default function SalesHistory() {
             </select>
             <select value={activeTab} onChange={(e) => setActiveTab(e.target.value)}>
               <option value="All">All Status</option>
+              {viewMode === "invoices" && <option value="Pending">Pending</option>}
               <option value="Completed">Completed</option>
               <option value="Cancelled">Cancelled</option>
             </select>
@@ -522,7 +780,7 @@ export default function SalesHistory() {
             <h3>Sales by Payment Method</h3>
             <div className="payment-chart">
               <div className="relative h-[160px] w-[160px]">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                   <PieChart>
                     <Pie
                       data={paymentData.length > 0 ? paymentData : [{ name: "No Data", value: 1, color: "#e2e8f0" }]}
@@ -576,6 +834,8 @@ export default function SalesHistory() {
           </div>
         </div>
       </div>
+        </>
+      )}
 
       {/* INVOICE PREVIEW MODAL */}
       {selectedInvoice && (
@@ -647,7 +907,146 @@ export default function SalesHistory() {
       <div className="print-container">
         {printMode === "single" && selectedInvoice && renderReceipt(selectedInvoice)}
         {printMode === "batch" && filteredData.filter(t => selectedTxns.includes(t.transactionId)).map(renderReceipt)}
+        {printMode === "summary" && renderSummaryReport()}
+        {printMode === "eod" && renderEODReport()}
       </div>
+
+      {/* CREATE NEW INVOICE MODAL */}
+      {isNewInvoiceOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity"
+          onClick={() => setIsNewInvoiceOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-slide-in flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
+              <h2 className="text-lg font-black text-slate-900">Create Custom Invoice</h2>
+              <button
+                onClick={() => setIsNewInvoiceOpen(false)}
+                className="text-slate-400 hover:text-slate-600 bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm transition"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-6 flex flex-col gap-4 overflow-y-auto max-h-[60vh]">
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-xs font-bold mb-1.5 text-slate-500 uppercase">Customer Name</label>
+                  <input
+                    type="text"
+                    value={newInvoiceData.customer}
+                    onChange={(e) => setNewInvoiceData({ ...newInvoiceData, customer: e.target.value })}
+                    className="w-full rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
+                    placeholder="Walk-in Customer"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-bold mb-1.5 text-slate-500 uppercase">Payment Method</label>
+                  <select
+                    value={newInvoiceData.method}
+                    onChange={(e) => setNewInvoiceData({ ...newInvoiceData, method: e.target.value })}
+                    className="w-full rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
+                  >
+                    <option value="Cash">Cash</option>
+                    <option value="Card">Card</option>
+                    <option value="eSewa">eSewa</option>
+                    <option value="Khalti">Khalti</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold mb-1.5 text-slate-500 uppercase">Add Items</label>
+                <div className="flex gap-2 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Item Name"
+                    value={newItemInput.name}
+                    onChange={(e) => setNewItemInput({ ...newItemInput, name: e.target.value })}
+                    className="flex-2 w-full rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Qty"
+                    min="1"
+                    value={newItemInput.qty || ""}
+                    onChange={(e) => setNewItemInput({ ...newItemInput, qty: parseInt(e.target.value) || 0 })}
+                    className="flex-1 w-20 rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Price"
+                    min="0"
+                    value={newItemInput.price === 0 ? "" : newItemInput.price}
+                    onChange={(e) => setNewItemInput({ ...newItemInput, price: parseFloat(e.target.value) || 0 })}
+                    className="flex-1 w-24 rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
+                  />
+                  <button
+                    onClick={handleAddNewItem}
+                    className="bg-slate-100 border border-slate-200 text-slate-700 font-bold px-4 rounded-lg hover:bg-slate-200 transition"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                <div className="border border-slate-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-left">
+                    <thead className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500">
+                      <tr>
+                        <th className="p-2 pl-3">Item</th>
+                        <th className="p-2 text-center">Qty</th>
+                        <th className="p-2 text-right">Price</th>
+                        <th className="p-2 text-center"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-sm divide-y divide-slate-100">
+                      {newInvoiceData.items.map((item, idx) => (
+                        <tr key={idx}>
+                          <td className="p-2 pl-3">{item.name}</td>
+                          <td className="p-2 text-center">{item.qty}</td>
+                          <td className="p-2 text-right">Rs. {item.price.toFixed(2)}</td>
+                          <td className="p-2 text-center">
+                            <button
+                              onClick={() => {
+                                const newItems = [...newInvoiceData.items];
+                                newItems.splice(idx, 1);
+                                setNewInvoiceData({ ...newInvoiceData, items: newItems });
+                              }}
+                              className="text-rose-500 hover:text-rose-700 transition"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {newInvoiceData.items.length === 0 && (
+                        <tr>
+                          <td colSpan="4" className="p-6 text-center text-slate-400">No items added yet.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+              <div className="text-lg font-black text-slate-900">
+                Total: Rs. {newInvoiceData.items.reduce((sum, i) => sum + i.qty * i.price, 0).toFixed(2)}
+              </div>
+              <button
+                onClick={handleCreateInvoice}
+                className="bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl hover:bg-emerald-600 transition shadow-md flex items-center gap-2"
+              >
+                <CheckCircle size={18} /> Create & Settle
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
