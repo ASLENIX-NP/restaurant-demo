@@ -1,19 +1,22 @@
 const Order = require("../models/Order");
 const Table = require("../models/Table");
-const Inventory = require("../models/Inventory");
+const Inventory = require("../models/InventoryItem");
 
 // --- INVENTORY AUTOMATION HELPERS ---
 const deductInventory = async (items, io) => {
   try {
     let updated = false;
     for (const item of items) {
-      const invItem = await Inventory.findOne({ name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") } });
+      const invItem = await Inventory.findOne({
+        name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") },
+      });
       if (invItem) {
         invItem.qty -= item.qty;
         if (invItem.qty <= 0) {
           invItem.qty = 0;
           invItem.status = "Out of Stock";
-        } else if (invItem.qty <= 10) { // Threshold for Low Stock alert
+        } else if (invItem.qty <= 10) {
+          // Threshold for Low Stock alert
           invItem.status = "Low Stock";
         } else {
           invItem.status = "In Stock";
@@ -33,7 +36,9 @@ const restockInventory = async (items, io) => {
   try {
     let updated = false;
     for (const item of items) {
-      const invItem = await Inventory.findOne({ name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") } });
+      const invItem = await Inventory.findOne({
+        name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") },
+      });
       if (invItem) {
         invItem.qty += item.qty;
         if (invItem.qty <= 0) {
@@ -333,7 +338,10 @@ exports.completeOrder = async (req, res) => {
     // If the frontend forgot to send the amount, automatically calculate it here
     let finalAmount = amount;
     if (!finalAmount) {
-      const subtotal = (existingOrder.items || []).reduce((sum, item) => sum + item.qty * (item.price || 0), 0);
+      const subtotal = (existingOrder.items || []).reduce(
+        (sum, item) => sum + item.qty * (item.price || 0),
+        0
+      );
       finalAmount = subtotal + (subtotal > 0 ? 50 : 0);
     }
 
