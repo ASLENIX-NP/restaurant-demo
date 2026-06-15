@@ -192,57 +192,57 @@ const Tables = () => {
 
         {/* DYNAMIC STATS GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 md:mb-8">
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
-              <Utensils size={22} />
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+            <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-inner border border-slate-100">
+              <Utensils size={26} strokeWidth={2.5} />
             </div>
             <div>
-              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
                 Total Tables
               </h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">
+              <h2 className="text-3xl font-black text-slate-900 leading-none">
                 {totalTables}
               </h2>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
-              <CheckCircle2 size={22} />
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-inner border border-emerald-100">
+              <CheckCircle2 size={26} strokeWidth={2.5} />
             </div>
             <div>
-              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
                 Available
               </h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">
+              <h2 className="text-3xl font-black text-slate-900 leading-none">
                 {availableCount}
               </h2>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
-              <Users size={22} />
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner border border-rose-100">
+              <Users size={26} strokeWidth={2.5} />
             </div>
             <div>
-              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
                 Occupied
               </h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">
+              <h2 className="text-3xl font-black text-slate-900 leading-none">
                 {occupiedCount}
               </h2>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
-              <AlertTriangle size={22} />
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100">
+              <AlertTriangle size={26} strokeWidth={2.5} />
             </div>
             <div>
-              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
                 Reserved
               </h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">
+              <h2 className="text-3xl font-black text-slate-900 leading-none">
                 {reservedCount}
               </h2>
             </div>
@@ -257,10 +257,9 @@ const Tables = () => {
               <div
                 key={table.id}
                 onClick={() => handleOpenView(table)}
-                className={`bg-white rounded-2xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-all cursor-pointer ${config.border}`}
+                className={`bg-white rounded-3xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer ${config.border}`}
               >
-                <div className="p-5">
-                  <div className="flex justify-between items-start mb-4">
+                <div className="p-5 pb-4 flex justify-between items-start">
                     <h3 className="text-lg font-black text-slate-900">
                       {table.name || `Table ${table.id}`}
                     </h3>
@@ -269,32 +268,49 @@ const Tables = () => {
                     >
                       {config.icon} {table.status}
                     </span>
-                  </div>
+                </div>
 
-                  <div className="flex flex-col gap-3 mb-2">
+                <div className="px-5 pb-5 flex flex-col gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
-                        <User size={14} />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-inner ${config.bg} ${config.text}`}>
+                      <Utensils size={20} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Capacity</p>
+                      <p className="text-sm font-bold text-slate-900">{table.seats || 4} Seats</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 shadow-inner border border-slate-100">
+                      <User size={20} />
                       </div>
-                      <div>
+                    <div className="truncate">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                           Customer
                         </p>
-                        <p className="text-sm font-bold text-slate-900 truncate max-w-[140px]">
-                          {table.customer}
+                        <p className="text-sm font-bold text-slate-900 truncate">
+                          {table.customer || "No Customer"}
                         </p>
                       </div>
                     </div>
-                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
+                <div className="grid grid-cols-2 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenView(table);
+                    }}
+                    className="py-3.5 text-xs font-bold text-slate-500 hover:bg-white hover:text-purple-600 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Eye size={14} /> View
+                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleOpenEdit(table);
                     }}
-                    className="py-3 text-xs font-bold text-slate-600 hover:bg-white hover:text-blue-600 transition flex items-center justify-center gap-1.5"
+                    className="py-3.5 text-xs font-bold text-slate-500 hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-1.5"
                   >
                     <Edit2 size={14} /> Edit
                   </button>
@@ -312,7 +328,7 @@ const Tables = () => {
           onClick={closeModal}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-[95%] max-w-sm sm:max-w-md overflow-hidden animate-slide-in"
+            className="bg-white rounded-2xl shadow-xl w-[95%] max-w-sm sm:max-w-md overflow-hidden flex flex-col max-h-[90vh] animate-slide-in"
             onClick={(e) => e.stopPropagation()}
           >
             {/* VIEW MODAL */}
@@ -330,10 +346,10 @@ const Tables = () => {
                     <X size={16} />
                   </button>
                 </div>
-                <div className="p-6 space-y-4">
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex justify-between items-center">
+                <div className="p-6 overflow-y-auto space-y-4">
+                  <div className="flex justify-between items-center bg-slate-50 border border-slate-100 rounded-xl p-4">
                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Current Status
+                      Status
                     </span>
                     <span
                       className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
@@ -343,13 +359,15 @@ const Tables = () => {
                       {selectedTable.status}
                     </span>
                   </div>
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col gap-1">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Current Customer
-                    </span>
-                    <span className="text-base font-black text-slate-900">
-                      {selectedTable.customer}
-                    </span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Capacity</span>
+                      <span className="font-bold text-slate-900 flex items-center gap-1.5"><Utensils size={14} className="text-slate-400"/> {selectedTable.seats || 4} Seats</span>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Customer</span>
+                      <span className="font-bold text-slate-900 flex items-center gap-1.5 truncate"><User size={14} className="text-slate-400"/> {selectedTable.customer || "No Customer"}</span>
+                    </div>
                   </div>
 
                   {/* Active Orders List */}
@@ -381,12 +399,14 @@ const Tables = () => {
                     )}
                   </div>
 
+                  <div className="flex gap-3 mt-6 border-t border-slate-100 pt-5">
                   <button
                     onClick={closeModal}
-                    className="w-full mt-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition shadow-md"
+                      className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-md text-sm"
                   >
                     Close Details
                   </button>
+                  </div>
                 </div>
               </>
             )}
@@ -418,7 +438,7 @@ const Tables = () => {
                   </button>
                 </div>
 
-                <div className="p-6 space-y-4">
+                <div className="p-6 space-y-4 overflow-y-auto">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       Current Status
@@ -426,12 +446,12 @@ const Tables = () => {
                     <select
                       value={formStatus}
                       onChange={(e) => setFormStatus(e.target.value)}
-                      className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-all font-bold text-sm cursor-pointer text-slate-700"
+                      className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-all font-bold text-sm cursor-pointer text-slate-700 mt-1.5"
                     >
-                      <option value="Available">🟢 Available</option>
-                      <option value="Occupied">🔴 Occupied</option>
-                      <option value="Reserved">🟡 Reserved</option>
-                      <option value="Cleaning">🔵 Cleaning</option>
+                      <option value="Available">Available</option>
+                      <option value="Occupied">Occupied</option>
+                      <option value="Reserved">Reserved</option>
+                      <option value="Cleaning">Cleaning</option>
                     </select>
                   </div>
 
@@ -446,13 +466,14 @@ const Tables = () => {
                         onChange={(e) => setFormCustomer(e.target.value)}
                         placeholder="Enter customer name"
                         required
-                        className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900"
+                        className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 mt-1.5"
                       />
                     </div>
                   )}
+                </div>
 
                   {/* Modal Footer */}
-                  <div className="flex gap-3 pt-4 mt-2 border-t border-slate-100">
+                  <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex gap-3">
                     <button
                       type="button"
                       onClick={closeModal}
@@ -466,7 +487,6 @@ const Tables = () => {
                     >
                       {activeModal === "add" ? "Create Table" : "Save Changes"}
                     </button>
-                  </div>
                 </div>
               </form>
             )}

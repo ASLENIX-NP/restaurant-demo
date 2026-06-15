@@ -31,6 +31,7 @@ const Employees = () => {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("Name (A - Z)");
   const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
 
   const [showModal, setShowModal] = useState(false);
@@ -293,6 +294,17 @@ const Employees = () => {
       statusFilter === "All" || employee?.status === statusFilter;
 
     return matchesSearch && matchesRole && matchesStatus;
+  }).sort((a, b) => {
+    if (sortBy === "Name (A - Z)") {
+      return (a.name || "").localeCompare(b.name || "");
+    }
+    if (sortBy === "Name (Z - A)") {
+      return (b.name || "").localeCompare(a.name || "");
+    }
+    if (sortBy === "Newest First") {
+      return (b._id || "").localeCompare(a._id || "");
+    }
+    return 0;
   });
 
   // Metric Computations
@@ -358,16 +370,22 @@ const Employees = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all">
-              <Filter size={16} /> Filter
-            </button>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2.5 outline-none font-semibold shadow-sm cursor-pointer"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Pending">Pending</option>
+              <option value="Inactive">Inactive</option>
+            </select>
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
               className="bg-white border border-slate-200 text-slate-700 text-sm rounded-xl px-4 py-2.5 outline-none font-semibold shadow-sm cursor-pointer"
             >
               <option value="All">All Departments</option>
-              <option value="Manager">Management</option>
               <option value="Chef">Kitchen</option>
               <option value="Cashier">Front of House</option>
               <option value="Waiter">Waitstaff</option>
@@ -473,10 +491,14 @@ const Employees = () => {
               <span className="text-sm font-semibold text-slate-500">
                 Sort By
               </span>
-              <select className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2 outline-none font-medium shadow-sm cursor-pointer">
-                <option>Name (A - Z)</option>
-                <option>Name (Z - A)</option>
-                <option>Newest First</option>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2 outline-none font-medium shadow-sm cursor-pointer"
+              >
+                <option value="Name (A - Z)">Name (A - Z)</option>
+                <option value="Name (Z - A)">Name (Z - A)</option>
+                <option value="Newest First">Newest First</option>
               </select>
             </div>
 
@@ -894,7 +916,6 @@ const Employees = () => {
                     <option value="" disabled>
                       Select Role
                     </option>
-                    <option value="Manager">Manager</option>
                     <option value="Chef">Chef</option>
                     <option value="Cashier">Cashier</option>
                     <option value="Waiter">Waiter</option>

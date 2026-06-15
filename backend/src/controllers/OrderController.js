@@ -1,5 +1,57 @@
 const Order = require("../models/Order");
 const Table = require("../models/Table");
+const Inventory = require("../models/Inventory");
+
+// --- INVENTORY AUTOMATION HELPERS ---
+const deductInventory = async (items, io) => {
+  try {
+    let updated = false;
+    for (const item of items) {
+      const invItem = await Inventory.findOne({ name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") } });
+      if (invItem) {
+        invItem.qty -= item.qty;
+        if (invItem.qty <= 0) {
+          invItem.qty = 0;
+          invItem.status = "Out of Stock";
+        } else if (invItem.qty <= 10) { // Threshold for Low Stock alert
+          invItem.status = "Low Stock";
+        } else {
+          invItem.status = "In Stock";
+        }
+        await invItem.save();
+        updated = true;
+      }
+    }
+    // Broadcast update so the Admin Inventory dashboard refreshes instantly
+    if (updated && io) io.emit("inventoryUpdated");
+  } catch (err) {
+    console.error("Inventory deduction error:", err);
+  }
+};
+
+const restockInventory = async (items, io) => {
+  try {
+    let updated = false;
+    for (const item of items) {
+      const invItem = await Inventory.findOne({ name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") } });
+      if (invItem) {
+        invItem.qty += item.qty;
+        if (invItem.qty <= 0) {
+          invItem.status = "Out of Stock";
+        } else if (invItem.qty <= 10) {
+          invItem.status = "Low Stock";
+        } else {
+          invItem.status = "In Stock";
+        }
+        await invItem.save();
+        updated = true;
+      }
+    }
+    if (updated && io) io.emit("inventoryUpdated");
+  } catch (err) {
+    console.error("Inventory restock error:", err);
+  }
+};
 
 // @desc    Get all orders
 // @route   GET /api/orders
@@ -154,6 +206,9 @@ exports.createOrder = async (req, res) => {
 
           const updatedOrder = await activeOrder.save();
 
+          // Deduct inventory for the newly appended items
+          await deductInventory(req.body.items || [], req.io);
+
           // 📢 Broadcast to all clients that an existing order was updated
           if (req.io) req.io.emit("orderUpdated", updatedOrder);
 
@@ -186,6 +241,9 @@ exports.createOrder = async (req, res) => {
 
     const order = new Order(req.body);
     const createdOrder = await order.save();
+
+    // Deduct inventory for the new order items
+    await deductInventory(req.body.items || [], req.io);
 
     // Automatically mark the table as Occupied if a specific table is assigned
     if (
@@ -332,6 +390,9 @@ exports.cancelOrder = async (req, res) => {
     );
     if (!cancelledOrder)
       return res.status(404).json({ message: "Order not found" });
+
+    // Restock inventory for the cancelled items
+    await restockInventory(cancelledOrder.items || [], req.io);
 
     // Free up the table since the order was cancelled
     if (

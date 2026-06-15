@@ -217,11 +217,11 @@ const POS = () => {
                       })}
                     </td>
                     <td className="p-4 text-center">
-                      <span className="inline-block bg-blue-50 text-blue-700 font-black px-3 py-1 rounded-full text-xs">
+                      <span className="inline-block bg-blue-50 text-blue-700 font-black px-3.5 py-1.5 rounded-full text-xs shadow-sm">
                         x {item.qty}
                       </span>
                     </td>
-                    <td className="p-4 pr-6 text-right font-black text-slate-900 text-base">
+                    <td className="p-4 pr-6 text-right font-black text-emerald-600 text-base">
                       Rs.{" "}
                       {item.revenue.toLocaleString(undefined, {
                         minimumFractionDigits: 2,

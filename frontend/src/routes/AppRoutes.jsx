@@ -20,6 +20,7 @@ import TableManagement from "../pages/admin/TableManagement";
 import Employees from "../pages/admin/Employees";
 import Settings from "../pages/admin/Settings";
 import QRMenuManager from "../pages/admin/QRMenuManager";
+import UserLog from "../pages/admin/UserLog";
 
 // <-- 1. IMPORT ADDED HERE
 
@@ -39,13 +40,12 @@ import ChefDashboard from "../pages/chef/Dashboard";
 // ================= CASHIER =================
 import CashierLayout from "../components/layout/CashierLayout";
 import CashierDashboard from "../pages/cashier/Dashboard";
-import Payments from "../pages/cashier/Payments";
 import PendingBills from "../pages/cashier/PendingBills";
-import Invoices from "../pages/cashier/Invoices";
 import SalesHistory from "../pages/cashier/SalesHistory";
 import POS from "../pages/cashier/POS";
 import ShiftManagement from "../pages/cashier/ShiftManagement";
 import CashierReservations from "../pages/cashier/Reservations";
+import TotalOrders from "../pages/cashier/TotalOrders";
 
 const AppRoutes = () => {
   return (
@@ -79,6 +79,7 @@ const AppRoutes = () => {
             <Route path="tables" element={<TableManagement />} />
             <Route path="employees" element={<Employees />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="user-log" element={<UserLog />} />
           </Route>
 
           {/* ================= STAFF ================= */}
@@ -126,11 +127,14 @@ const AppRoutes = () => {
             <Route path="qr-menu" element={<QRMenuManager />} />
             <Route path="tables" element={<TableManagement />} />
             <Route path="reservations" element={<CashierReservations />} />
-            <Route path="payments" element={<Payments />} />
             <Route path="pending-bills" element={<PendingBills />} />
-            <Route path="invoices" element={<Invoices />} />
             <Route path="sales" element={<SalesHistory />} />
+            <Route path="total-orders" element={<TotalOrders />} />
             <Route path="shift" element={<ShiftManagement />} />
+            
+            {/* Redirect old deleted routes to the unified ledger */}
+            <Route path="payments" element={<Navigate to="/cashier/sales" replace />} />
+            <Route path="invoices" element={<Navigate to="/cashier/sales" replace />} />
           </Route>
         </Routes>
       </TableProvider>

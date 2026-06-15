@@ -7,8 +7,6 @@ import {
   Utensils,
   QrCode,
   LayoutGrid,
-  CreditCard,
-  FileText,
   LineChart,
   CalendarDays,
   Wallet,
@@ -102,24 +100,6 @@ const CashierLayout = () => {
           >
             <CalendarDays size={20} />
             <span>Reservations</span>
-          </NavLink>
-
-          {/* PAYMENTS */}
-          <NavLink
-            to="/cashier/payments"
-            className="menu-item"
-          >
-            <CreditCard size={20} />
-            <span>Payments</span>
-          </NavLink>
-
-          {/* INVOICES */}
-          <NavLink
-            to="/cashier/invoices"
-            className="menu-item"
-          >
-            <FileText size={20} />
-            <span>Invoices</span>
           </NavLink>
 
           {/* SALES */}

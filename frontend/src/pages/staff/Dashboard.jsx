@@ -202,29 +202,29 @@ const Dashboard = () => {
 
         {/* STATS OVERVIEW CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 md:mb-8">
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-              <Utensils size={22} />
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner border border-blue-100">
+              <Utensils size={26} strokeWidth={2.5} />
             </div>
             <div>
-              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
                 Active Tables
               </h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">
+              <h2 className="text-3xl font-black text-slate-900 leading-none">
                 {tablesList.filter((t) => t.status === "Occupied").length}
               </h2>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
-              <Package size={22} />
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100">
+              <Package size={26} strokeWidth={2.5} />
             </div>
             <div>
-              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
                 Pending Orders
               </h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">
+              <h2 className="text-3xl font-black text-slate-900 leading-none">
                 {
                   orders.filter(
                     (o) => o.status === "Pending" || o.status === "Cooking"
@@ -234,29 +234,29 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
-              <CheckCircle2 size={22} />
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner border border-emerald-100">
+              <CheckCircle2 size={26} strokeWidth={2.5} />
             </div>
             <div>
-              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
                 Completed Orders
               </h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">
+              <h2 className="text-3xl font-black text-slate-900 leading-none">
                 {orders.filter((o) => o.status === "Completed").length}
               </h2>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
-              <CalendarClock size={22} />
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+            <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 shadow-inner border border-purple-100">
+              <CalendarClock size={26} strokeWidth={2.5} />
             </div>
             <div>
-              <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
                 Reservations
               </h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1">
+              <h2 className="text-3xl font-black text-slate-900 leading-none">
                 {tablesList.filter((t) => t.status === "Reserved").length}
               </h2>
             </div>
@@ -294,7 +294,7 @@ const Dashboard = () => {
                   <div
                     key={index}
                     onClick={() => setSelectedTableDetails(table)}
-                    className={`bg-white rounded-2xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-all cursor-pointer ${styles.border}`}
+                  className={`bg-white rounded-3xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer ${styles.border}`}
                   >
                     <div className="p-5">
                       <div className="flex justify-between items-start mb-4">
@@ -309,14 +309,14 @@ const Dashboard = () => {
                       </div>
 
                       <div className="flex items-center gap-4 mb-2">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${styles.bg} ${styles.text}`}>
                           <Utensils size={24} />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-900 mb-1">
+                        <p className="text-xs font-black text-slate-900 mb-1">
                             {table.label}
                           </p>
-                          <p className="text-[11px] font-medium text-slate-500 mb-0.5">
+                        <p className="text-xs font-medium text-slate-500 mb-0.5">
                             <strong className="text-slate-700">Guest:</strong>{" "}
                             {table.customer}
                           </p>
@@ -330,7 +330,7 @@ const Dashboard = () => {
                           e.stopPropagation();
                           openEditModal(table);
                         }}
-                        className="py-3 text-xs font-bold text-slate-600 hover:bg-white transition flex items-center justify-center gap-1.5"
+                    className="py-3.5 text-xs font-bold text-slate-500 hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-1.5"
                       >
                         <Edit2 size={14} /> Edit
                       </button>
@@ -350,9 +350,9 @@ const Dashboard = () => {
           <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 sticky top-6">
             {/* READY ORDERS ALERT SECTION */}
             {orders.filter((o) => o.status === "Ready").length > 0 && (
-              <div className="bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl shadow-lg shadow-emerald-200 p-5 text-white animate-slide-in">
+              <div className="bg-gradient-to-br from-emerald-500 to-teal-500 rounded-[24px] shadow-xl shadow-emerald-500/20 p-6 text-white animate-slide-in border border-emerald-400/30">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-base font-black flex items-center gap-2">
+                  <h2 className="text-lg font-black flex items-center gap-2">
                     <BellRing size={20} className="animate-bounce" /> Ready to
                     Serve
                   </h2>
@@ -367,25 +367,25 @@ const Dashboard = () => {
                     .map((order) => (
                       <div
                         key={order.id}
-                        className="bg-white/20 hover:bg-white/30 p-3 rounded-xl border border-white/20 flex items-center justify-between transition-all group backdrop-blur-sm"
+                        className="bg-white/10 hover:bg-white/20 p-4 rounded-2xl border border-white/20 flex items-center justify-between transition-all group backdrop-blur-md"
                       >
                         <div
                           className="cursor-pointer flex-1"
                           onClick={() => navigate("/staff/ready-orders")}
                         >
-                          <h3 className="font-bold text-white text-sm">
+                          <h3 className="font-black text-white text-base tracking-tight">
                             {order.table || "Queue"}
                           </h3>
-                          <p className="text-[11px] font-medium text-emerald-50 mt-0.5">
+                          <p className="text-xs font-medium text-emerald-50 mt-0.5">
                             {order.id}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => serveOrder(order.id)}
-                            className="bg-white text-emerald-600 hover:bg-emerald-50 px-2.5 py-1.5 rounded-lg text-[10px] font-black shadow-sm flex items-center gap-1 transition-all"
+                            className="bg-white text-emerald-600 hover:bg-emerald-50 px-3 py-2 rounded-xl text-xs font-black shadow-sm flex items-center gap-1.5 transition-all hover:scale-105"
                           >
-                            <CheckCircle2 size={14} /> Serve
+                            <CheckCircle2 size={16} /> Serve
                           </button>
                         </div>
                       </div>
@@ -403,9 +403,9 @@ const Dashboard = () => {
             )}
 
             {/* LIVE ORDERS QUEUE CONTAINER */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-              <div className="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
-                <h2 className="text-base font-black text-slate-900">
+            <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm p-6">
+              <div className="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
+                <h2 className="text-lg font-black text-slate-900 tracking-tight">
                   Live Orders
                 </h2>
                 <button
@@ -428,27 +428,27 @@ const Dashboard = () => {
                   .map((order) => (
                     <div
                       key={order.id}
-                      className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
+                        className={`flex items-center justify-between p-4 rounded-2xl border transition-all hover:shadow-md ${
                         order.status === "Ready"
                           ? "bg-emerald-50/50 border-emerald-100"
-                          : "border-slate-100 bg-slate-50"
+                            : "border-slate-100 bg-slate-50/50 hover:bg-white"
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`border font-bold text-[10px] px-2 py-1 rounded-md shadow-sm ${
+                            className={`border font-black text-[10px] px-2.5 py-1.5 rounded-lg shadow-sm tracking-wider ${
                             order.status === "Ready"
                               ? "bg-emerald-500 text-white border-emerald-600"
-                              : "bg-white text-slate-600 border-slate-200"
+                                : "bg-slate-800 text-white border-slate-900"
                           }`}
                         >
                           {order.id}
                         </div>
                         <div>
-                          <h3 className="font-bold text-slate-900 text-sm">
+                            <h3 className="font-bold text-slate-900 text-sm leading-tight">
                             {order.table || "Queue"}
                           </h3>
-                          <p className="text-[10px] font-medium text-slate-400">
+                            <p className="text-[11px] font-medium text-slate-500 mt-0.5">
                             {(order.items || []).reduce(
                               (acc, item) => acc + item.qty,
                               0
@@ -459,7 +459,7 @@ const Dashboard = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border ${getOrderStatusStyles(
+                            className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border shadow-sm ${getOrderStatusStyles(
                             order.status
                           )}`}
                         >

@@ -74,6 +74,7 @@ const Reservations = () => {
 
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [reservationToDelete, setReservationToDelete] = useState(null);
 
   const [newRes, setNewRes] = useState({
     name: "",
@@ -137,10 +138,13 @@ const Reservations = () => {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Delete this reservation?")) {
-      setReservationsData(reservationsData.filter((r) => r.id !== id));
-      setSelectedReservation(null);
-    }
+    setReservationToDelete(id);
+  };
+
+  const confirmDelete = () => {
+    setReservationsData(reservationsData.filter((r) => r.id !== reservationToDelete));
+    setSelectedReservation(null);
+    setReservationToDelete(null);
   };
 
   const handleStatusChange = (id, newStatus) => {
@@ -627,6 +631,37 @@ const Reservations = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {reservationToDelete && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex justify-center items-center p-4 transition-opacity">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center animate-slide-in">
+            <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 size={28} className="text-rose-500" />
+            </div>
+            <h2 className="text-xl font-black text-slate-900 mb-2">
+              Delete this reservation?
+            </h2>
+            <p className="text-sm text-slate-500 font-medium mb-6">
+              Are you sure you want to delete this booking? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setReservationToDelete(null)}
+                className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 bg-rose-500 text-white font-bold py-3 rounded-xl hover:bg-rose-600 shadow-md shadow-rose-200 transition"
+              >
+                Yes, Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

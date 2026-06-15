@@ -7,6 +7,7 @@ import {
   CreditCard,
   CheckCircle2,
   Receipt,
+  AlertTriangle,
 } from "lucide-react";
 import { useOrders } from "../../context/OrderContext";
 
@@ -28,7 +29,6 @@ const Billing = () => {
       const timeB = new Date(b.timestamp || b.createdAt || 0).getTime();
       return timeB - timeA;
     })
-    .filter((o) => o.status === "Completed")
     .map((o) => {
       const subtotal = (o.items || []).reduce(
         (sum, item) => sum + item.qty * item.price,
@@ -41,18 +41,19 @@ const Billing = () => {
         table: o.table || "Walk-in",
         amount: total,
         payment: o.paymentMethod || "Cash",
-        status: "Paid",
+        status: o.status === "Completed" ? "Paid" : "Unpaid",
         time: o.time || "N/A",
         items: o.items || [],
       };
     });
 
-  // Filter bills based on search input
+  // Filter bills based on search input and active tab
   const filteredBills = billsData.filter(
     (bill) =>
-      bill.billNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (activeTab === "All Bills" || bill.status === activeTab) &&
+      (bill.billNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bill.table.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bill.orderId.toLowerCase().includes(searchTerm.toLowerCase())
+      bill.orderId.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Get active selected bill details
@@ -74,6 +75,24 @@ const Billing = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
+      {/* PRINT-ONLY STYLES FOR PDF EXPORT */}
+      <style>
+        {`
+        @media print {
+          @page { margin: 0; size: 80mm auto; }
+          html, body { width: 80mm !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
+          .sidebar, .navbar, header, footer, main { display: none !important; }
+          .min-h-screen { padding: 0 !important; margin: 0 !important; background: transparent !important; }
+          #printable-receipt { position: absolute !important; left: 0 !important; top: 0 !important; width: 80mm !important; margin: 0 !important; padding: 5mm !important; font-family: 'Courier New', monospace; color: #000; font-size: 12px; background: #fff; display: block !important; z-index: 99999; }
+        }
+        @media screen {
+          #printable-receipt {
+            display: none;
+          }
+        }
+        `}
+      </style>
+
       <main className="max-w-[1600px] mx-auto">
         {/* HEADER SECTION */}
         <div className="flex justify-between items-center mb-8">
@@ -103,6 +122,7 @@ const Billing = () => {
                 <h2 className="text-2xl font-black text-slate-900">
                   Rs.{" "}
                   {billsData
+                    .filter((b) => b.status === "Paid")
                     .reduce((sum, b) => sum + b.amount, 0)
                     .toLocaleString()}
                 </h2>
@@ -145,10 +165,10 @@ const Billing = () => {
               <div className="flex items-end gap-2">
                 <h2 className="text-2xl font-black text-slate-900">
                   Rs.{" "}
-                  {billsData.length > 0
+                  {billsData.filter((b) => b.status === "Paid").length > 0
                     ? Math.round(
-                        billsData.reduce((sum, b) => sum + b.amount, 0) /
-                          billsData.length
+                        billsData.filter((b) => b.status === "Paid").reduce((sum, b) => sum + b.amount, 0) /
+                          billsData.filter((b) => b.status === "Paid").length
                       ).toLocaleString()
                     : 0}
                 </h2>
@@ -167,7 +187,7 @@ const Billing = () => {
             {/* Table Controls (Tabs & Search) */}
             <div className="p-5 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
               <div className="flex bg-slate-50 p-1 rounded-xl">
-                {["All Bills", "Paid"].map((tab) => (
+                {["All Bills", "Paid", "Unpaid"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -256,8 +276,10 @@ const Billing = () => {
                           </span>
                         </td>
                         <td className="p-4">
-                          <span className="flex items-center gap-1.5 text-emerald-600 font-bold text-[11px] uppercase tracking-wider bg-emerald-50 px-2.5 py-1 rounded-md w-fit">
-                            <CheckCircle2 size={12} /> {bill.status}
+                          <span className={`flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-md w-fit ${
+                            bill.status === "Paid" ? "text-emerald-600 bg-emerald-50" : "text-rose-600 bg-rose-50"
+                          }`}>
+                            {bill.status === "Paid" ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />} {bill.status}
                           </span>
                         </td>
                         <td className="p-4 pr-6 font-semibold text-slate-500">
@@ -293,7 +315,7 @@ const Billing = () => {
                       Details
                     </h2>
                   </div>
-                  <span className="bg-emerald-100 text-emerald-700 font-bold text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full">
+                  <span className={`font-bold text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full ${activeBill.status === "Paid" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
                     {activeBill.status}
                   </span>
                 </div>
@@ -353,14 +375,170 @@ const Billing = () => {
                 </div>
 
                 {/* Download Invoice Button */}
-                <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md mt-2">
-                  <Download size={16} /> Download Invoice
+                <button 
+                  onClick={() => window.print()}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md mt-2"
+                >
+                  <Download size={16} /> Print / Save as PDF
                 </button>
               </>
             )}
           </div>
         </div>
       </main>
+
+      {/* DEDICATED PRINTABLE RECEIPT LAYOUT */}
+      {activeBill && (
+        <div id="printable-receipt">
+          <div style={{ textAlign: "center", marginBottom: "15px" }}>
+            <h2 style={{ fontSize: "20px", margin: "0 0 5px 0" }}>
+              ASLENIX RESTAURANT
+            </h2>
+            <p style={{ margin: "2px 0" }}>Kathmandu, Nepal</p>
+            <p style={{ margin: "2px 0" }}>Tel: +977 9812345678</p>
+          </div>
+
+          <div
+            style={{
+              borderBottom: "1px dashed #000",
+              paddingBottom: "10px",
+              marginBottom: "10px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Bill No:</span>{" "}
+              <span>{activeBill.billNo}</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Date:</span>{" "}
+              <span>
+                {new Date().toLocaleDateString()} {activeBill.time}
+              </span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Table:</span> <span>{activeBill.table}</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Payment:</span> <span>{activeBill.payment}</span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <span>Status:</span> <span>{activeBill.status}</span>
+            </div>
+          </div>
+
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              marginTop: "10px",
+              marginBottom: "10px",
+              borderBottom: "1px dashed #000",
+              paddingBottom: "10px",
+            }}
+          >
+            <thead>
+              <tr>
+                <th
+                  style={{
+                    textAlign: "left",
+                    borderBottom: "1px dashed #000",
+                    paddingBottom: "5px",
+                  }}
+                >
+                  Item
+                </th>
+                <th
+                  style={{
+                    textAlign: "center",
+                    borderBottom: "1px dashed #000",
+                    paddingBottom: "5px",
+                  }}
+                >
+                  Qty
+                </th>
+                <th
+                  style={{
+                    textAlign: "right",
+                    borderBottom: "1px dashed #000",
+                    paddingBottom: "5px",
+                  }}
+                >
+                  Amount
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {activeBill.items.map((item, idx) => (
+                <tr key={idx}>
+                  <td style={{ padding: "5px 0" }}>{item.name}</td>
+                  <td style={{ textAlign: "center", padding: "5px 0" }}>
+                    {item.qty}
+                  </td>
+                  <td style={{ textAlign: "right", padding: "5px 0" }}>
+                    Rs. {(item.qty * (parseFloat(item.price) || 0)).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontWeight: "bold",
+              fontSize: "16px",
+              marginTop: "10px",
+              borderTop: "1px dashed #000",
+              paddingTop: "10px",
+            }}
+          >
+            <span>GRAND TOTAL:</span>
+            <span>Rs. {activeBill.amount.toLocaleString()}</span>
+          </div>
+
+          <div
+            style={{
+              textAlign: "center",
+              marginTop: "20px",
+              fontWeight: "bold",
+            }}
+          >
+            <p>Thank you for your visit!</p>
+            <p>Please come again.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

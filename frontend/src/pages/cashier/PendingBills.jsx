@@ -49,7 +49,7 @@ export default function PendingBillsPage() {
 
   // Dynamically generate pending bills from live global orders
   const pendingBillsData = useMemo(() => {
-    const activeOrders = orders.filter((order) => order.status !== "Completed"); // Only show unpaid orders
+    const activeOrders = orders.filter((order) => order.status !== "Completed" && order.status !== "Cancelled"); // Only show unpaid and active orders
     const grouped = {};
 
     activeOrders.forEach((order) => {
@@ -126,6 +126,7 @@ export default function PendingBillsPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
   const [activeMetric, setActiveMetric] = useState("totalDue");
 
   const selectedInvoice = pendingBillsData.find(
@@ -231,28 +232,43 @@ export default function PendingBillsPage() {
 
       setIsPaymentSuccess(false);
       setSelectedInvoiceId(null);
+
+      // Force a refresh of the orders and tables data after checkout
+      setTimeout(() => {
+        if (fetchOrders) fetchOrders();
+        if (fetchTables) fetchTables();
+      }, 500);
     }, 100);
   };
 
-  const handleCancelBill = () => {
-    if (window.confirm("Are you sure you want to cancel this bill?")) {
-      const tableObj = tables.find((t) => t.name === selectedInvoice.table);
-      if (tableObj) {
-        updateTableStatus(tableObj.id, "Available", "No Customer");
-      } else {
-        const match = selectedInvoice.table.match(/\d+/);
-        if (match) {
-          updateTableStatus(parseInt(match[0], 10), "Available", "No Customer");
-        }
-      }
+  const handleCancelBillClick = () => {
+    setIsCancelConfirmOpen(true);
+  };
 
-      if (selectedInvoice.orderIds) {
-        selectedInvoice.orderIds.forEach((id) => cancelOrder(id));
-      } else {
-        cancelOrder(selectedInvoice.id);
+  const executeCancelBill = () => {
+    const tableObj = tables.find((t) => t.name === selectedInvoice.table);
+    if (tableObj) {
+      updateTableStatus(tableObj.id, "Available", "No Customer");
+    } else {
+      const match = selectedInvoice.table.match(/\d+/);
+      if (match) {
+        updateTableStatus(parseInt(match[0], 10), "Available", "No Customer");
       }
-      setSelectedInvoiceId(null);
     }
+
+    if (selectedInvoice.orderIds) {
+      selectedInvoice.orderIds.forEach((id) => cancelOrder(id));
+    } else {
+      cancelOrder(selectedInvoice.id);
+    }
+    setIsCancelConfirmOpen(false);
+    setSelectedInvoiceId(null);
+
+    // Force a refresh of the orders and tables data after cancellation
+    setTimeout(() => {
+      if (fetchOrders) fetchOrders();
+      if (fetchTables) fetchTables();
+    }, 500);
   };
 
   return (
@@ -708,7 +724,7 @@ export default function PendingBillsPage() {
                     transition: "all 0.2s",
                   }}
                   type="button"
-                  onClick={handleCancelBill}
+                  onClick={handleCancelBillClick}
                   title="Cancel and Void Bill"
                 >
                   <XCircle size={20} /> Cancel Bill
@@ -787,6 +803,37 @@ export default function PendingBillsPage() {
                   className="flex-1 bg-emerald-500 text-white font-bold py-3 rounded-xl hover:bg-emerald-600 shadow-md shadow-emerald-200 transition flex justify-center items-center gap-2"
                 >
                   <Printer size={18} /> Print Receipt
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* CANCEL CONFIRMATION MODAL */}
+        {isCancelConfirmOpen && selectedInvoice && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[80] flex justify-center items-center p-4 transition-opacity print-modal-hide">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-slide-in">
+              <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <XCircle size={28} className="text-rose-500" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900 mb-2">
+                Cancel Bill?
+              </h2>
+              <p className="text-sm text-slate-500 font-medium mb-6">
+                Are you sure you want to void this bill for <strong>{selectedInvoice.table}</strong>? This action cannot be undone and will be recorded in the ledger.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsCancelConfirmOpen(false)}
+                  className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition"
+                >
+                  No, Keep It
+                </button>
+                <button
+                  onClick={executeCancelBill}
+                  className="flex-1 bg-rose-500 text-white font-bold py-3 rounded-xl hover:bg-rose-600 shadow-md shadow-rose-200 transition"
+                >
+                  Yes, Void Bill
                 </button>
               </div>
             </div>

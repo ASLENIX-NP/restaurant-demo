@@ -19,7 +19,16 @@ import { useOrders } from "../../context/OrderContext";
 
 const filters = ["All", "Completed", "Cancelled"];
 
-const avatarColors = ["blue", "violet", "green"];
+const getAvatarGradient = (index) => {
+  const gradients = [
+    "from-blue-500 to-indigo-600",
+    "from-violet-500 to-purple-600",
+    "from-emerald-400 to-teal-500",
+    "from-pink-500 to-rose-600",
+    "from-orange-400 to-amber-500",
+  ];
+  return gradients[index % gradients.length];
+};
 
 const History = () => {
   const { orders = [] } = useOrders();
@@ -170,7 +179,7 @@ const History = () => {
   };
 
   return (
-    <div className="history-page">
+    <div className="min-h-screen bg-slate-50 p-4 sm:p-6 md:p-8 text-slate-800 font-sans">
       {/* PRINT-ONLY STYLES FOR PDF EXPORT */}
       <style>
         {`
@@ -196,259 +205,240 @@ const History = () => {
         `}
       </style>
 
-      <section className="history-hero" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', backgroundColor: '#fff', padding: '24px', borderRadius: '20px', border: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
-        <div>
-          <span className="history-eyebrow" style={{ display: 'flex', gap: '8px', alignItems: 'center', color: '#64748b', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
-            <Receipt size={16} />
-            Staff Order Ledger
-          </span>
-          <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#0f172a', margin: '0 0 8px 0', letterSpacing: '-0.02em' }}>Order History</h1>
-          <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>
-            Track completed and cancelled restaurant orders with receipt-level
-            detail.
-          </p>
-        </div>
-
-        <div style={{ position: "relative", width: "100%", maxWidth: "max-content" }} ref={exportMenuRef}>
-          <button
-            className={`export-btn ${isExporting ? "loading" : ""}`}
-            onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-            disabled={isExporting}
-            type="button"
-            style={{ display: 'flex', width: "100%", justifyContent: 'center', alignItems: 'center', gap: '10px', padding: '12px 20px', backgroundColor: '#0f172a', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s', opacity: isExporting ? 0.7 : 1 }}
-          >
-            <Download size={16} />
-            {isExporting ? "Preparing..." : "Export History"}
-          </button>
-          {isExportMenuOpen && (
-            <div style={{ position: "absolute", top: "calc(100% + 5px)", right: 0, background: "white", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "8px", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)", zIndex: 50, minWidth: "180px" }}>
-              <button onClick={() => { handleExportPDF(); setIsExportMenuOpen(false); }} style={{ width: "100%", background: "none", border: "none", padding: "10px 12px", textAlign: "left", cursor: "pointer", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", fontWeight: "600", color: "#334155", transition: "0.2s" }} className="export-dropdown-item">
-                <Printer size={16} /> Print / Save PDF
-              </button>
-              <button onClick={() => { handleExportCSV(); setIsExportMenuOpen(false); }} style={{ width: "100%", background: "none", border: "none", padding: "10px 12px", textAlign: "left", cursor: "pointer", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", fontWeight: "600", color: "#334155", transition: "0.2s" }} className="export-dropdown-item">
-                <FileText size={16} /> Download CSV
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="history-summary-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-        <div
-          className="summary-card"
-          onClick={() => setActiveTab("All")}
-          style={{
-            cursor: "pointer",
-            background: activeTab === "All" ? "#ffffff" : "#f8fafc",
-            borderRadius: "20px",
-            padding: "20px",
-            display: "flex",
-            alignItems: "center",
-            gap: "16px",
-            border: "1px solid #f1f5f9",
-            boxShadow: activeTab === "All" ? "0 10px 25px -5px rgba(71, 85, 105, 0.15), 0 0 0 2px #475569" : "0 1px 3px 0 rgba(0,0,0,0.1)",
-            transform: activeTab === "All" ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
-            opacity: activeTab === "All" ? 1 : 0.6,
-            transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
-          }}
-        >
-          <span className="card-icon" style={{ width: '60px', height: '60px', borderRadius: '16px', backgroundColor: '#f1f5f9', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FileText size={28} />
-          </span>
+      <main className="max-w-[1600px] mx-auto pb-12">
+        <section className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
           <div>
-            <h3 style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a', margin: '0 0 4px 0' }}>{stats.totalItems}</h3>
-            <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Items Processed</p>
+            <h1 className="text-2xl md:text-[28px] font-bold text-slate-900 tracking-tight">Order History</h1>
+            <p className="text-slate-400 text-sm mt-0.5 font-medium">
+              Dashboard <span className="mx-1.5 text-slate-300">&gt;</span> Order History
+            </p>
           </div>
-        </div>
 
-        <div
-          className="summary-card"
-          onClick={() => setActiveTab("Completed")}
-          style={{
-            cursor: "pointer",
-            background: activeTab === "Completed" ? "#ffffff" : "#f8fafc",
-            borderRadius: "20px",
-            padding: "20px",
-            display: "flex",
-            alignItems: "center",
-            gap: "16px",
-            border: "1px solid #f1f5f9",
-            boxShadow: activeTab === "Completed" ? "0 10px 25px -5px rgba(16, 185, 129, 0.15), 0 0 0 2px #10b981" : "0 1px 3px 0 rgba(0,0,0,0.1)",
-            transform: activeTab === "Completed" ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
-            opacity: activeTab === "Completed" ? 1 : 0.6,
-            transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
-          }}
-        >
-          <span className="card-icon green" style={{ width: '60px', height: '60px', borderRadius: '16px', backgroundColor: '#ecfdf5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <CheckCircle2 size={28} />
-          </span>
-          <div>
-            <h3 style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a', margin: '0 0 4px 0' }}>{stats.completedCount}</h3>
-            <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Completed Orders</p>
-          </div>
-        </div>
-
-        <div
-          className="summary-card"
-          onClick={() => setActiveTab("Cancelled")}
-          style={{
-            cursor: "pointer",
-            background: activeTab === "Cancelled" ? "#ffffff" : "#f8fafc",
-            borderRadius: "20px",
-            padding: "20px",
-            display: "flex",
-            alignItems: "center",
-            gap: "16px",
-            border: "1px solid #f1f5f9",
-            boxShadow: activeTab === "Cancelled" ? "0 10px 25px -5px rgba(244, 63, 94, 0.15), 0 0 0 2px #f43f5e" : "0 1px 3px 0 rgba(0,0,0,0.1)",
-            transform: activeTab === "Cancelled" ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
-            opacity: activeTab === "Cancelled" ? 1 : 0.6,
-            transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
-          }}
-        >
-          <span className="card-icon red" style={{ width: '60px', height: '60px', borderRadius: '16px', backgroundColor: '#fff1f2', color: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <XCircle size={28} />
-          </span>
-          <div>
-            <h3 style={{ fontSize: '28px', fontWeight: '900', color: '#0f172a', margin: '0 0 4px 0' }}>{stats.cancelledCount}</h3>
-            <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cancelled Orders</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="history-toolbar">
-        <div className="search-input-wrapper">
-          <Search size={16} />
-          <input
-            type="text"
-            placeholder="Search ID, customer, table, payment..."
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-          />
-        </div>
-
-        <div className="filter-tabs">
-          {filters.map((tab) => (
+          <div className="relative w-full sm:w-auto" ref={exportMenuRef}>
             <button
-              key={tab}
-              className={activeTab === tab ? "active" : ""}
-              onClick={() => setActiveTab(tab)}
+              className={`w-full sm:w-auto justify-center bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all ${isExporting ? "opacity-70 cursor-not-allowed" : ""}`}
+              onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+              disabled={isExporting}
               type="button"
             >
-              {tab}
+              <Download size={16} />
+              {isExporting ? "Preparing..." : "Export History"}
             </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="history-table-wrapper" style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}>
-        {filteredOrders.length === 0 ? (
-          <div className="empty-search-state">
-            <FileText size={30} />
-            <h2>No orders found</h2>
-            <p>Try another keyword or switch the status filter.</p>
+            {isExportMenuOpen && (
+              <div className="absolute top-full right-0 mt-2 bg-white border border-slate-100 shadow-xl rounded-xl w-48 z-50 overflow-hidden text-left animate-slide-in">
+                <button onClick={() => { handleExportPDF(); setIsExportMenuOpen(false); }} className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50">
+                  <Printer size={16} className="text-slate-400" /> Print / Save PDF
+                </button>
+                <button onClick={() => { handleExportCSV(); setIsExportMenuOpen(false); }} className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors">
+                  <FileText size={16} className="text-slate-400" /> Download CSV
+                </button>
+              </div>
+            )}
           </div>
-        ) : (
-          <table className="history-table">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Customer Profile</th>
-                <th>Assigned Table</th>
-                <th>Cart Load</th>
-                <th>Timestamp</th>
-                <th>Items Ordered</th>
-                <th>Workflow Status</th>
-                <th>Operations</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map((order, index) => (
-                <tr key={order.id}>
-                  <td className="order-id">{order.id}</td>
-                  <td>
-                    <div className="customer-box">
-                      <div
-                        className={`customer-avatar ${
-                          avatarColors[index % avatarColors.length]
-                        }`}
-                      >
-                        {order.customer.charAt(0)}
-                      </div>
-                      <div>
-                        <h4>{order.customer}</h4>
-                        <p>{order.customerType}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className="table-badge">
-                      <Table2 size={14} />
-                      {order.table}
-                    </span>
-                  </td>
-                  <td>{order.itemsCount} Items</td>
-                  <td>
-                    <span className="time-cell">
-                      <CalendarDays size={14} />
-                      {order.date}
-                    </span>
-                    <small>{order.time}</small>
-                  </td>
-                  <td>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "2px", maxHeight: "60px", overflowY: "auto", fontSize: "12px" }}>
-                      {order.breakdown.map((item, i) => (
-                        <span key={i} style={{ color: "#475569", whiteSpace: "nowrap" }}>
-                          <strong>{item.qty}x</strong> {item.name}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td>
-                    <span
-                      className={`status-badge-history ${order.status.toLowerCase()}`}
-                    >
-                      {order.status === "Completed" ? (
-                        <CheckCircle2 size={14} />
-                      ) : (
-                        <XCircle size={14} />
-                      )}
-                      {order.status}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      className="action-inspect-btn"
-                      onClick={() => setSelectedOrder(order)}
-                      type="button"
-                    >
-                      <Eye size={14} />
-                      Receipt
-                    </button>
-                  </td>
-                </tr>
+        </section>
+
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5 mb-6 md:mb-8">
+          <div
+            onClick={() => setActiveTab("All")}
+            className={`bg-white rounded-2xl p-6 border shadow-sm flex items-center gap-5 transition-all duration-300 cursor-pointer ${
+              activeTab === "All"
+                ? "border-slate-400 shadow-md ring-1 ring-slate-400 -translate-y-1"
+                : "border-slate-100 hover:shadow-md hover:-translate-y-1 opacity-80 hover:opacity-100"
+            }`}
+          >
+            <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-inner border border-slate-100">
+              <FileText size={26} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Items Processed</h4>
+              <h2 className="text-3xl font-black text-slate-900 leading-none">{stats.totalItems}</h2>
+            </div>
+          </div>
+
+          <div
+            onClick={() => setActiveTab("Completed")}
+            className={`bg-white rounded-2xl p-6 border shadow-sm flex items-center gap-5 transition-all duration-300 cursor-pointer ${
+              activeTab === "Completed"
+                ? "border-emerald-400 shadow-md ring-1 ring-emerald-400 -translate-y-1"
+                : "border-slate-100 hover:shadow-md hover:-translate-y-1 opacity-80 hover:opacity-100"
+            }`}
+          >
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-inner border border-emerald-100">
+              <CheckCircle2 size={26} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Completed Orders</h4>
+              <h2 className="text-3xl font-black text-slate-900 leading-none">{stats.completedCount}</h2>
+            </div>
+          </div>
+
+          <div
+            onClick={() => setActiveTab("Cancelled")}
+            className={`bg-white rounded-2xl p-6 border shadow-sm flex items-center gap-5 transition-all duration-300 cursor-pointer ${
+              activeTab === "Cancelled"
+                ? "border-rose-400 shadow-md ring-1 ring-rose-400 -translate-y-1"
+                : "border-slate-100 hover:shadow-md hover:-translate-y-1 opacity-80 hover:opacity-100"
+            }`}
+          >
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner border border-rose-100">
+              <XCircle size={26} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Cancelled Orders</h4>
+              <h2 className="text-3xl font-black text-slate-900 leading-none">{stats.cancelledCount}</h2>
+            </div>
+          </div>
+        </section>
+
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+          <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/50">
+            <div className="relative w-full md:max-w-md">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search ID, customer, table, payment..."
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-50 transition-all placeholder:text-slate-400 shadow-sm"
+              />
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide w-full md:w-auto pb-2 md:pb-0">
+              {filters.map((tab) => (
+                <button
+                  key={tab}
+                  className={`px-5 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap transition-all flex-shrink-0 border-2 ${
+                    activeTab === tab
+                      ? "bg-slate-900 text-white border-slate-900 shadow-sm"
+                      : "bg-white text-slate-500 border-transparent hover:border-slate-200 hover:bg-slate-50 hover:text-slate-800"
+                  }`}
+                  onClick={() => setActiveTab(tab)}
+                  type="button"
+                >
+                  {tab}
+                </button>
               ))}
-            </tbody>
-          </table>
-        )}
-      </section>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto min-h-[400px]">
+            {filteredOrders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100 shadow-inner">
+                  <FileText size={32} className="text-slate-300" />
+                </div>
+                <h2 className="text-xl font-black text-slate-700">No orders found</h2>
+                <p className="font-medium mt-1">Try another keyword or switch the status filter.</p>
+              </div>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-white text-slate-400 text-[11px] uppercase tracking-wider font-bold border-b border-slate-100">
+                  <tr>
+                    <th className="p-4 pl-6">Order ID</th>
+                    <th className="p-4">Customer Profile</th>
+                    <th className="p-4">Assigned Table</th>
+                    <th className="p-4 text-center">Cart Load</th>
+                    <th className="p-4">Timestamp</th>
+                    <th className="p-4">Items Ordered</th>
+                    <th className="p-4 text-center">Workflow Status</th>
+                    <th className="p-4 pr-6 text-right">Operations</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-sm">
+                  {filteredOrders.map((order, index) => (
+                    <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="p-4 pl-6 font-black text-slate-900">{order.id}</td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-md bg-gradient-to-br ${
+                              getAvatarGradient(index)
+                            }`}
+                          >
+                            {order.customer.charAt(0)}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-slate-900">{order.customer}</h4>
+                            <p className="text-[11px] font-semibold text-slate-400">{order.customerType}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                          <Table2 size={14} className="text-slate-400" />
+                          {order.table}
+                        </span>
+                      </td>
+                      <td className="p-4 text-center font-bold text-slate-700">{order.itemsCount} Items</td>
+                      <td className="p-4">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                            <CalendarDays size={13} className="text-slate-400" />
+                            {order.date}
+                          </span>
+                          <small className="text-[11px] font-semibold text-slate-500 pl-5">{order.time}</small>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-col gap-1 max-h-[60px] overflow-y-auto pr-2 scrollbar-hide">
+                          {order.breakdown.map((item, i) => (
+                            <span key={i} className="text-xs text-slate-600 font-medium whitespace-nowrap">
+                              <strong className="text-slate-900">{item.qty}x</strong> {item.name}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="p-4 text-center">
+                        <span
+                          className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider w-max mx-auto border ${
+                            order.status === "Completed"
+                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                              : "bg-rose-50 text-rose-600 border-rose-100"
+                          }`}
+                        >
+                          {order.status === "Completed" ? (
+                            <CheckCircle2 size={12} />
+                          ) : (
+                            <XCircle size={12} />
+                          )}
+                          {order.status}
+                        </span>
+                      </td>
+                      <td className="p-4 pr-6 text-right">
+                        <button
+                          className="inline-flex items-center justify-center gap-1.5 bg-white border border-slate-200 text-slate-600 hover:text-purple-600 hover:border-purple-200 hover:bg-purple-50 font-bold py-1.5 px-3 rounded-lg transition-all shadow-sm text-xs"
+                          onClick={() => setSelectedOrder(order)}
+                          type="button"
+                        >
+                          <Eye size={14} />
+                          Receipt
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </main>
 
       {selectedOrder && (
-        <div className="modal-overlay" onClick={() => setSelectedOrder(null)}>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity" onClick={() => setSelectedOrder(null)}>
           <div
-            className="invoice-modal"
+            className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in flex flex-col max-h-[90vh]"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="invoice-header">
+            <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
               <div>
-                <span className="invoice-kicker">Receipt Preview</span>
-                <h2>Invoice Manifest</h2>
-                <p>
+                <span className="text-[10px] font-black uppercase tracking-widest text-purple-500 mb-1 block">Receipt Preview</span>
+                <h2 className="text-lg font-black text-slate-900">Invoice Manifest</h2>
+                <p className="text-xs font-semibold text-slate-500">
                   {selectedOrder.id} - {selectedOrder.date}
                 </p>
               </div>
               <button
-                className="close-x-btn"
+                className="text-slate-400 hover:text-slate-600 bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm transition"
                 onClick={() => setSelectedOrder(null)}
                 type="button"
               >
@@ -456,56 +446,65 @@ const History = () => {
               </button>
             </div>
 
-            <div className="invoice-meta-grid">
-              <p>
-                <User size={14} />
-                <span>Customer</span>
-                <strong>{selectedOrder.customer}</strong>
-              </p>
-              <p>
-                <Table2 size={14} />
-                <span>Table</span>
-                <strong>{selectedOrder.table}</strong>
-              </p>
-              <p>
-                <CalendarDays size={14} />
-                <span>Time</span>
-                <strong>{selectedOrder.time}</strong>
-              </p>
-              <p>
-                <Wallet size={14} />
-                <span>Payment</span>
-                <strong>{selectedOrder.paymentMethod}</strong>
-              </p>
-            </div>
-
-            <h4 className="modal-section-title">Itemized Summary</h4>
-            <div className="invoice-items-list">
-              {selectedOrder.breakdown.map((item, i) => (
-                <div key={i} className="invoice-item-row">
-                  <span>
-                    {item.name} <strong>x{item.qty}</strong>
-                  </span>
+            <div className="p-6 overflow-y-auto space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><User size={12}/> Customer</span>
+                  <span className="font-bold text-slate-900 text-sm truncate block">{selectedOrder.customer}</span>
                 </div>
-              ))}
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Table2 size={12}/> Table</span>
+                  <span className="font-bold text-slate-900 text-sm truncate block">{selectedOrder.table}</span>
+                </div>
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><CalendarDays size={12}/> Time</span>
+                  <span className="font-bold text-slate-900 text-sm truncate block">{selectedOrder.time}</span>
+                </div>
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Wallet size={12}/> Payment</span>
+                  <span className="font-bold text-slate-900 text-sm truncate block">{selectedOrder.paymentMethod}</span>
+                </div>
+              </div>
+
+              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-2 border-b border-slate-100 pb-2">Itemized Summary</h4>
+              <div className="flex flex-col gap-2 max-h-[160px] overflow-y-auto pr-2">
+                {selectedOrder.breakdown.map((item, i) => (
+                  <div key={i} className="flex justify-between items-center p-2.5 bg-slate-50 rounded-lg border-l-4 border-slate-300 shadow-sm text-sm text-slate-800">
+                    <span className="font-semibold">{item.name}</span>
+                    <strong className="text-slate-500">x{item.qty}</strong>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100 mt-4">
+                <h3 className="font-bold text-slate-600 uppercase tracking-wider text-xs">Total Items</h3>
+                <h2 className="text-xl font-black text-slate-900">{selectedOrder.itemsCount}</h2>
+              </div>
             </div>
 
-            <div className="invoice-total-row">
-              <h3>Total Items</h3>
-              <h2>{selectedOrder.itemsCount}</h2>
-            </div>
-
-            <div className="invoice-status-footer">
-              <span
-                className={`status-badge-history ${selectedOrder.status.toLowerCase()}`}
+            <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-4">
+              <div className="flex justify-center">
+                <span
+                  className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${
+                    selectedOrder.status === "Completed"
+                      ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                      : "bg-rose-50 text-rose-600 border-rose-200"
+                  }`}
+                >
+                  {selectedOrder.status === "Completed" ? (
+                    <CheckCircle2 size={14} />
+                  ) : (
+                    <XCircle size={14} />
+                  )}
+                  Invoice State: {selectedOrder.status}
+                </span>
+              </div>
+              <button 
+                onClick={() => setSelectedOrder(null)}
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-md text-sm"
               >
-                {selectedOrder.status === "Completed" ? (
-                  <CheckCircle2 size={14} />
-                ) : (
-                  <XCircle size={14} />
-                )}
-                Invoice State: {selectedOrder.status}
-              </span>
+                Close Receipt
+              </button>
             </div>
           </div>
         </div>

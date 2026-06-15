@@ -22,13 +22,13 @@ import {
   Clock,
   Download,
   FileText,
-<<<<<<< HEAD
   TrendingUp,
-  ShoppingCart
-=======
->>>>>>> cad5fae5e5459d5d74b36c975e77ce0b92cb9575
+  ShoppingCart,
+  Calendar,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { useOrders } from "../../context/OrderContext";
 
 const ITEMS_PER_PAGE = 8;
@@ -67,11 +67,15 @@ export default function SalesHistory() {
     price: 0,
   });
 
+  // Date Range Filter State
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [startDate, endDate] = dateRange;
+
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
     setSelectedTxns([]); // Clear selections when filters change
-  }, [searchTerm, activeTab, paymentFilter, viewMode]);
+  }, [searchTerm, activeTab, paymentFilter, viewMode, startDate, endDate]);
 
   // Reset search and dropdown filters when changing tabs for a fresh view
   useEffect(() => {
@@ -134,8 +138,21 @@ export default function SalesHistory() {
     setNewInvoiceData({ customer: "", method: "Cash", items: [] });
   };
 
-  // Unified Metrics
-  const completedSales = orders.filter((o) => o.status === "Completed");
+  // Date Filtering logic to isolate orders within the picked date range
+  const dateFilteredOrders = useMemo(() => {
+    if (!startDate || !endDate) return orders;
+    return orders.filter((txn) => {
+      const txDate = txn.timestamp ? new Date(txn.timestamp) : (txn.date ? new Date(txn.date) : null);
+      if (!txDate) return false;
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      return txDate >= startDate && txDate <= endOfDay;
+    });
+  }, [orders, startDate, endDate]);
+
+  // Unified Metrics (Updates dynamically based on date range)
+  const completedSales = dateFilteredOrders.filter((o) => o.status === "Completed");
+
   const totalSalesAmount = completedSales.reduce((acc, order) => {
     const subtotal = (order.items || []).reduce(
       (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
@@ -177,12 +194,13 @@ export default function SalesHistory() {
     ].filter((item) => item.value > 0); // Only show methods that have sales
   }, [completedSales]);
 
-  // End of Day (Today's) Metrics
+  // End of Day (Today's) Metrics (Strictly today, unfiltered by the date picker)
+  const allCompletedSales = orders.filter((o) => o.status === "Completed");
   const eodMetrics = useMemo(() => {
     const todayStr = new Date().toLocaleDateString();
     const todayStrISO = new Date().toISOString().split("T")[0];
     
-    const todayCompleted = completedSales.filter(o => {
+    const todayCompleted = allCompletedSales.filter(o => {
       const oDate = o.date || (o.timestamp ? new Date(o.timestamp).toLocaleDateString() : "");
       return oDate === todayStr || oDate === todayStrISO || (o.timestamp && new Date(o.timestamp).toLocaleDateString() === new Date().toLocaleDateString());
     });
@@ -204,29 +222,14 @@ export default function SalesHistory() {
       ordersCount: todayCompleted.length,
       total, cash, card, esewa, khalti
     };
-  }, [completedSales]);
+  }, [allCompletedSales]);
 
   // Map Orders to Unified Ledger Data
   const ledgerData = useMemo(() => {
-    return orders
-<<<<<<< HEAD
+    return dateFilteredOrders
       .map(order => {
         const subtotal = (order.items || []).reduce((sum, item) => sum + item.qty * (parseFloat(item.price) || 0), 0);
         const total = order.amount || (subtotal + (subtotal > 0 ? 50 : 0));
-=======
-      .filter(
-        (o) =>
-          o.status === "Completed" ||
-          o.status === "Cancelled" ||
-          o.status === "Refunded"
-      )
-      .map((order) => {
-        const subtotal = (order.items || []).reduce(
-          (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
-          0
-        );
-        const total = order.amount || subtotal + (subtotal > 0 ? 50 : 0);
->>>>>>> cad5fae5e5459d5d74b36c975e77ce0b92cb9575
         return {
           ...order,
           transactionId: `TXN-${String(order.id).replace(/\D/g, "")}`,
@@ -235,13 +238,12 @@ export default function SalesHistory() {
         };
       })
       .reverse();
-  }, [orders]);
+  }, [dateFilteredOrders]);
 
   // Filter Logic
   const filteredData = useMemo(() => {
     return ledgerData.filter((txn) => {
       const matchesTab = activeTab === "All" ? true : txn.status === activeTab;
-<<<<<<< HEAD
       const matchesSearch = txn.transactionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             (txn.customer || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
                             txn.id.toLowerCase().includes(searchTerm.toLowerCase());
@@ -254,15 +256,6 @@ export default function SalesHistory() {
       if (viewMode === "invoices") matchesView = true; // Show all (including Pending)
       
       return matchesTab && matchesSearch && matchesPayment && matchesView;
-=======
-      const matchesSearch =
-        txn.transactionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (txn.customer || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        txn.id.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesPayment =
-        paymentFilter === "All" ? true : txn.paymentMethod === paymentFilter;
-      return matchesTab && matchesSearch && matchesPayment;
->>>>>>> cad5fae5e5459d5d74b36c975e77ce0b92cb9575
     });
   }, [ledgerData, activeTab, searchTerm, paymentFilter, viewMode]);
 
@@ -658,7 +651,7 @@ export default function SalesHistory() {
   );
 
   return (
-    <div className="sales-history-page">
+    <div className="sales-history-page p-6 md:p-8 bg-slate-50 min-h-screen text-slate-800 font-sans">
       {/* DYNAMIC SMART PRINT-ONLY STYLES */}
       <style>
         {`
@@ -675,7 +668,6 @@ export default function SalesHistory() {
             .print-hide-row { display: none !important; }
             .print-container { display: none !important; }
             .details-btn, .arrow-icon { display: none !important; }
-<<<<<<< HEAD
           ` : printMode === 'summary' || printMode === 'eod' ? `
             @page { margin: 10mm; size: auto; }
             html, body { width: 100% !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
@@ -684,10 +676,6 @@ export default function SalesHistory() {
             .sales-history-page { padding: 0 !important; margin: 0 !important; background: transparent !important; }
             .print-container { position: relative !important; width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; z-index: 99999; }
           ` : `
-=======
-          `
-              : `
->>>>>>> cad5fae5e5459d5d74b36c975e77ce0b92cb9575
             @page { margin: 0; size: 80mm auto; }
             html, body { width: 80mm !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
             .sidebar, .navbar, header, footer { display: none !important; }
@@ -704,34 +692,48 @@ export default function SalesHistory() {
       </style>
 
       {/* HEADER */}
-      <div className="sales-top">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
         <div>
-          <h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             {viewMode === "ledger" && "Sales Ledger"}
             {viewMode === "invoices" && "Invoices"}
             {viewMode === "payments" && "Payments History"}
             {viewMode === "eod" && "End of Day"}
           </h1>
-          <p>
+          <p className="text-slate-500 text-sm mt-1">
             {viewMode === "ledger" && "Unified Ledger: Sales, Payments & Custom Invoices"}
             {viewMode === "invoices" && "Manage all generated bills and pending invoices"}
             {viewMode === "payments" && "View all completed and settled transactions"}
             {viewMode === "eod" && "Review today's total payments and shift metrics"}
           </p>
         </div>
-        <div className="sales-top-actions flex gap-3">
-          <button className="date-btn">
-            {new Date().toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <style>{`
+            .react-datepicker-wrapper { width: 100%; display: block; }
+            .react-datepicker__input-container { display: block; }
+            .react-datepicker__close-icon { padding: 0; right: 0; }
+            .react-datepicker__close-icon::after { background-color: #f1f5f9; color: #64748b; font-size: 16px; height: 22px; width: 22px; line-height: 20px; border-radius: 6px; transition: all 0.2s ease; }
+            .react-datepicker__close-icon:hover::after { background-color: #fee2e2; color: #ef4444; }
+          `}</style>
+          <div className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm hover:border-purple-300 transition-all w-full max-w-[260px] relative z-10">
+            <Calendar size={16} className="text-purple-500 flex-shrink-0" />
+            <DatePicker
+              selectsRange={true}
+              startDate={startDate}
+              endDate={endDate}
+              onChange={(update) => setDateRange(update)}
+              isClearable={true}
+              placeholderText="Filter by date range..."
+              className="w-full bg-transparent outline-none cursor-pointer text-sm text-slate-700 font-bold placeholder:text-slate-400 placeholder:font-medium"
+              dateFormat="MMM d, yyyy"
+              maxDate={new Date()}
+            />
+          </div>
           <div className="relative" ref={exportMenuRef}>
             <button
               onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
               disabled={isExporting}
-              className="bg-white border border-slate-200 text-slate-700 font-bold px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-slate-50 transition shadow-sm"
+              className="bg-white border border-slate-200 text-slate-700 font-bold px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-slate-50 transition shadow-sm text-sm"
             >
               <Download size={16} />{" "}
               {isExporting
@@ -767,23 +769,11 @@ export default function SalesHistory() {
                   </>
                 ) : (
                   <>
-<<<<<<< HEAD
                     <button onClick={() => { setIsExportMenuOpen(false); handlePrintSummary(); }} className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50">
                       <Printer size={16} className="text-purple-500" /> Print Summary Report
                     </button>
                     <button onClick={() => { setIsExportMenuOpen(false); handlePrintLedger(); }} className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50">
                       <Printer size={16} className="text-emerald-500" /> Print Ledger Page
-=======
-                    <button
-                      onClick={() => {
-                        setIsExportMenuOpen(false);
-                        handlePrintLedger();
-                      }}
-                      className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50"
-                    >
-                      <Printer size={16} className="text-emerald-500" /> Print
-                      Ledger Page
->>>>>>> cad5fae5e5459d5d74b36c975e77ce0b92cb9575
                     </button>
                     <button
                       onClick={() => {
@@ -802,71 +792,24 @@ export default function SalesHistory() {
           </div>
           <button
             onClick={() => setIsNewInvoiceOpen(true)}
-            className="bg-slate-900 text-white font-bold px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-slate-800 transition shadow-sm"
+            className="bg-slate-900 text-white font-bold px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-slate-800 transition shadow-sm text-sm"
           >
             <Plus size={16} /> Custom Invoice
           </button>
         </div>
       </div>
 
-<<<<<<< HEAD
       {/* UNIFIED VIEW SWITCHER TABS */}
-      <div className="flex gap-6 border-b border-slate-200 mb-6 px-1 mx-6 mt-6">
+      <div className="flex gap-6 border-b border-slate-200 mb-8 mt-6 overflow-x-auto scrollbar-hide">
         {["ledger", "invoices", "payments", "eod"].map((mode) => (
           <button
             key={mode}
             onClick={() => setViewMode(mode)}
-            className={`pb-3 px-1 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 ${viewMode === mode ? "border-slate-900 text-slate-900" : "border-transparent text-slate-400 hover:text-slate-700"}`}
+            className={`pb-3 px-1 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${viewMode === mode ? "border-slate-900 text-slate-900" : "border-transparent text-slate-400 hover:text-slate-700"}`}
           >
             {mode === "ledger" ? "All History" : mode === "eod" ? "End of Day" : mode.charAt(0).toUpperCase() + mode.slice(1)}
           </button>
         ))}
-=======
-      {/* METRICS GRID */}
-      <div className="sales-stats">
-        <div className="sales-stat-card">
-          <div className="stat-icon green">📈</div>
-          <div>
-            <h4>Total Sales</h4>
-            <h2>
-              Rs.{" "}
-              {totalSalesAmount.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}
-            </h2>
-            <span>0% vs yesterday</span>
-          </div>
-        </div>
-        <div className="sales-stat-card">
-          <div className="stat-icon blue">🛒</div>
-          <div>
-            <h4>Total Orders</h4>
-            <h2>{completedSales.length}</h2>
-            <span>0 vs yesterday</span>
-          </div>
-        </div>
-        <div className="sales-stat-card">
-          <div className="stat-icon orange">📦</div>
-          <div>
-            <h4>Items Sold</h4>
-            <h2>{totalItemsSold}</h2>
-            <span>0% vs yesterday</span>
-          </div>
-        </div>
-        <div className="sales-stat-card">
-          <div className="stat-icon purple">💳</div>
-          <div>
-            <h4>Average Order Value</h4>
-            <h2>
-              Rs.{" "}
-              {avgOrderValue.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}
-            </h2>
-            <span>0% vs yesterday</span>
-          </div>
-        </div>
->>>>>>> cad5fae5e5459d5d74b36c975e77ce0b92cb9575
       </div>
 
       {viewMode === "eod" ? (
@@ -924,66 +867,64 @@ export default function SalesHistory() {
       ) : (
         <>
           {/* METRICS GRID */}
-          <div className="sales-stats">
-            <div className="sales-stat-card">
-              <div className="stat-icon green flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 shadow-sm border border-emerald-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner border border-emerald-100">
                 <TrendingUp size={24} strokeWidth={2.5} />
               </div>
               <div>
-                <h4>Total Sales</h4>
-                <h2>Rs. {totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
-                <span>0% vs yesterday</span>
+                <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Total Sales</h4>
+                <h2 className="text-2xl font-black text-slate-900 leading-none truncate">Rs. {totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
               </div>
             </div>
-            <div className="sales-stat-card">
-              <div className="stat-icon blue flex items-center justify-center w-12 h-12 rounded-xl bg-blue-100 text-blue-600 shadow-sm border border-blue-200">
+            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner border border-blue-100">
                 <ShoppingCart size={24} strokeWidth={2.5} />
               </div>
               <div>
-                <h4>Total Orders</h4>
-                <h2>{completedSales.length}</h2>
-                <span>0 vs yesterday</span>
+                <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Total Orders</h4>
+                <h2 className="text-2xl font-black text-slate-900 leading-none">{completedSales.length}</h2>
               </div>
             </div>
-            <div className="sales-stat-card">
-              <div className="stat-icon orange flex items-center justify-center w-12 h-12 rounded-xl bg-amber-100 text-amber-600 shadow-sm border border-amber-200">
+            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner border border-amber-100">
                 <Package size={24} strokeWidth={2.5} />
               </div>
               <div>
-                <h4>Items Sold</h4>
-                <h2>{totalItemsSold}</h2>
-                <span>0% vs yesterday</span>
+                <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Items Sold</h4>
+                <h2 className="text-2xl font-black text-slate-900 leading-none">{totalItemsSold}</h2>
               </div>
             </div>
-            <div className="sales-stat-card">
-              <div className="stat-icon purple flex items-center justify-center w-12 h-12 rounded-xl bg-purple-100 text-purple-600 shadow-sm border border-purple-200">
+            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 shadow-inner border border-purple-100">
                 <CreditCard size={24} strokeWidth={2.5} />
               </div>
               <div>
-                <h4>Average Order Value</h4>
-                <h2>Rs. {avgOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
-                <span>0% vs yesterday</span>
+                <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Avg Order Value</h4>
+                <h2 className="text-2xl font-black text-slate-900 leading-none truncate">Rs. {avgOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
               </div>
             </div>
           </div>
 
       {/* UNIFIED WORKSPACE */}
-      <div className="sales-content">
+          <div className="flex flex-col xl:flex-row gap-6">
         {/* LEFT COLUMN: HISTORY LIST */}
-        <div className="sales-left">
-          <div className="sales-filters">
-            <div className="sales-search">
-              <Search size={16} className="text-slate-400" />
+            <div className="flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+              <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center bg-slate-50/50">
+                <div className="relative w-full md:max-w-xs shrink-0">
+                  <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search by Order ID, Customer or Phone..."
+                    placeholder="Search ID or Customer..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-50 transition-all placeholder:text-slate-400 shadow-sm"
               />
             </div>
             <select
               value={paymentFilter}
               onChange={(e) => setPaymentFilter(e.target.value)}
+                  className="w-full md:w-auto px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:border-purple-400 transition-all shadow-sm"
             >
               <option value="All">All Methods</option>
               <option value="Cash">Cash</option>
@@ -994,6 +935,7 @@ export default function SalesHistory() {
             <select
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value)}
+                  className="w-full md:w-auto px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:border-purple-400 transition-all shadow-sm"
             >
               <option value="All">All Status</option>
               {viewMode === "invoices" && <option value="Pending">Pending</option>}
@@ -1002,119 +944,105 @@ export default function SalesHistory() {
             </select>
           </div>
 
-          <div className="sales-list">
-            <div className="sales-date">
-              Today -{" "}
-              {new Date().toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </div>
-
-            {paginatedData.length > 0 ? (
-              paginatedData.map((sale) => (
-                <div className="sales-row" key={sale.id}>
-                  <div className="sales-time">{sale.time || "N/A"}</div>
-                  <div className="sales-info">
-                    <div className="sales-id">
-                      <h4 className="flex items-center gap-1.5">
-                        <Receipt size={14} className="text-purple-500" />{" "}
-                        {sale.transactionId}
-                      </h4>
-                      <p className="flex items-center gap-1.5">
-                        <User size={13} /> {sale.customer || "Walk-in"}
-                      </p>
-                      <span className="flex items-center gap-1.5">
-                        <Table2 size={13} /> {sale.channel || "Dining"}
-                      </span>
-                    </div>
-                    <div className="sales-items">
-                      <h4>{sale.itemCount} Items</h4>
-                      <p
-                        className="truncate w-32 flex items-center gap-1.5"
-                        style={{
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {sale.items
-                          .map((i) => `${i.name} x${i.qty}`)
-                          .join(", ")}
-                      </p>
-                    </div>
-                    <div className="sales-payment">
-                      <h4 className="flex items-center gap-1.5">
-                        <CreditCard size={14} className="text-emerald-500" />{" "}
-                        {sale.paymentMethod || "Cash"}
-                      </h4>
-                      <p>{sale.id}</p>
-                    </div>
-                    <div className="sales-amount">
-                      Rs.{" "}
-                      {sale.totalAmount.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                      })}
-                    </div>
-                    <div>
-                      <span
-                        className={`sale-status ${sale.status.toLowerCase()} flex items-center gap-1.5 w-max`}
-                      >
-                        {sale.status === "Completed" ? (
-                          <CheckCircle size={14} />
-                        ) : sale.status === "Cancelled" ? (
-                          <XCircle size={14} />
-                        ) : (
-                          <Clock size={14} />
-                        )}
-                        {sale.status}
-                      </span>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        className="details-btn flex items-center gap-2 hover:border-purple-300 hover:text-purple-600 transition-colors"
-                        onClick={() => setSelectedInvoice(sale)}
-                      >
-                        <Eye size={16} /> Details
-                      </button>
-                      <button
-                        className="details-btn flex items-center gap-2 hover:border-emerald-300 hover:text-emerald-600 transition-colors"
-                        onClick={() => handlePrintSingle(sale)}
-                      >
-                        <Printer size={16} /> Print
-                      </button>
-                    </div>
-                    <ChevronRight className="arrow-icon" />
+              <div className="overflow-x-auto min-h-[400px]">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-white text-slate-400 text-[11px] uppercase tracking-wider font-bold border-b border-slate-100">
+                    <tr>
+                      <th className="p-4 pl-6">Transaction</th>
+                      <th className="p-4">Customer</th>
+                      <th className="p-4 text-center">Items</th>
+                      <th className="p-4 text-center">Payment</th>
+                      <th className="p-4 text-right">Amount</th>
+                      <th className="p-4 text-center">Status</th>
+                      <th className="p-4 pr-6 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm">
+                    {paginatedData.length > 0 ? (
+                      paginatedData.map((sale) => (
+                        <tr key={sale.id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="p-4 pl-6">
+                            <div className="font-bold text-slate-900 flex items-center gap-1.5"><Receipt size={14} className="text-purple-500" /> {sale.transactionId}</div>
+                            <div className="text-xs text-slate-500 font-medium mt-0.5">{sale.time || "N/A"}</div>
+                          </td>
+                          <td className="p-4">
+                            <div className="font-semibold text-slate-800 flex items-center gap-1.5"><User size={13} className="text-slate-400" /> {sale.customer || "Walk-in"}</div>
+                            <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5"><Table2 size={13} className="text-slate-400" /> {sale.channel || "Dining"}</div>
+                          </td>
+                          <td className="p-4 text-center">
+                            <div className="font-bold text-slate-700">{sale.itemCount}</div>
+                            <div className="text-[10px] text-slate-400 truncate w-24 mx-auto">{sale.items.map(i => i.name).join(", ")}</div>
+                          </td>
+                          <td className="p-4 text-center">
+                            <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 shadow-sm flex items-center gap-1.5 w-max mx-auto">
+                              <CreditCard size={12} className="text-slate-400" /> {sale.paymentMethod || "Cash"}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right font-black text-emerald-600 text-base">
+                            Rs. {sale.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="p-4 text-center">
+                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider flex items-center gap-1 w-max mx-auto ${
+                              sale.status === "Completed" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
+                              sale.status === "Cancelled" ? "bg-rose-50 text-rose-600 border border-rose-100" :
+                              "bg-amber-50 text-amber-600 border border-amber-100"
+                            }`}>
+                              {sale.status === "Completed" ? <CheckCircle size={10} /> : sale.status === "Cancelled" ? <XCircle size={10} /> : <Clock size={10} />}
+                              {sale.status}
+                            </span>
+                          </td>
+                          <td className="p-4 pr-6 text-right">
+                            <div className="flex gap-2 justify-end">
+                              <button
+                                className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-purple-600 hover:border-purple-200 hover:bg-purple-50 flex items-center justify-center transition-all shadow-sm"
+                                onClick={() => setSelectedInvoice(sale)}
+                                title="View Details"
+                              >
+                                <Eye size={16} />
+                              </button>
+                              <button
+                                className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 flex items-center justify-center transition-all shadow-sm"
+                                onClick={() => handlePrintSingle(sale)}
+                                title="Print Receipt"
+                              >
+                                <Printer size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="7" className="p-12 text-center text-slate-500 font-medium">
+                          <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                            <Receipt size={24} className="text-slate-300" />
+                          </div>
+                          No transactions found matching your criteria.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+                
+                {paginatedData.length < filteredData.length && (
+                  <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+                    <button 
+                      className="w-full py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all text-sm"
+                      onClick={() => setCurrentPage((p) => p + 1)}
+                    >
+                      Load More Transactions
+                    </button>
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className="p-12 text-center text-slate-500 font-medium flex flex-col items-center gap-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
-                  <Receipt size={32} className="text-slate-300" />
-                </div>
-                No transactions found matching your criteria.
+                )}
               </div>
-            )}
-
-            {paginatedData.length < filteredData.length && (
-              <div
-                className="load-more"
-                onClick={() => setCurrentPage((p) => p + 1)}
-              >
-                Load More History
-              </div>
-            )}
-          </div>
         </div>
 
         {/* RIGHT COLUMN: OVERVIEW CHARTS */}
-        <div className="sales-right">
-          <div className="right-card">
-            <h3>Sales by Payment Method</h3>
-            <div className="payment-chart">
-              <div className="relative h-[160px] w-[160px]">
+            <div className="w-full xl:w-[340px] shrink-0 flex flex-col gap-6">
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6">Sales by Payment Method</h3>
+                <div className="flex flex-col items-center">
+                  <div className="relative h-[200px] w-[200px] mb-6">
                 <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                   <PieChart>
                     <Pie
@@ -1125,8 +1053,8 @@ export default function SalesHistory() {
                       }
                       cx="50%"
                       cy="50%"
-                      innerRadius={55}
-                      outerRadius={75}
+                          innerRadius={65}
+                          outerRadius={90}
                       paddingAngle={5}
                       dataKey="value"
                       stroke="none"
@@ -1142,89 +1070,62 @@ export default function SalesHistory() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                    Total
-                  </span>
-                  <span className="text-sm font-black text-slate-900 mt-0.5">
-                    Rs.{" "}
-                    {totalSalesAmount > 1000
-                      ? (totalSalesAmount / 1000).toFixed(1) + "k"
-                      : totalSalesAmount}
-                  </span>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Total</span>
+                      <span className="text-xl font-black text-slate-900 mt-0.5">
+                        {totalSalesAmount > 1000 ? (totalSalesAmount / 1000).toFixed(1) + "k" : totalSalesAmount}
+                      </span>
                 </div>
               </div>
-              <div className="chart-details flex flex-col gap-3">
+                  <div className="flex flex-col gap-3 w-full">
                 {paymentData.map((method, idx) => (
-                  <div key={idx} className="chart-item flex items-center gap-3">
-                    <span
-                      className="dot w-3 h-3 rounded-full"
-                      style={{ backgroundColor: method.color }}
-                    ></span>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-bold text-slate-700">
-                        {method.name}
-                      </span>
-                      <span className="text-xs font-semibold text-slate-400">
-                        Rs. {method.value.toLocaleString()}
+                      <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50">
+                        <div className="flex items-center gap-3">
+                          <span className="w-3.5 h-3.5 rounded-full shadow-sm" style={{ backgroundColor: method.color }}></span>
+                          <span className="text-sm font-bold text-slate-700">{method.name}</span>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className="text-sm font-black text-slate-900">Rs. {method.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                          <span className="text-[10px] font-bold text-slate-400">
+                            {totalSalesAmount > 0 ? ((method.value / totalSalesAmount) * 100).toFixed(1) : 0}%
                       </span>
                     </div>
                   </div>
                 ))}
                 {paymentData.length === 0 && (
-                  <span className="text-sm text-slate-400 font-medium">
-                    No sales data yet
-                  </span>
+                      <span className="text-sm text-slate-400 font-medium text-center py-4 bg-slate-50 rounded-xl border border-slate-100">No sales data yet</span>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="right-card">
-            <h3>Sales Summary</h3>
-            <div className="summary-item">
-              <span>Total Sales</span>
-              <strong>
-                Rs.{" "}
-                {totalSalesAmount.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                })}
-              </strong>
-            </div>
-            <div className="summary-item">
-              <span>Total Orders</span>
-              <strong>{completedSales.length}</strong>
-            </div>
-            <div className="summary-item">
-              <span>Total Items Sold</span>
-              <strong>{totalItemsSold}</strong>
-            </div>
-            <div className="summary-item">
-              <span>Average Order Value</span>
-              <strong>
-                Rs.{" "}
-                {avgOrderValue.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                })}
-              </strong>
-            </div>
-            <div className="summary-item">
-              <span>Highest Sale</span>
-              <strong>
-                Rs.{" "}
-                {highestSale.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                })}
-              </strong>
-            </div>
-            <div className="summary-item">
-              <span>Lowest Sale</span>
-              <strong>
-                Rs.{" "}
-                {lowestSale.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                })}
-              </strong>
-            </div>
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Sales Summary</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Total Sales</span>
+                    <strong className="text-sm font-black text-slate-900">Rs. {totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
+                  </div>
+                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Total Orders</span>
+                    <strong className="text-sm font-black text-slate-900">{completedSales.length}</strong>
+                  </div>
+                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Total Items Sold</span>
+                    <strong className="text-sm font-black text-slate-900">{totalItemsSold}</strong>
+                  </div>
+                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Avg Order Value</span>
+                    <strong className="text-sm font-black text-slate-900">Rs. {avgOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
+                  </div>
+                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Highest Sale</span>
+                    <strong className="text-sm font-black text-emerald-600">Rs. {highestSale.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-500 uppercase">Lowest Sale</span>
+                    <strong className="text-sm font-black text-rose-500">Rs. {lowestSale.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
+                  </div>
+                </div>
           </div>
         </div>
       </div>
@@ -1355,20 +1256,10 @@ export default function SalesHistory() {
 
       {/* THERMAL PRINTER RECEIPT BATCH LAYOUT */}
       <div className="print-container">
-<<<<<<< HEAD
         {printMode === "single" && selectedInvoice && renderReceipt(selectedInvoice)}
         {printMode === "batch" && filteredData.filter(t => selectedTxns.includes(t.transactionId)).map(renderReceipt)}
         {printMode === "summary" && renderSummaryReport()}
         {printMode === "eod" && renderEODReport()}
-=======
-        {printMode === "single" &&
-          selectedInvoice &&
-          renderReceipt(selectedInvoice)}
-        {printMode === "batch" &&
-          filteredData
-            .filter((t) => selectedTxns.includes(t.transactionId))
-            .map(renderReceipt)}
->>>>>>> cad5fae5e5459d5d74b36c975e77ce0b92cb9575
       </div>
 
       {/* CREATE NEW INVOICE MODAL */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   TrendingUp,
   ShoppingBag,
@@ -24,6 +24,8 @@ import {
   Cell,
 } from "recharts";
 import { useNavigate } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { useOrders } from "../../context/OrderContext";
 import { useTables } from "../../context/TableContext";
 
@@ -41,7 +43,22 @@ export default function AdminDashboard() {
   const reservedCount = tables.filter(
     (t) => (t.status || "").toLowerCase() === "reserved"
   ).length;
-  const pendingPaymentsCount = orders.filter(
+
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [startDate, endDate] = dateRange;
+
+  const dateFilteredOrders = useMemo(() => {
+    if (!startDate || !endDate) return orders;
+    return orders.filter((order) => {
+      const txDate = order.timestamp ? new Date(order.timestamp) : (order.date ? new Date(order.date) : null);
+      if (!txDate) return false;
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      return txDate >= startDate && txDate <= endOfDay;
+    });
+  }, [orders, startDate, endDate]);
+
+  const pendingPaymentsCount = dateFilteredOrders.filter(
     (o) => o.status !== "Completed" && o.status !== "Cancelled"
   ).length;
 
@@ -54,7 +71,7 @@ export default function AdminDashboard() {
     }
   }, [orders, tables]);
 
-  const completedSales = orders.filter((order) => order.status === "Completed");
+  const completedSales = dateFilteredOrders.filter((order) => order.status === "Completed");
 
   const totalRevenue = completedSales.reduce((acc, order) => {
     const subtotal = (order.items || []).reduce(
@@ -64,16 +81,16 @@ export default function AdminDashboard() {
     return acc + (order.amount || subtotal + (subtotal > 0 ? 50 : 0));
   }, 0);
 
-  const totalOrders = orders.length;
-  const totalCustomers = new Set(orders.map((o) => o.customer || "Guest")).size;
+  const totalOrders = dateFilteredOrders.length;
+  const totalCustomers = new Set(dateFilteredOrders.map((o) => o.customer || "Guest")).size;
   const avgOrderValue =
     completedSales.length > 0 ? totalRevenue / completedSales.length : 0;
 
-  const dineInCount = orders.filter(
+  const dineInCount = dateFilteredOrders.filter(
     (o) => o.channel === "Dine In" || o.channel === "Dining"
   ).length;
-  const takeawayCount = orders.filter((o) => o.channel === "Takeaway").length;
-  const deliveryCount = orders.filter((o) => o.channel === "Delivery").length;
+  const takeawayCount = dateFilteredOrders.filter((o) => o.channel === "Takeaway").length;
+  const deliveryCount = dateFilteredOrders.filter((o) => o.channel === "Delivery").length;
 
   const orderDistributionData = [
     { name: "Dine In", value: dineInCount, color: "#6366f1" },
@@ -107,7 +124,7 @@ export default function AdminDashboard() {
       revenue: `Rs. ${item.revenue.toLocaleString()}`,
     }));
 
-  const recentOrders = [...orders]
+  const recentOrders = [...dateFilteredOrders]
     .sort((a, b) => {
       const timeA = new Date(a.timestamp || a.createdAt || 0).getTime();
       const timeB = new Date(b.timestamp || b.createdAt || 0).getTime();
@@ -129,8 +146,9 @@ export default function AdminDashboard() {
 
   // Dynamic Revenue Trend Data (Last 7 Days)
   const revenueTrendData = [];
+  const trendEndDate = endDate || new Date();
   for (let i = 6; i >= 0; i--) {
-    const d = new Date();
+    const d = new Date(trendEndDate);
     d.setDate(d.getDate() - i);
     revenueTrendData.push({
       day: d.toLocaleDateString("en-US", { weekday: "short" }),
@@ -151,25 +169,6 @@ export default function AdminDashboard() {
       );
       dayData.revenue += order.amount || subtotal + (subtotal > 0 ? 50 : 0);
     }
-  });
-
-  const startOfMonth = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth(),
-    1
-  ).toLocaleDateString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  });
-  const endOfMonth = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth() + 1,
-    0
-  ).toLocaleDateString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
   });
 
   if (loading) {
@@ -195,11 +194,26 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 bg-white border border-slate-200/80 px-4 py-2.5 rounded-xl shadow-sm text-slate-600 font-medium text-sm">
-            <Calendar size={16} className="text-purple-500" />
-            <span>
-              {startOfMonth} - {endOfMonth}
-            </span>
+        <div className="flex items-center gap-2 bg-white border border-slate-200/80 px-4 py-2.5 rounded-xl shadow-sm text-slate-600 font-medium text-sm w-full sm:w-[260px] relative z-10">
+          <style>{`
+            .react-datepicker-wrapper { width: 100%; display: block; }
+            .react-datepicker__input-container { display: block; }
+            .react-datepicker__close-icon { padding: 0; right: 0; }
+            .react-datepicker__close-icon::after { background-color: #f1f5f9; color: #64748b; font-size: 16px; height: 22px; width: 22px; line-height: 20px; border-radius: 6px; transition: all 0.2s ease; }
+            .react-datepicker__close-icon:hover::after { background-color: #fee2e2; color: #ef4444; }
+          `}</style>
+          <Calendar size={16} className="text-purple-500 shrink-0" />
+          <DatePicker
+            selectsRange={true}
+            startDate={startDate}
+            endDate={endDate}
+            onChange={(update) => setDateRange(update)}
+            isClearable={true}
+            placeholderText="Filter by date range..."
+            className="w-full bg-transparent outline-none cursor-pointer text-sm text-slate-700 font-bold placeholder:text-slate-400"
+            dateFormat="MMM d, yyyy"
+            maxDate={new Date()}
+          />
           </div>
         </div>
 
