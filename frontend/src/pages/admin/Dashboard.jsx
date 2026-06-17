@@ -50,7 +50,11 @@ export default function AdminDashboard() {
   const dateFilteredOrders = useMemo(() => {
     if (!startDate || !endDate) return orders;
     return orders.filter((order) => {
-      const txDate = order.timestamp ? new Date(order.timestamp) : (order.date ? new Date(order.date) : null);
+      const txDate = order.timestamp
+        ? new Date(order.timestamp)
+        : order.date
+        ? new Date(order.date)
+        : null;
       if (!txDate) return false;
       const endOfDay = new Date(endDate);
       endOfDay.setHours(23, 59, 59, 999);
@@ -71,7 +75,9 @@ export default function AdminDashboard() {
     }
   }, [orders, tables]);
 
-  const completedSales = dateFilteredOrders.filter((order) => order.status === "Completed");
+  const completedSales = dateFilteredOrders.filter(
+    (order) => order.status === "Completed"
+  );
 
   const totalRevenue = completedSales.reduce((acc, order) => {
     const subtotal = (order.items || []).reduce(
@@ -82,15 +88,21 @@ export default function AdminDashboard() {
   }, 0);
 
   const totalOrders = dateFilteredOrders.length;
-  const totalCustomers = new Set(dateFilteredOrders.map((o) => o.customer || "Guest")).size;
+  const totalCustomers = new Set(
+    dateFilteredOrders.map((o) => o.customer || "Guest")
+  ).size;
   const avgOrderValue =
     completedSales.length > 0 ? totalRevenue / completedSales.length : 0;
 
   const dineInCount = dateFilteredOrders.filter(
     (o) => o.channel === "Dine In" || o.channel === "Dining"
   ).length;
-  const takeawayCount = dateFilteredOrders.filter((o) => o.channel === "Takeaway").length;
-  const deliveryCount = dateFilteredOrders.filter((o) => o.channel === "Delivery").length;
+  const takeawayCount = dateFilteredOrders.filter(
+    (o) => o.channel === "Takeaway"
+  ).length;
+  const deliveryCount = dateFilteredOrders.filter(
+    (o) => o.channel === "Delivery"
+  ).length;
 
   const orderDistributionData = [
     { name: "Dine In", value: dineInCount, color: "#6366f1" },
@@ -184,7 +196,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-slate-50 p-8 text-slate-800 font-sans">
       <main className="max-w-[1600px] mx-auto">
         {/* TOP SECTION: PAGE HEADER */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
           <div>
             <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">
               Welcome back, Admin! 👋
@@ -194,31 +206,31 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-        <div className="flex items-center gap-2 bg-white border border-slate-200/80 px-4 py-2.5 rounded-xl shadow-sm text-slate-600 font-medium text-sm w-full sm:w-[260px] relative z-10">
-          <style>{`
-            .react-datepicker-wrapper { width: 100%; display: block; }
-            .react-datepicker__input-container { display: block; }
-            .react-datepicker__close-icon { padding: 0; right: 0; }
-            .react-datepicker__close-icon::after { background-color: #f1f5f9; color: #64748b; font-size: 16px; height: 22px; width: 22px; line-height: 20px; border-radius: 6px; transition: all 0.2s ease; }
-            .react-datepicker__close-icon:hover::after { background-color: #fee2e2; color: #ef4444; }
-          `}</style>
-          <Calendar size={16} className="text-purple-500 shrink-0" />
-          <DatePicker
-            selectsRange={true}
-            startDate={startDate}
-            endDate={endDate}
-            onChange={(update) => setDateRange(update)}
-            isClearable={true}
-            placeholderText="Filter by date range..."
-            className="w-full bg-transparent outline-none cursor-pointer text-sm text-slate-700 font-bold placeholder:text-slate-400"
-            dateFormat="MMM d, yyyy"
-            maxDate={new Date()}
-          />
+          <div className="flex items-center gap-2 bg-white border border-slate-200/80 px-4 py-2.5 rounded-xl shadow-sm text-slate-600 font-medium text-sm w-full sm:w-[260px] relative z-10">
+            <style>{`
+              .react-datepicker-wrapper { width: 100%; display: block; }
+              .react-datepicker__input-container { display: block; }
+              .react-datepicker__close-icon { padding: 0; right: 0; }
+              .react-datepicker__close-icon::after { background-color: #f1f5f9; color: #64748b; font-size: 16px; height: 22px; width: 22px; line-height: 20px; border-radius: 6px; transition: all 0.2s ease; }
+              .react-datepicker__close-icon:hover::after { background-color: #fee2e2; color: #ef4444; }
+            `}</style>
+            <Calendar size={16} className="text-purple-500 shrink-0" />
+            <DatePicker
+              selectsRange={true}
+              startDate={startDate}
+              endDate={endDate}
+              onChange={(update) => setDateRange(update)}
+              isClearable={true}
+              placeholderText="Filter by date range..."
+              className="w-full bg-transparent outline-none cursor-pointer text-sm text-slate-700 font-bold placeholder:text-slate-400"
+              dateFormat="MMM d, yyyy"
+              maxDate={new Date()}
+            />
           </div>
         </div>
 
         {/* METRICS SUMMARY CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-6 sm:mb-8">
           {[
             {
               title: "Total Revenue",
@@ -253,54 +265,53 @@ export default function AdminDashboard() {
           ].map((card) => (
             <div
               key={card.title}
-              className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-start justify-between transition hover:shadow-md"
+              className="bg-white rounded-xl sm:rounded-2xl p-3.5 sm:p-6 border border-slate-100 shadow-sm flex flex-col-reverse sm:flex-row items-start sm:items-center justify-between transition hover:shadow-md gap-2 sm:gap-0"
             >
               <div>
-                <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                <p className="text-slate-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider line-clamp-1">
                   {card.title}
                 </p>
-                <h2 className="text-[26px] font-extrabold text-slate-900 mt-1.5 tracking-tight">
+                <h2 className="text-lg sm:text-[26px] font-extrabold text-slate-900 mt-0.5 sm:mt-1.5 tracking-tight">
                   {card.value}
                 </h2>
-                <p className="text-emerald-500 text-xs font-semibold mt-1 flex items-center gap-0.5">
+                <p className="text-emerald-500 text-[9px] sm:text-xs font-semibold mt-0.5 sm:mt-1 flex items-center gap-0.5">
                   {card.change}
                 </p>
               </div>
-              <div className={`p-3.5 rounded-xl border ${card.color}`}>
-                {card.icon}
+              <div
+                className={`p-2 sm:p-3.5 rounded-lg sm:rounded-xl border ${card.color}`}
+              >
+                {React.cloneElement(card.icon, {
+                  className: "w-4 h-4 sm:w-5 sm:h-5",
+                })}
               </div>
             </div>
           ))}
         </div>
 
         {/* HIGH-PERFORMANCE DATA VISUALIZATION GRAPH GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* INTERACTIVE AREA CHART: REVENUE TRACKING */}
-          <div className="lg:col-span-8 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between min-h-[420px]">
-            <div className="flex justify-between items-center mb-4">
+          <div className="lg:col-span-8 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-100 shadow-sm">
+            <div className="flex justify-between items-start sm:items-center mb-4">
               <div>
                 <h2 className="text-base font-bold text-slate-900">
                   Revenue Overview
                 </h2>
                 <p className="text-slate-400 text-xs mt-0.5">
-                  Weekly breakdown total gross revenue run-rate
+                  Gross performance trends over this cycle
                 </p>
               </div>
-              <button className="bg-slate-50 border border-slate-200/80 hover:bg-slate-100 text-slate-700 font-semibold text-xs px-3.5 py-2 rounded-xl transition">
+              <button className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-md transition-colors">
                 By Day
               </button>
             </div>
 
-            <div className="flex-1 w-full text-xs min-h-[250px]">
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-                minWidth={1}
-                minHeight={1}
-              >
+            <div className="w-full h-[250px] sm:h-[300px] text-xs mt-2">
+              <ResponsiveContainer width="99%" height="100%">
                 <AreaChart
                   data={revenueTrendData}
-                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                 >
                   <defs>
                     <linearGradient
@@ -359,7 +370,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* DOUGHNUT PIE CHART: ORDER FULFILLMENT BREAKDOWN */}
-          <div className="lg:col-span-4 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between min-h-[420px]">
+          <div className="lg:col-span-4 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-100 shadow-sm">
             <div>
               <h2 className="text-base font-bold text-slate-900">
                 Orders Overview
@@ -369,13 +380,8 @@ export default function AdminDashboard() {
               </p>
             </div>
 
-            <div className="flex-1 w-full h-[220px] relative my-2">
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-                minWidth={1}
-                minHeight={1}
-              >
+            <div className="w-full h-[220px] relative mt-4 mb-2">
+              <ResponsiveContainer width="99%" height="100%">
                 <PieChart>
                   <Pie
                     data={orderDistributionData}
@@ -383,7 +389,7 @@ export default function AdminDashboard() {
                     cy="50%"
                     innerRadius={65}
                     outerRadius={85}
-                    paddingAngle={5}
+                    paddingAngle={4}
                     dataKey="value"
                   >
                     {orderDistributionData.map((entry, index) => (
@@ -426,9 +432,9 @@ export default function AdminDashboard() {
         </div>
 
         {/* LOWER DATA MATRIX SECTION GRID CONTAINER */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
           {/* LEFT AREA PANEL: TOP SELLING ITEMS GRID SECTION */}
-          <div className="lg:col-span-4 bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+          <div className="lg:col-span-4 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-slate-900">
                 Top Selling Items
@@ -440,8 +446,7 @@ export default function AdminDashboard() {
                 View All
               </button>
             </div>
-
-            <div className="overflow-hidden rounded-xl border border-slate-100">
+            <div className="overflow-x-auto rounded-xl border border-slate-100 -mx-4 sm:mx-0">
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="bg-slate-50 font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
                   <tr>
@@ -457,7 +462,7 @@ export default function AdminDashboard() {
                         colSpan="3"
                         className="p-4 text-center text-slate-400 text-xs"
                       >
-                        No items sold yet.
+                        No items sold recently.
                       </td>
                     </tr>
                   ) : (
@@ -493,7 +498,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* CENTER AREA PANEL: RECENT CUSTOMER LIVE DISPATCH MATRICES */}
-          <div className="lg:col-span-5 bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+          <div className="lg:col-span-5 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-slate-900">
                 Recent Orders
@@ -506,7 +511,7 @@ export default function AdminDashboard() {
               </button>
             </div>
 
-            <div className="overflow-hidden rounded-xl border border-slate-100">
+            <div className="overflow-x-auto rounded-xl border border-slate-100 -mx-4 sm:mx-0">
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="bg-slate-50 font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
                   <tr>
@@ -559,7 +564,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* RIGHT AREA PANEL: LIVE OPERATIONAL ACTION REMINDERS BLOCK */}
-          <div className="lg:col-span-3 bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+          <div className="lg:col-span-3 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm">
             <h2 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
               <Layers size={18} className="text-purple-500" /> Reminders
             </h2>
@@ -570,7 +575,7 @@ export default function AdminDashboard() {
                   label: "Upcoming Reservations",
                   icon: <Calendar size={15} />,
                   color: "bg-purple-50 text-purple-600 border-purple-100",
-                  action: () => navigate("/admin/tables"),
+                  action: () => navigate("/admin/table-management"),
                   count: reservedCount > 0 ? reservedCount : null,
                 },
                 {
@@ -578,7 +583,6 @@ export default function AdminDashboard() {
                   icon: <AlertTriangle size={15} />,
                   color: "bg-red-50 text-red-600 border-red-100",
                   action: () => navigate("/admin/inventory"),
-                  count: 2, // Sample static value until inventory is linked to context
                 },
                 {
                   label: "New Reviews Pending",

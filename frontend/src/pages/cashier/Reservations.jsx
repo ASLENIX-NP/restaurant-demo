@@ -111,7 +111,7 @@ const Reservations = () => {
       );
 
       if (tableObj && editTable) {
-        editTable(tableObj.id, {
+        editTable(tableObj._id || tableObj.id, {
           status: "Reserved",
           currentCustomer: res.name,
           reservationTime: res.time,
@@ -142,7 +142,9 @@ const Reservations = () => {
   };
 
   const confirmDelete = () => {
-    setReservationsData(reservationsData.filter((r) => r.id !== reservationToDelete));
+    setReservationsData(
+      reservationsData.filter((r) => r.id !== reservationToDelete)
+    );
     setSelectedReservation(null);
     setReservationToDelete(null);
   };
@@ -495,6 +497,8 @@ const Reservations = () => {
                   Guest Name *
                 </label>
                 <input
+                  id="resGuestName"
+                  name="resGuestName"
                   type="text"
                   required
                   value={newRes.name}
@@ -512,6 +516,8 @@ const Reservations = () => {
                     Table
                   </label>
                   <select
+                    id="resTable"
+                    name="resTable"
                     value={newRes.table}
                     onChange={(e) =>
                       setNewRes({ ...newRes, table: e.target.value })
@@ -533,6 +539,8 @@ const Reservations = () => {
                     Guests *
                   </label>
                   <input
+                    id="resGuests"
+                    name="resGuests"
                     type="number"
                     required
                     min="1"
@@ -551,6 +559,8 @@ const Reservations = () => {
                     Time *
                   </label>
                   <input
+                    id="resTime"
+                    name="resTime"
                     type="text"
                     required
                     value={newRes.time}
@@ -566,6 +576,8 @@ const Reservations = () => {
                     Phone
                   </label>
                   <input
+                    id="resPhone"
+                    name="resPhone"
                     type="tel"
                     pattern="[0-9]{10}"
                     maxLength="10"
@@ -588,6 +600,8 @@ const Reservations = () => {
                   Status
                 </label>
                 <select
+                  id="resStatus"
+                  name="resStatus"
                   value={newRes.status}
                   onChange={(e) =>
                     setNewRes({ ...newRes, status: e.target.value })
@@ -605,6 +619,8 @@ const Reservations = () => {
                   Notes
                 </label>
                 <textarea
+                  id="resNotes"
+                  name="resNotes"
                   rows="2"
                   value={newRes.notes}
                   onChange={(e) =>
@@ -646,7 +662,8 @@ const Reservations = () => {
               Delete this reservation?
             </h2>
             <p className="text-sm text-slate-500 font-medium mb-6">
-              Are you sure you want to delete this booking? This action cannot be undone.
+              Are you sure you want to delete this booking? This action cannot
+              be undone.
             </p>
             <div className="flex gap-3">
               <button

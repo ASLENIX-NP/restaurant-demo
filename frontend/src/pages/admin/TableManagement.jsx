@@ -19,9 +19,17 @@ import { useTables } from "../../context/TableContext";
 import { useOrders } from "../../context/OrderContext";
 
 const AdminTables = () => {
-  const { tables, addTable, deleteTable, editTable, updateTableStatus, fetchTables } =
-    useTables() || { tables: [] };
-  const { orders, completeOrder, cancelOrder, fetchOrders } = useOrders() || { orders: [] };
+  const {
+    tables,
+    addTable,
+    deleteTable,
+    editTable,
+    updateTableStatus,
+    fetchTables,
+  } = useTables() || { tables: [] };
+  const { orders, completeOrder, cancelOrder, fetchOrders } = useOrders() || {
+    orders: [],
+  };
 
   useEffect(() => {
     if (fetchTables) fetchTables();
@@ -648,6 +656,8 @@ const AdminTables = () => {
                   Table Number *
                 </label>
                 <input
+                  id="newTableName"
+                  name="newTableName"
                   type="text"
                   inputMode="numeric"
                   required
@@ -713,6 +723,8 @@ const AdminTables = () => {
                   Table Number *
                 </label>
                 <input
+                  id="editTableName"
+                  name="editTableName"
                   type="text"
                   inputMode="numeric"
                   required
@@ -733,6 +745,8 @@ const AdminTables = () => {
                   Status
                 </label>
                 <select
+                  id="editTableStatus"
+                  name="editTableStatus"
                   value={editTableData.status}
                   onChange={(e) =>
                     setEditTableData({
@@ -756,6 +770,8 @@ const AdminTables = () => {
                       Customer Name
                     </label>
                     <input
+                      id="editTableCustomer"
+                      name="editTableCustomer"
                       type="text"
                       value={editTableData.currentCustomer}
                       onChange={(e) =>

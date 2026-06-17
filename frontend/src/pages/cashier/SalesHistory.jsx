@@ -142,7 +142,11 @@ export default function SalesHistory() {
   const dateFilteredOrders = useMemo(() => {
     if (!startDate || !endDate) return orders;
     return orders.filter((txn) => {
-      const txDate = txn.timestamp ? new Date(txn.timestamp) : (txn.date ? new Date(txn.date) : null);
+      const txDate = txn.timestamp
+        ? new Date(txn.timestamp)
+        : txn.date
+        ? new Date(txn.date)
+        : null;
       if (!txDate) return false;
       const endOfDay = new Date(endDate);
       endOfDay.setHours(23, 59, 59, 999);
@@ -151,7 +155,9 @@ export default function SalesHistory() {
   }, [orders, startDate, endDate]);
 
   // Unified Metrics (Updates dynamically based on date range)
-  const completedSales = dateFilteredOrders.filter((o) => o.status === "Completed");
+  const completedSales = dateFilteredOrders.filter(
+    (o) => o.status === "Completed"
+  );
 
   const totalSalesAmount = completedSales.reduce((acc, order) => {
     const subtotal = (order.items || []).reduce(
@@ -199,17 +205,32 @@ export default function SalesHistory() {
   const eodMetrics = useMemo(() => {
     const todayStr = new Date().toLocaleDateString();
     const todayStrISO = new Date().toISOString().split("T")[0];
-    
-    const todayCompleted = allCompletedSales.filter(o => {
-      const oDate = o.date || (o.timestamp ? new Date(o.timestamp).toLocaleDateString() : "");
-      return oDate === todayStr || oDate === todayStrISO || (o.timestamp && new Date(o.timestamp).toLocaleDateString() === new Date().toLocaleDateString());
+
+    const todayCompleted = allCompletedSales.filter((o) => {
+      const oDate =
+        o.date ||
+        (o.timestamp ? new Date(o.timestamp).toLocaleDateString() : "");
+      return (
+        oDate === todayStr ||
+        oDate === todayStrISO ||
+        (o.timestamp &&
+          new Date(o.timestamp).toLocaleDateString() ===
+            new Date().toLocaleDateString())
+      );
     });
 
-    let cash = 0, card = 0, esewa = 0, khalti = 0, total = 0;
+    let cash = 0,
+      card = 0,
+      esewa = 0,
+      khalti = 0,
+      total = 0;
 
-    todayCompleted.forEach(order => {
-      const subtotal = (order.items || []).reduce((sum, item) => sum + item.qty * (parseFloat(item.price) || 0), 0);
-      const amt = order.amount || (subtotal + (subtotal > 0 ? 50 : 0));
+    todayCompleted.forEach((order) => {
+      const subtotal = (order.items || []).reduce(
+        (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
+        0
+      );
+      const amt = order.amount || subtotal + (subtotal > 0 ? 50 : 0);
       total += amt;
 
       if (order.paymentMethod === "Card") card += amt;
@@ -220,41 +241,52 @@ export default function SalesHistory() {
 
     return {
       ordersCount: todayCompleted.length,
-      total, cash, card, esewa, khalti
+      total,
+      cash,
+      card,
+      esewa,
+      khalti,
     };
   }, [allCompletedSales]);
 
   // Map Orders to Unified Ledger Data
   const ledgerData = useMemo(() => {
-    return dateFilteredOrders
-      .map(order => {
-        const subtotal = (order.items || []).reduce((sum, item) => sum + item.qty * (parseFloat(item.price) || 0), 0);
-        const total = order.amount || (subtotal + (subtotal > 0 ? 50 : 0));
-        return {
-          ...order,
-          transactionId: `TXN-${String(order.id).replace(/\D/g, "")}`,
-          totalAmount: total,
-          itemCount: (order.items || []).reduce((sum, i) => sum + i.qty, 0),
-        };
-      })
-      .reverse();
+    return dateFilteredOrders.map((order) => {
+      const subtotal = (order.items || []).reduce(
+        (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
+        0
+      );
+      const total = order.amount || subtotal + (subtotal > 0 ? 50 : 0);
+      return {
+        ...order,
+        transactionId: `TXN-${String(order.id).replace(/\D/g, "")}`,
+        totalAmount: total,
+        itemCount: (order.items || []).reduce((sum, i) => sum + i.qty, 0),
+      };
+    });
   }, [dateFilteredOrders]);
 
   // Filter Logic
   const filteredData = useMemo(() => {
     return ledgerData.filter((txn) => {
       const matchesTab = activeTab === "All" ? true : txn.status === activeTab;
-      const matchesSearch = txn.transactionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (txn.customer || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            txn.id.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesPayment = paymentFilter === "All" ? true : txn.paymentMethod === paymentFilter;
-      
+      const matchesSearch =
+        txn.transactionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (txn.customer || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        txn.id.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesPayment =
+        paymentFilter === "All" ? true : txn.paymentMethod === paymentFilter;
+
       // Apply view mode specific filters
       let matchesView = true;
-      if (viewMode === "ledger") matchesView = txn.status === "Completed" || txn.status === "Cancelled" || txn.status === "Refunded";
+      if (viewMode === "ledger")
+        matchesView =
+          txn.status === "Completed" ||
+          txn.status === "Cancelled" ||
+          txn.status === "Refunded";
       if (viewMode === "payments") matchesView = txn.status === "Completed"; // Only show finalized payments
       if (viewMode === "invoices") matchesView = true; // Show all (including Pending)
-      
+
       return matchesTab && matchesSearch && matchesPayment && matchesView;
     });
   }, [ledgerData, activeTab, searchTerm, paymentFilter, viewMode]);
@@ -539,112 +571,510 @@ export default function SalesHistory() {
   );
 
   const renderSummaryReport = () => (
-    <div key="summary-report" style={{ width: "100%", maxWidth: "800px", margin: "0 auto", padding: "20px", fontFamily: "sans-serif", color: "#000" }}>
-      <div style={{ textAlign: "center", marginBottom: "30px", borderBottom: "2px solid #e2e8f0", paddingBottom: "20px" }}>
-        <h1 style={{ fontSize: "24px", margin: "0 0 10px 0" }}>ASLENIX RESTAURANT</h1>
-        <h2 style={{ fontSize: "18px", margin: "0 0 5px 0", color: "#475569" }}>Sales & Payment Summary Report</h2>
-        <p style={{ margin: 0, color: "#64748b" }}>Generated on: {new Date().toLocaleString()}</p>
-        <p style={{ margin: "5px 0 0 0", color: "#64748b" }}>Current Filter: {activeTab} | Payment Method: {paymentFilter}</p>
+    <div
+      key="summary-report"
+      style={{
+        width: "100%",
+        maxWidth: "800px",
+        margin: "0 auto",
+        padding: "20px",
+        fontFamily: "sans-serif",
+        color: "#000",
+      }}
+    >
+      <div
+        style={{
+          textAlign: "center",
+          marginBottom: "30px",
+          borderBottom: "2px solid #e2e8f0",
+          paddingBottom: "20px",
+        }}
+      >
+        <h1 style={{ fontSize: "24px", margin: "0 0 10px 0" }}>
+          ASLENIX RESTAURANT
+        </h1>
+        <h2 style={{ fontSize: "18px", margin: "0 0 5px 0", color: "#475569" }}>
+          Sales & Payment Summary Report
+        </h2>
+        <p style={{ margin: 0, color: "#64748b" }}>
+          Generated on: {new Date().toLocaleString()}
+        </p>
+        <p style={{ margin: "5px 0 0 0", color: "#64748b" }}>
+          Current Filter: {activeTab} | Payment Method: {paymentFilter}
+        </p>
       </div>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginBottom: "30px" }}>
-        <div style={{ flex: "1 1 45%", padding: "15px", border: "1px solid #e2e8f0", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
-          <h3 style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#64748b", textTransform: "uppercase" }}>Total Revenue</h3>
-          <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>Rs. {totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "20px",
+          marginBottom: "30px",
+        }}
+      >
+        <div
+          style={{
+            flex: "1 1 45%",
+            padding: "15px",
+            border: "1px solid #e2e8f0",
+            borderRadius: "8px",
+            backgroundColor: "#f8fafc",
+          }}
+        >
+          <h3
+            style={{
+              margin: "0 0 10px 0",
+              fontSize: "14px",
+              color: "#64748b",
+              textTransform: "uppercase",
+            }}
+          >
+            Total Revenue
+          </h3>
+          <p
+            style={{
+              margin: 0,
+              fontSize: "24px",
+              fontWeight: "bold",
+              color: "#0f172a",
+            }}
+          >
+            Rs.{" "}
+            {totalSalesAmount.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
+          </p>
         </div>
-        <div style={{ flex: "1 1 45%", padding: "15px", border: "1px solid #e2e8f0", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
-          <h3 style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#64748b", textTransform: "uppercase" }}>Total Orders</h3>
-          <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>{completedSales.length}</p>
+        <div
+          style={{
+            flex: "1 1 45%",
+            padding: "15px",
+            border: "1px solid #e2e8f0",
+            borderRadius: "8px",
+            backgroundColor: "#f8fafc",
+          }}
+        >
+          <h3
+            style={{
+              margin: "0 0 10px 0",
+              fontSize: "14px",
+              color: "#64748b",
+              textTransform: "uppercase",
+            }}
+          >
+            Total Orders
+          </h3>
+          <p
+            style={{
+              margin: 0,
+              fontSize: "24px",
+              fontWeight: "bold",
+              color: "#0f172a",
+            }}
+          >
+            {completedSales.length}
+          </p>
         </div>
-        <div style={{ flex: "1 1 45%", padding: "15px", border: "1px solid #e2e8f0", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
-          <h3 style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#64748b", textTransform: "uppercase" }}>Items Sold</h3>
-          <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>{totalItemsSold}</p>
+        <div
+          style={{
+            flex: "1 1 45%",
+            padding: "15px",
+            border: "1px solid #e2e8f0",
+            borderRadius: "8px",
+            backgroundColor: "#f8fafc",
+          }}
+        >
+          <h3
+            style={{
+              margin: "0 0 10px 0",
+              fontSize: "14px",
+              color: "#64748b",
+              textTransform: "uppercase",
+            }}
+          >
+            Items Sold
+          </h3>
+          <p
+            style={{
+              margin: 0,
+              fontSize: "24px",
+              fontWeight: "bold",
+              color: "#0f172a",
+            }}
+          >
+            {totalItemsSold}
+          </p>
         </div>
-        <div style={{ flex: "1 1 45%", padding: "15px", border: "1px solid #e2e8f0", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
-          <h3 style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#64748b", textTransform: "uppercase" }}>Average Order Value</h3>
-          <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>Rs. {avgOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+        <div
+          style={{
+            flex: "1 1 45%",
+            padding: "15px",
+            border: "1px solid #e2e8f0",
+            borderRadius: "8px",
+            backgroundColor: "#f8fafc",
+          }}
+        >
+          <h3
+            style={{
+              margin: "0 0 10px 0",
+              fontSize: "14px",
+              color: "#64748b",
+              textTransform: "uppercase",
+            }}
+          >
+            Average Order Value
+          </h3>
+          <p
+            style={{
+              margin: 0,
+              fontSize: "24px",
+              fontWeight: "bold",
+              color: "#0f172a",
+            }}
+          >
+            Rs.{" "}
+            {avgOrderValue.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
+          </p>
         </div>
       </div>
 
-      <h3 style={{ fontSize: "18px", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px", marginBottom: "15px" }}>Payments by Method</h3>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "30px" }}>
+      <h3
+        style={{
+          fontSize: "18px",
+          borderBottom: "1px solid #e2e8f0",
+          paddingBottom: "10px",
+          marginBottom: "15px",
+        }}
+      >
+        Payments by Method
+      </h3>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          marginBottom: "30px",
+        }}
+      >
         <thead>
           <tr>
-            <th style={{ textAlign: "left", padding: "10px", borderBottom: "2px solid #e2e8f0", color: "#475569" }}>Method</th>
-            <th style={{ textAlign: "right", padding: "10px", borderBottom: "2px solid #e2e8f0", color: "#475569" }}>Amount</th>
+            <th
+              style={{
+                textAlign: "left",
+                padding: "10px",
+                borderBottom: "2px solid #e2e8f0",
+                color: "#475569",
+              }}
+            >
+              Method
+            </th>
+            <th
+              style={{
+                textAlign: "right",
+                padding: "10px",
+                borderBottom: "2px solid #e2e8f0",
+                color: "#475569",
+              }}
+            >
+              Amount
+            </th>
           </tr>
         </thead>
         <tbody>
           {paymentData.map((method, idx) => (
             <tr key={idx}>
-              <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>{method.name}</td>
-              <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>Rs. {method.value.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+              <td
+                style={{
+                  padding: "10px",
+                  borderBottom: "1px solid #f1f5f9",
+                  fontWeight: "bold",
+                }}
+              >
+                {method.name}
+              </td>
+              <td
+                style={{
+                  padding: "10px",
+                  borderBottom: "1px solid #f1f5f9",
+                  textAlign: "right",
+                }}
+              >
+                Rs.{" "}
+                {method.value.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
+              </td>
             </tr>
           ))}
           {paymentData.length === 0 && (
             <tr>
-              <td colSpan="2" style={{ padding: "15px", textAlign: "center", color: "#64748b" }}>No payment data available</td>
+              <td
+                colSpan="2"
+                style={{
+                  padding: "15px",
+                  textAlign: "center",
+                  color: "#64748b",
+                }}
+              >
+                No payment data available
+              </td>
             </tr>
           )}
         </tbody>
       </table>
-      
-      <div style={{ textAlign: "center", marginTop: "40px", fontSize: "12px", color: "#94a3b8" }}>
+
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "40px",
+          fontSize: "12px",
+          color: "#94a3b8",
+        }}
+      >
         <p>This is a system generated report. No signature required.</p>
       </div>
     </div>
   );
 
   const renderEODReport = () => (
-    <div key="eod-report" style={{ width: "100%", maxWidth: "800px", margin: "0 auto", padding: "20px", fontFamily: "sans-serif", color: "#000" }}>
-      <div style={{ textAlign: "center", marginBottom: "30px", borderBottom: "2px solid #e2e8f0", paddingBottom: "20px" }}>
-        <h1 style={{ fontSize: "24px", margin: "0 0 10px 0" }}>ASLENIX RESTAURANT</h1>
-        <h2 style={{ fontSize: "18px", margin: "0 0 5px 0", color: "#475569" }}>End of Day Summary (Z-Report)</h2>
-        <p style={{ margin: 0, color: "#64748b" }}>Date: {new Date().toLocaleDateString()}</p>
+    <div
+      key="eod-report"
+      style={{
+        width: "100%",
+        maxWidth: "800px",
+        margin: "0 auto",
+        padding: "20px",
+        fontFamily: "sans-serif",
+        color: "#000",
+      }}
+    >
+      <div
+        style={{
+          textAlign: "center",
+          marginBottom: "30px",
+          borderBottom: "2px solid #e2e8f0",
+          paddingBottom: "20px",
+        }}
+      >
+        <h1 style={{ fontSize: "24px", margin: "0 0 10px 0" }}>
+          ASLENIX RESTAURANT
+        </h1>
+        <h2 style={{ fontSize: "18px", margin: "0 0 5px 0", color: "#475569" }}>
+          End of Day Summary (Z-Report)
+        </h2>
+        <p style={{ margin: 0, color: "#64748b" }}>
+          Date: {new Date().toLocaleDateString()}
+        </p>
       </div>
 
-      <h3 style={{ fontSize: "18px", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px", marginBottom: "15px" }}>Sales Summary</h3>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "30px" }}>
+      <h3
+        style={{
+          fontSize: "18px",
+          borderBottom: "1px solid #e2e8f0",
+          paddingBottom: "10px",
+          marginBottom: "15px",
+        }}
+      >
+        Sales Summary
+      </h3>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          marginBottom: "30px",
+        }}
+      >
         <tbody>
           <tr>
-            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>Total Revenue Today</td>
-            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>Rs. {eodMetrics.total.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #f1f5f9",
+                fontWeight: "bold",
+              }}
+            >
+              Total Revenue Today
+            </td>
+            <td
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #f1f5f9",
+                textAlign: "right",
+              }}
+            >
+              Rs.{" "}
+              {eodMetrics.total.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            </td>
           </tr>
           <tr>
-            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>Total Orders Today</td>
-            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>{eodMetrics.ordersCount}</td>
+            <td
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #f1f5f9",
+                fontWeight: "bold",
+              }}
+            >
+              Total Orders Today
+            </td>
+            <td
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #f1f5f9",
+                textAlign: "right",
+              }}
+            >
+              {eodMetrics.ordersCount}
+            </td>
           </tr>
         </tbody>
       </table>
 
-      <h3 style={{ fontSize: "18px", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px", marginBottom: "15px" }}>Payment Breakdown</h3>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "30px" }}>
+      <h3
+        style={{
+          fontSize: "18px",
+          borderBottom: "1px solid #e2e8f0",
+          paddingBottom: "10px",
+          marginBottom: "15px",
+        }}
+      >
+        Payment Breakdown
+      </h3>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          marginBottom: "30px",
+        }}
+      >
         <tbody>
           <tr>
-            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>Cash</td>
-            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>Rs. {eodMetrics.cash.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #f1f5f9",
+                fontWeight: "bold",
+              }}
+            >
+              Cash
+            </td>
+            <td
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #f1f5f9",
+                textAlign: "right",
+              }}
+            >
+              Rs.{" "}
+              {eodMetrics.cash.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            </td>
           </tr>
           <tr>
-            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>Card</td>
-            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>Rs. {eodMetrics.card.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #f1f5f9",
+                fontWeight: "bold",
+              }}
+            >
+              Card
+            </td>
+            <td
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #f1f5f9",
+                textAlign: "right",
+              }}
+            >
+              Rs.{" "}
+              {eodMetrics.card.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            </td>
           </tr>
           <tr>
-            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>eSewa</td>
-            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>Rs. {eodMetrics.esewa.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #f1f5f9",
+                fontWeight: "bold",
+              }}
+            >
+              eSewa
+            </td>
+            <td
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #f1f5f9",
+                textAlign: "right",
+              }}
+            >
+              Rs.{" "}
+              {eodMetrics.esewa.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            </td>
           </tr>
           <tr>
-            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", fontWeight: "bold" }}>Khalti</td>
-            <td style={{ padding: "10px", borderBottom: "1px solid #f1f5f9", textAlign: "right" }}>Rs. {eodMetrics.khalti.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            <td
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #f1f5f9",
+                fontWeight: "bold",
+              }}
+            >
+              Khalti
+            </td>
+            <td
+              style={{
+                padding: "10px",
+                borderBottom: "1px solid #f1f5f9",
+                textAlign: "right",
+              }}
+            >
+              Rs.{" "}
+              {eodMetrics.khalti.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            </td>
           </tr>
         </tbody>
       </table>
-      
-      <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px", display: "flex", justifyContent: "space-between" }}>
-        <span style={{ fontWeight: "bold", fontSize: "16px" }}>Expected Cash in Drawer:</span>
-        <span style={{ fontWeight: "bold", fontSize: "16px" }}>Rs. {eodMetrics.cash.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+
+      <div
+        style={{
+          marginTop: "20px",
+          padding: "15px",
+          backgroundColor: "#f8fafc",
+          border: "1px solid #e2e8f0",
+          borderRadius: "8px",
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <span style={{ fontWeight: "bold", fontSize: "16px" }}>
+          Expected Cash in Drawer:
+        </span>
+        <span style={{ fontWeight: "bold", fontSize: "16px" }}>
+          Rs.{" "}
+          {eodMetrics.cash.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+          })}
+        </span>
       </div>
 
-      <div style={{ textAlign: "center", marginTop: "40px", fontSize: "12px", color: "#94a3b8" }}>
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "40px",
+          fontSize: "12px",
+          color: "#94a3b8",
+        }}
+      >
         <p>End of Day System Report. No signature required.</p>
       </div>
     </div>
@@ -668,14 +1098,17 @@ export default function SalesHistory() {
             .print-hide-row { display: none !important; }
             .print-container { display: none !important; }
             .details-btn, .arrow-icon { display: none !important; }
-          ` : printMode === 'summary' || printMode === 'eod' ? `
+          `
+              : printMode === "summary" || printMode === "eod"
+              ? `
             @page { margin: 10mm; size: auto; }
             html, body { width: 100% !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
             .sidebar, .navbar, header, footer { display: none !important; }
             .sales-history-page > *:not(.print-container) { display: none !important; }
             .sales-history-page { padding: 0 !important; margin: 0 !important; background: transparent !important; }
             .print-container { position: relative !important; width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; z-index: 99999; }
-          ` : `
+          `
+              : `
             @page { margin: 0; size: 80mm auto; }
             html, body { width: 80mm !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
             .sidebar, .navbar, header, footer { display: none !important; }
@@ -701,10 +1134,14 @@ export default function SalesHistory() {
             {viewMode === "eod" && "End of Day"}
           </h1>
           <p className="text-slate-500 text-sm mt-1">
-            {viewMode === "ledger" && "Unified Ledger: Sales, Payments & Custom Invoices"}
-            {viewMode === "invoices" && "Manage all generated bills and pending invoices"}
-            {viewMode === "payments" && "View all completed and settled transactions"}
-            {viewMode === "eod" && "Review today's total payments and shift metrics"}
+            {viewMode === "ledger" &&
+              "Unified Ledger: Sales, Payments & Custom Invoices"}
+            {viewMode === "invoices" &&
+              "Manage all generated bills and pending invoices"}
+            {viewMode === "payments" &&
+              "View all completed and settled transactions"}
+            {viewMode === "eod" &&
+              "Review today's total payments and shift metrics"}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -769,11 +1206,25 @@ export default function SalesHistory() {
                   </>
                 ) : (
                   <>
-                    <button onClick={() => { setIsExportMenuOpen(false); handlePrintSummary(); }} className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50">
-                      <Printer size={16} className="text-purple-500" /> Print Summary Report
+                    <button
+                      onClick={() => {
+                        setIsExportMenuOpen(false);
+                        handlePrintSummary();
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50"
+                    >
+                      <Printer size={16} className="text-purple-500" /> Print
+                      Summary Report
                     </button>
-                    <button onClick={() => { setIsExportMenuOpen(false); handlePrintLedger(); }} className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50">
-                      <Printer size={16} className="text-emerald-500" /> Print Ledger Page
+                    <button
+                      onClick={() => {
+                        setIsExportMenuOpen(false);
+                        handlePrintLedger();
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50"
+                    >
+                      <Printer size={16} className="text-emerald-500" /> Print
+                      Ledger Page
                     </button>
                     <button
                       onClick={() => {
@@ -805,9 +1256,17 @@ export default function SalesHistory() {
           <button
             key={mode}
             onClick={() => setViewMode(mode)}
-            className={`pb-3 px-1 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${viewMode === mode ? "border-slate-900 text-slate-900" : "border-transparent text-slate-400 hover:text-slate-700"}`}
+            className={`pb-3 px-1 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 whitespace-nowrap ${
+              viewMode === mode
+                ? "border-slate-900 text-slate-900"
+                : "border-transparent text-slate-400 hover:text-slate-700"
+            }`}
           >
-            {mode === "ledger" ? "All History" : mode === "eod" ? "End of Day" : mode.charAt(0).toUpperCase() + mode.slice(1)}
+            {mode === "ledger"
+              ? "All History"
+              : mode === "eod"
+              ? "End of Day"
+              : mode.charAt(0).toUpperCase() + mode.slice(1)}
           </button>
         ))}
       </div>
@@ -815,51 +1274,121 @@ export default function SalesHistory() {
       {viewMode === "eod" ? (
         <div className="max-w-4xl mx-auto my-8 bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
           <div className="text-center mb-8 pb-8 border-b border-slate-100">
-            <h2 className="text-3xl font-black text-slate-900 mb-2">End of Day Report</h2>
-            <p className="text-slate-500 font-medium">Business Date: {new Date().toLocaleDateString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <h2 className="text-3xl font-black text-slate-900 mb-2">
+              End of Day Report
+            </h2>
+            <p className="text-slate-500 font-medium">
+              Business Date:{" "}
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-6 mb-8">
             <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-              <span className="text-slate-500 font-bold uppercase tracking-wider text-xs">Total Revenue Today</span>
-              <h3 className="text-4xl font-black text-slate-900 mt-2">Rs. {eodMetrics.total.toLocaleString(undefined, {minimumFractionDigits:2})}</h3>
+              <span className="text-slate-500 font-bold uppercase tracking-wider text-xs">
+                Total Revenue Today
+              </span>
+              <h3 className="text-4xl font-black text-slate-900 mt-2">
+                Rs.{" "}
+                {eodMetrics.total.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
+              </h3>
             </div>
             <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-              <span className="text-slate-500 font-bold uppercase tracking-wider text-xs">Total Orders Today</span>
-              <h3 className="text-4xl font-black text-slate-900 mt-2">{eodMetrics.ordersCount}</h3>
+              <span className="text-slate-500 font-bold uppercase tracking-wider text-xs">
+                Total Orders Today
+              </span>
+              <h3 className="text-4xl font-black text-slate-900 mt-2">
+                {eodMetrics.ordersCount}
+              </h3>
             </div>
           </div>
 
-          <h3 className="text-lg font-bold text-slate-900 mb-4">Payment Breakdown</h3>
+          <h3 className="text-lg font-bold text-slate-900 mb-4">
+            Payment Breakdown
+          </h3>
           <div className="space-y-3 mb-8">
             <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
-              <div className="flex items-center gap-3"><span className="w-3.5 h-3.5 rounded-full bg-emerald-500"></span><span className="font-bold text-slate-700">Cash Payments</span></div>
-              <span className="font-black text-lg text-slate-900">Rs. {eodMetrics.cash.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+              <div className="flex items-center gap-3">
+                <span className="w-3.5 h-3.5 rounded-full bg-emerald-500"></span>
+                <span className="font-bold text-slate-700">Cash Payments</span>
+              </div>
+              <span className="font-black text-lg text-slate-900">
+                Rs.{" "}
+                {eodMetrics.cash.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
             </div>
             <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
-              <div className="flex items-center gap-3"><span className="w-3.5 h-3.5 rounded-full bg-blue-500"></span><span className="font-bold text-slate-700">Card Payments</span></div>
-              <span className="font-black text-lg text-slate-900">Rs. {eodMetrics.card.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+              <div className="flex items-center gap-3">
+                <span className="w-3.5 h-3.5 rounded-full bg-blue-500"></span>
+                <span className="font-bold text-slate-700">Card Payments</span>
+              </div>
+              <span className="font-black text-lg text-slate-900">
+                Rs.{" "}
+                {eodMetrics.card.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
             </div>
             <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
-              <div className="flex items-center gap-3"><span className="w-3.5 h-3.5 rounded-full bg-green-500"></span><span className="font-bold text-slate-700">eSewa</span></div>
-              <span className="font-black text-lg text-slate-900">Rs. {eodMetrics.esewa.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+              <div className="flex items-center gap-3">
+                <span className="w-3.5 h-3.5 rounded-full bg-green-500"></span>
+                <span className="font-bold text-slate-700">eSewa</span>
+              </div>
+              <span className="font-black text-lg text-slate-900">
+                Rs.{" "}
+                {eodMetrics.esewa.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
             </div>
             <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
-              <div className="flex items-center gap-3"><span className="w-3.5 h-3.5 rounded-full bg-purple-500"></span><span className="font-bold text-slate-700">Khalti</span></div>
-              <span className="font-black text-lg text-slate-900">Rs. {eodMetrics.khalti.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+              <div className="flex items-center gap-3">
+                <span className="w-3.5 h-3.5 rounded-full bg-purple-500"></span>
+                <span className="font-bold text-slate-700">Khalti</span>
+              </div>
+              <span className="font-black text-lg text-slate-900">
+                Rs.{" "}
+                {eodMetrics.khalti.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
             </div>
           </div>
 
           <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 flex justify-between items-center">
             <div>
-              <h4 className="text-lg font-bold text-emerald-800">Expected Cash in Drawer</h4>
-              <p className="text-sm text-emerald-600 font-medium mt-1">Sum of all cash payments processed today</p>
+              <h4 className="text-lg font-bold text-emerald-800">
+                Expected Cash in Drawer
+              </h4>
+              <p className="text-sm text-emerald-600 font-medium mt-1">
+                Sum of all cash payments processed today
+              </p>
             </div>
-            <span className="text-3xl font-black text-emerald-700">Rs. {eodMetrics.cash.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+            <span className="text-3xl font-black text-emerald-700">
+              Rs.{" "}
+              {eodMetrics.cash.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            </span>
           </div>
-          
+
           <div className="mt-8 flex gap-4">
-            <button onClick={() => {setPrintMode('eod'); setTimeout(() => window.print(), 300);}} className="flex-1 bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition shadow-md flex items-center justify-center gap-2">
+            <button
+              onClick={() => {
+                setPrintMode("eod");
+                setTimeout(() => window.print(), 300);
+              }}
+              className="flex-1 bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition shadow-md flex items-center justify-center gap-2"
+            >
               <Printer size={18} /> Print End of Day Report
             </button>
           </div>
@@ -873,8 +1402,15 @@ export default function SalesHistory() {
                 <TrendingUp size={24} strokeWidth={2.5} />
               </div>
               <div>
-                <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Total Sales</h4>
-                <h2 className="text-2xl font-black text-slate-900 leading-none truncate">Rs. {totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
+                <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
+                  Total Sales
+                </h4>
+                <h2 className="text-2xl font-black text-slate-900 leading-none truncate">
+                  Rs.{" "}
+                  {totalSalesAmount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}
+                </h2>
               </div>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
@@ -882,8 +1418,12 @@ export default function SalesHistory() {
                 <ShoppingCart size={24} strokeWidth={2.5} />
               </div>
               <div>
-                <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Total Orders</h4>
-                <h2 className="text-2xl font-black text-slate-900 leading-none">{completedSales.length}</h2>
+                <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
+                  Total Orders
+                </h4>
+                <h2 className="text-2xl font-black text-slate-900 leading-none">
+                  {completedSales.length}
+                </h2>
               </div>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
@@ -891,8 +1431,12 @@ export default function SalesHistory() {
                 <Package size={24} strokeWidth={2.5} />
               </div>
               <div>
-                <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Items Sold</h4>
-                <h2 className="text-2xl font-black text-slate-900 leading-none">{totalItemsSold}</h2>
+                <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
+                  Items Sold
+                </h4>
+                <h2 className="text-2xl font-black text-slate-900 leading-none">
+                  {totalItemsSold}
+                </h2>
               </div>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
@@ -900,49 +1444,67 @@ export default function SalesHistory() {
                 <CreditCard size={24} strokeWidth={2.5} />
               </div>
               <div>
-                <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Avg Order Value</h4>
-                <h2 className="text-2xl font-black text-slate-900 leading-none truncate">Rs. {avgOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</h2>
+                <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
+                  Avg Order Value
+                </h4>
+                <h2 className="text-2xl font-black text-slate-900 leading-none truncate">
+                  Rs.{" "}
+                  {avgOrderValue.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}
+                </h2>
               </div>
             </div>
           </div>
 
-      {/* UNIFIED WORKSPACE */}
+          {/* UNIFIED WORKSPACE */}
           <div className="flex flex-col xl:flex-row gap-6">
-        {/* LEFT COLUMN: HISTORY LIST */}
+            {/* LEFT COLUMN: HISTORY LIST */}
             <div className="flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
               <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center bg-slate-50/50">
                 <div className="relative w-full md:max-w-xs shrink-0">
-                  <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
+                  <Search
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
+                  <input
+                    id="searchLedger"
+                    name="searchLedger"
+                    type="text"
                     placeholder="Search ID or Customer..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-50 transition-all placeholder:text-slate-400 shadow-sm"
-              />
-            </div>
-            <select
-              value={paymentFilter}
-              onChange={(e) => setPaymentFilter(e.target.value)}
+                  />
+                </div>
+                <select
+                  id="paymentFilter"
+                  name="paymentFilter"
+                  value={paymentFilter}
+                  onChange={(e) => setPaymentFilter(e.target.value)}
                   className="w-full md:w-auto px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:border-purple-400 transition-all shadow-sm"
-            >
-              <option value="All">All Methods</option>
-              <option value="Cash">Cash</option>
-              <option value="Card">Card</option>
-              <option value="eSewa">eSewa</option>
-              <option value="Khalti">Khalti</option>
-            </select>
-            <select
-              value={activeTab}
-              onChange={(e) => setActiveTab(e.target.value)}
+                >
+                  <option value="All">All Methods</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
+                  <option value="eSewa">eSewa</option>
+                  <option value="Khalti">Khalti</option>
+                </select>
+                <select
+                  id="statusFilter"
+                  name="statusFilter"
+                  value={activeTab}
+                  onChange={(e) => setActiveTab(e.target.value)}
                   className="w-full md:w-auto px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:border-purple-400 transition-all shadow-sm"
-            >
-              <option value="All">All Status</option>
-              {viewMode === "invoices" && <option value="Pending">Pending</option>}
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
-          </div>
+                >
+                  <option value="All">All Status</option>
+                  {viewMode === "invoices" && (
+                    <option value="Pending">Pending</option>
+                  )}
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
 
               <div className="overflow-x-auto min-h-[400px]">
                 <table className="w-full text-left border-collapse">
@@ -960,34 +1522,69 @@ export default function SalesHistory() {
                   <tbody className="divide-y divide-slate-100 text-sm">
                     {paginatedData.length > 0 ? (
                       paginatedData.map((sale) => (
-                        <tr key={sale.id} className="hover:bg-slate-50/50 transition-colors">
+                        <tr
+                          key={sale.id}
+                          className="hover:bg-slate-50/50 transition-colors"
+                        >
                           <td className="p-4 pl-6">
-                            <div className="font-bold text-slate-900 flex items-center gap-1.5"><Receipt size={14} className="text-purple-500" /> {sale.transactionId}</div>
-                            <div className="text-xs text-slate-500 font-medium mt-0.5">{sale.time || "N/A"}</div>
+                            <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                              <Receipt size={14} className="text-purple-500" />{" "}
+                              {sale.transactionId}
+                            </div>
+                            <div className="text-xs text-slate-500 font-medium mt-0.5">
+                              {sale.time || "N/A"}
+                            </div>
                           </td>
                           <td className="p-4">
-                            <div className="font-semibold text-slate-800 flex items-center gap-1.5"><User size={13} className="text-slate-400" /> {sale.customer || "Walk-in"}</div>
-                            <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5"><Table2 size={13} className="text-slate-400" /> {sale.channel || "Dining"}</div>
+                            <div className="font-semibold text-slate-800 flex items-center gap-1.5">
+                              <User size={13} className="text-slate-400" />{" "}
+                              {sale.customer || "Walk-in"}
+                            </div>
+                            <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                              <Table2 size={13} className="text-slate-400" />{" "}
+                              {sale.channel || "Dining"}
+                            </div>
                           </td>
                           <td className="p-4 text-center">
-                            <div className="font-bold text-slate-700">{sale.itemCount}</div>
-                            <div className="text-[10px] text-slate-400 truncate w-24 mx-auto">{sale.items.map(i => i.name).join(", ")}</div>
+                            <div className="font-bold text-slate-700">
+                              {sale.itemCount}
+                            </div>
+                            <div className="text-[10px] text-slate-400 truncate w-24 mx-auto">
+                              {sale.items.map((i) => i.name).join(", ")}
+                            </div>
                           </td>
                           <td className="p-4 text-center">
                             <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 shadow-sm flex items-center gap-1.5 w-max mx-auto">
-                              <CreditCard size={12} className="text-slate-400" /> {sale.paymentMethod || "Cash"}
+                              <CreditCard
+                                size={12}
+                                className="text-slate-400"
+                              />{" "}
+                              {sale.paymentMethod || "Cash"}
                             </span>
                           </td>
                           <td className="p-4 text-right font-black text-emerald-600 text-base">
-                            Rs. {sale.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            Rs.{" "}
+                            {sale.totalAmount.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                            })}
                           </td>
                           <td className="p-4 text-center">
-                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider flex items-center gap-1 w-max mx-auto ${
-                              sale.status === "Completed" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
-                              sale.status === "Cancelled" ? "bg-rose-50 text-rose-600 border border-rose-100" :
-                              "bg-amber-50 text-amber-600 border border-amber-100"
-                            }`}>
-                              {sale.status === "Completed" ? <CheckCircle size={10} /> : sale.status === "Cancelled" ? <XCircle size={10} /> : <Clock size={10} />}
+                            <span
+                              className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider flex items-center gap-1 w-max mx-auto ${
+                                sale.status === "Completed"
+                                  ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                                  : sale.status === "Cancelled"
+                                  ? "bg-rose-50 text-rose-600 border border-rose-100"
+                                  : "bg-amber-50 text-amber-600 border border-amber-100"
+                              }`}
+                            >
+                              {sale.status === "Completed" ? (
+                                <CheckCircle size={10} />
+                              ) : sale.status === "Cancelled" ? (
+                                <XCircle size={10} />
+                              ) : (
+                                <Clock size={10} />
+                              )}
                               {sale.status}
                             </span>
                           </td>
@@ -1013,7 +1610,10 @@ export default function SalesHistory() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="7" className="p-12 text-center text-slate-500 font-medium">
+                        <td
+                          colSpan="7"
+                          className="p-12 text-center text-slate-500 font-medium"
+                        >
                           <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
                             <Receipt size={24} className="text-slate-300" />
                           </div>
@@ -1023,10 +1623,10 @@ export default function SalesHistory() {
                     )}
                   </tbody>
                 </table>
-                
+
                 {paginatedData.length < filteredData.length && (
                   <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-                    <button 
+                    <button
                       className="w-full py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all text-sm"
                       onClick={() => setCurrentPage((p) => p + 1)}
                     >
@@ -1035,100 +1635,171 @@ export default function SalesHistory() {
                   </div>
                 )}
               </div>
-        </div>
+            </div>
 
-        {/* RIGHT COLUMN: OVERVIEW CHARTS */}
+            {/* RIGHT COLUMN: OVERVIEW CHARTS */}
             <div className="w-full xl:w-[340px] shrink-0 flex flex-col gap-6">
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6">Sales by Payment Method</h3>
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6">
+                  Sales by Payment Method
+                </h3>
                 <div className="flex flex-col items-center">
                   <div className="relative h-[200px] w-[200px] mb-6">
-                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                  <PieChart>
-                    <Pie
-                      data={
-                        paymentData.length > 0
-                          ? paymentData
-                          : [{ name: "No Data", value: 1, color: "#e2e8f0" }]
-                      }
-                      cx="50%"
-                      cy="50%"
+                    <ResponsiveContainer width="99%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={
+                            paymentData.length > 0
+                              ? paymentData
+                              : [
+                                  {
+                                    name: "No Data",
+                                    value: 1,
+                                    color: "#e2e8f0",
+                                  },
+                                ]
+                          }
+                          cx="50%"
+                          cy="50%"
                           innerRadius={65}
                           outerRadius={90}
-                      paddingAngle={5}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {(paymentData.length > 0
-                        ? paymentData
-                        : [{ name: "No Data", value: 1, color: "#e2e8f0" }]
-                      ).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Total</span>
-                      <span className="text-xl font-black text-slate-900 mt-0.5">
-                        {totalSalesAmount > 1000 ? (totalSalesAmount / 1000).toFixed(1) + "k" : totalSalesAmount}
+                          paddingAngle={5}
+                          dataKey="value"
+                          stroke="none"
+                        >
+                          {(paymentData.length > 0
+                            ? paymentData
+                            : [{ name: "No Data", value: 1, color: "#e2e8f0" }]
+                          ).map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                        Total
                       </span>
-                </div>
-              </div>
-                  <div className="flex flex-col gap-3 w-full">
-                {paymentData.map((method, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50">
-                        <div className="flex items-center gap-3">
-                          <span className="w-3.5 h-3.5 rounded-full shadow-sm" style={{ backgroundColor: method.color }}></span>
-                          <span className="text-sm font-bold text-slate-700">{method.name}</span>
-                        </div>
-                        <div className="flex flex-col items-end">
-                          <span className="text-sm font-black text-slate-900">Rs. {method.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                          <span className="text-[10px] font-bold text-slate-400">
-                            {totalSalesAmount > 0 ? ((method.value / totalSalesAmount) * 100).toFixed(1) : 0}%
+                      <span className="text-xl font-black text-slate-900 mt-0.5">
+                        {totalSalesAmount > 1000
+                          ? (totalSalesAmount / 1000).toFixed(1) + "k"
+                          : totalSalesAmount}
                       </span>
                     </div>
                   </div>
-                ))}
-                {paymentData.length === 0 && (
-                      <span className="text-sm text-slate-400 font-medium text-center py-4 bg-slate-50 rounded-xl border border-slate-100">No sales data yet</span>
-                )}
+                  <div className="flex flex-col gap-3 w-full">
+                    {paymentData.map((method, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span
+                            className="w-3.5 h-3.5 rounded-full shadow-sm"
+                            style={{ backgroundColor: method.color }}
+                          ></span>
+                          <span className="text-sm font-bold text-slate-700">
+                            {method.name}
+                          </span>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className="text-sm font-black text-slate-900">
+                            Rs.{" "}
+                            {method.value.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                            })}
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-400">
+                            {totalSalesAmount > 0
+                              ? (
+                                  (method.value / totalSalesAmount) *
+                                  100
+                                ).toFixed(1)
+                              : 0}
+                            %
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {paymentData.length === 0 && (
+                      <span className="text-sm text-slate-400 font-medium text-center py-4 bg-slate-50 rounded-xl border border-slate-100">
+                        No sales data yet
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">
+                  Sales Summary
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-500 uppercase">
+                      Total Sales
+                    </span>
+                    <strong className="text-sm font-black text-slate-900">
+                      Rs.{" "}
+                      {totalSalesAmount.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-500 uppercase">
+                      Total Orders
+                    </span>
+                    <strong className="text-sm font-black text-slate-900">
+                      {completedSales.length}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-500 uppercase">
+                      Total Items Sold
+                    </span>
+                    <strong className="text-sm font-black text-slate-900">
+                      {totalItemsSold}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-500 uppercase">
+                      Avg Order Value
+                    </span>
+                    <strong className="text-sm font-black text-slate-900">
+                      Rs.{" "}
+                      {avgOrderValue.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-500 uppercase">
+                      Highest Sale
+                    </span>
+                    <strong className="text-sm font-black text-emerald-600">
+                      Rs.{" "}
+                      {highestSale.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-500 uppercase">
+                      Lowest Sale
+                    </span>
+                    <strong className="text-sm font-black text-rose-500">
+                      Rs.{" "}
+                      {lowestSale.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}
+                    </strong>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Sales Summary</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                    <span className="text-xs font-bold text-slate-500 uppercase">Total Sales</span>
-                    <strong className="text-sm font-black text-slate-900">Rs. {totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
-                  </div>
-                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                    <span className="text-xs font-bold text-slate-500 uppercase">Total Orders</span>
-                    <strong className="text-sm font-black text-slate-900">{completedSales.length}</strong>
-                  </div>
-                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                    <span className="text-xs font-bold text-slate-500 uppercase">Total Items Sold</span>
-                    <strong className="text-sm font-black text-slate-900">{totalItemsSold}</strong>
-                  </div>
-                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                    <span className="text-xs font-bold text-slate-500 uppercase">Avg Order Value</span>
-                    <strong className="text-sm font-black text-slate-900">Rs. {avgOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
-                  </div>
-                  <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                    <span className="text-xs font-bold text-slate-500 uppercase">Highest Sale</span>
-                    <strong className="text-sm font-black text-emerald-600">Rs. {highestSale.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-500 uppercase">Lowest Sale</span>
-                    <strong className="text-sm font-black text-rose-500">Rs. {lowestSale.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
-                  </div>
-                </div>
-          </div>
-        </div>
-      </div>
         </>
       )}
 
@@ -1256,8 +1927,13 @@ export default function SalesHistory() {
 
       {/* THERMAL PRINTER RECEIPT BATCH LAYOUT */}
       <div className="print-container">
-        {printMode === "single" && selectedInvoice && renderReceipt(selectedInvoice)}
-        {printMode === "batch" && filteredData.filter(t => selectedTxns.includes(t.transactionId)).map(renderReceipt)}
+        {printMode === "single" &&
+          selectedInvoice &&
+          renderReceipt(selectedInvoice)}
+        {printMode === "batch" &&
+          filteredData
+            .filter((t) => selectedTxns.includes(t.transactionId))
+            .map(renderReceipt)}
         {printMode === "summary" && renderSummaryReport()}
         {printMode === "eod" && renderEODReport()}
       </div>
@@ -1273,7 +1949,9 @@ export default function SalesHistory() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
-              <h2 className="text-lg font-black text-slate-900">Create Custom Invoice</h2>
+              <h2 className="text-lg font-black text-slate-900">
+                Create Custom Invoice
+              </h2>
               <button
                 onClick={() => setIsNewInvoiceOpen(false)}
                 className="text-slate-400 hover:text-slate-600 bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm transition"
@@ -1285,20 +1963,38 @@ export default function SalesHistory() {
             <div className="p-6 flex flex-col gap-4 overflow-y-auto max-h-[60vh]">
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="block text-xs font-bold mb-1.5 text-slate-500 uppercase">Customer Name</label>
+                  <label className="block text-xs font-bold mb-1.5 text-slate-500 uppercase">
+                    Customer Name
+                  </label>
                   <input
+                    id="customInvoiceCustomer"
+                    name="customInvoiceCustomer"
                     type="text"
                     value={newInvoiceData.customer}
-                    onChange={(e) => setNewInvoiceData({ ...newInvoiceData, customer: e.target.value })}
+                    onChange={(e) =>
+                      setNewInvoiceData({
+                        ...newInvoiceData,
+                        customer: e.target.value,
+                      })
+                    }
                     className="w-full rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
                     placeholder="Walk-in Customer"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs font-bold mb-1.5 text-slate-500 uppercase">Payment Method</label>
+                  <label className="block text-xs font-bold mb-1.5 text-slate-500 uppercase">
+                    Payment Method
+                  </label>
                   <select
+                    id="customInvoiceMethod"
+                    name="customInvoiceMethod"
                     value={newInvoiceData.method}
-                    onChange={(e) => setNewInvoiceData({ ...newInvoiceData, method: e.target.value })}
+                    onChange={(e) =>
+                      setNewInvoiceData({
+                        ...newInvoiceData,
+                        method: e.target.value,
+                      })
+                    }
                     className="w-full rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
                   >
                     <option value="Cash">Cash</option>
@@ -1310,29 +2006,49 @@ export default function SalesHistory() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold mb-1.5 text-slate-500 uppercase">Add Items</label>
+                <label className="block text-xs font-bold mb-1.5 text-slate-500 uppercase">
+                  Add Items
+                </label>
                 <div className="flex gap-2 mb-4">
                   <input
+                    id="newItemName"
+                    name="newItemName"
                     type="text"
                     placeholder="Item Name"
                     value={newItemInput.name}
-                    onChange={(e) => setNewItemInput({ ...newItemInput, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewItemInput({ ...newItemInput, name: e.target.value })
+                    }
                     className="flex-2 w-full rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
                   />
                   <input
+                    id="newItemQty"
+                    name="newItemQty"
                     type="number"
                     placeholder="Qty"
                     min="1"
                     value={newItemInput.qty || ""}
-                    onChange={(e) => setNewItemInput({ ...newItemInput, qty: parseInt(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setNewItemInput({
+                        ...newItemInput,
+                        qty: parseInt(e.target.value) || 0,
+                      })
+                    }
                     className="flex-1 w-20 rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
                   />
                   <input
+                    id="newItemPrice"
+                    name="newItemPrice"
                     type="number"
                     placeholder="Price"
                     min="0"
                     value={newItemInput.price === 0 ? "" : newItemInput.price}
-                    onChange={(e) => setNewItemInput({ ...newItemInput, price: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setNewItemInput({
+                        ...newItemInput,
+                        price: parseFloat(e.target.value) || 0,
+                      })
+                    }
                     className="flex-1 w-24 rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
                   />
                   <button
@@ -1358,13 +2074,18 @@ export default function SalesHistory() {
                         <tr key={idx}>
                           <td className="p-2 pl-3">{item.name}</td>
                           <td className="p-2 text-center">{item.qty}</td>
-                          <td className="p-2 text-right">Rs. {item.price.toFixed(2)}</td>
+                          <td className="p-2 text-right">
+                            Rs. {item.price.toFixed(2)}
+                          </td>
                           <td className="p-2 text-center">
                             <button
                               onClick={() => {
                                 const newItems = [...newInvoiceData.items];
                                 newItems.splice(idx, 1);
-                                setNewInvoiceData({ ...newInvoiceData, items: newItems });
+                                setNewInvoiceData({
+                                  ...newInvoiceData,
+                                  items: newItems,
+                                });
                               }}
                               className="text-rose-500 hover:text-rose-700 transition"
                             >
@@ -1375,7 +2096,12 @@ export default function SalesHistory() {
                       ))}
                       {newInvoiceData.items.length === 0 && (
                         <tr>
-                          <td colSpan="4" className="p-6 text-center text-slate-400">No items added yet.</td>
+                          <td
+                            colSpan="4"
+                            className="p-6 text-center text-slate-400"
+                          >
+                            No items added yet.
+                          </td>
                         </tr>
                       )}
                     </tbody>
@@ -1386,7 +2112,10 @@ export default function SalesHistory() {
 
             <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
               <div className="text-lg font-black text-slate-900">
-                Total: Rs. {newInvoiceData.items.reduce((sum, i) => sum + i.qty * i.price, 0).toFixed(2)}
+                Total: Rs.{" "}
+                {newInvoiceData.items
+                  .reduce((sum, i) => sum + i.qty * i.price, 0)
+                  .toFixed(2)}
               </div>
               <button
                 onClick={handleCreateInvoice}

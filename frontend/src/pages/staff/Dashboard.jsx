@@ -39,7 +39,7 @@ const Dashboard = () => {
 
   const { orders, serveOrder, cancelOrder, completeOrder, fetchOrders } =
     useOrders();
-  const { tables, setTables, updateTableStatus, fetchTables } = useTables();
+  const { tables, editTable, updateTableStatus, fetchTables } = useTables();
 
   useEffect(() => {
     if (fetchOrders) fetchOrders();
@@ -96,28 +96,30 @@ const Dashboard = () => {
   };
 
   // Process and save updated table data properties
-  const handleSaveTableEdits = (e) => {
+  const handleSaveTableEdits = async (e) => {
     e.preventDefault();
-    setTables((prev) =>
-      prev.map((t) => {
-        if (t.id === editingTable.number) {
-          let finalCustomer =
-            editStatus === "Available"
-              ? "No Customer"
-              : editCustomer.trim() || "No Customer";
+    let finalCustomer =
+      editStatus === "Available"
+        ? "No Customer"
+        : editCustomer.trim() || "No Customer";
 
-          return {
-            ...t,
+    try {
+      if (editTable) {
+        await editTable(
+          editingTable._id || editingTable.id || editingTable.number,
+          {
             status: editStatus,
             currentCustomer: finalCustomer,
             seats: parseInt(editSeats, 10),
             reservationTime: editStatus === "Reserved" ? editTime : null,
-          };
-        }
-        return t;
-      })
-    );
-    setEditingTable(null);
+          }
+        );
+      }
+      setEditingTable(null);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Failed to update table");
+    }
   };
 
   const handleCancelOrder = (order) => {
@@ -294,7 +296,7 @@ const Dashboard = () => {
                   <div
                     key={index}
                     onClick={() => setSelectedTableDetails(table)}
-                  className={`bg-white rounded-3xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer ${styles.border}`}
+                    className={`bg-white rounded-3xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer ${styles.border}`}
                   >
                     <div className="p-5">
                       <div className="flex justify-between items-start mb-4">
@@ -309,14 +311,16 @@ const Dashboard = () => {
                       </div>
 
                       <div className="flex items-center gap-4 mb-2">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${styles.bg} ${styles.text}`}>
+                        <div
+                          className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${styles.bg} ${styles.text}`}
+                        >
                           <Utensils size={24} />
                         </div>
                         <div>
-                        <p className="text-xs font-black text-slate-900 mb-1">
+                          <p className="text-xs font-black text-slate-900 mb-1">
                             {table.label}
                           </p>
-                        <p className="text-xs font-medium text-slate-500 mb-0.5">
+                          <p className="text-xs font-medium text-slate-500 mb-0.5">
                             <strong className="text-slate-700">Guest:</strong>{" "}
                             {table.customer}
                           </p>
@@ -330,7 +334,7 @@ const Dashboard = () => {
                           e.stopPropagation();
                           openEditModal(table);
                         }}
-                    className="py-3.5 text-xs font-bold text-slate-500 hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-1.5"
+                        className="py-3.5 text-xs font-bold text-slate-500 hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-1.5"
                       >
                         <Edit2 size={14} /> Edit
                       </button>
@@ -428,27 +432,27 @@ const Dashboard = () => {
                   .map((order) => (
                     <div
                       key={order.id}
-                        className={`flex items-center justify-between p-4 rounded-2xl border transition-all hover:shadow-md ${
+                      className={`flex items-center justify-between p-4 rounded-2xl border transition-all hover:shadow-md ${
                         order.status === "Ready"
                           ? "bg-emerald-50/50 border-emerald-100"
-                            : "border-slate-100 bg-slate-50/50 hover:bg-white"
+                          : "border-slate-100 bg-slate-50/50 hover:bg-white"
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
-                            className={`border font-black text-[10px] px-2.5 py-1.5 rounded-lg shadow-sm tracking-wider ${
+                          className={`border font-black text-[10px] px-2.5 py-1.5 rounded-lg shadow-sm tracking-wider ${
                             order.status === "Ready"
                               ? "bg-emerald-500 text-white border-emerald-600"
-                                : "bg-slate-800 text-white border-slate-900"
+                              : "bg-slate-800 text-white border-slate-900"
                           }`}
                         >
                           {order.id}
                         </div>
                         <div>
-                            <h3 className="font-bold text-slate-900 text-sm leading-tight">
+                          <h3 className="font-bold text-slate-900 text-sm leading-tight">
                             {order.table || "Queue"}
                           </h3>
-                            <p className="text-[11px] font-medium text-slate-500 mt-0.5">
+                          <p className="text-[11px] font-medium text-slate-500 mt-0.5">
                             {(order.items || []).reduce(
                               (acc, item) => acc + item.qty,
                               0
@@ -459,7 +463,7 @@ const Dashboard = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span
-                            className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border shadow-sm ${getOrderStatusStyles(
+                          className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border shadow-sm ${getOrderStatusStyles(
                             order.status
                           )}`}
                         >

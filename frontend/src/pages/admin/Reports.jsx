@@ -198,27 +198,32 @@ export default function Reports() {
         `}
       </style>
 
-      <div className="report-container screen-only">
+      <div className="report-container screen-only p-3 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">
         {/* HEADER SECTION */}
-        <div className="report-header">
+        <div className="report-header flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-5 sm:mb-8">
           <div>
-            <h1>Reports</h1>
-            <p className="breadcrumb">
+            <h1 className="text-xl sm:text-[28px] font-bold text-slate-900 tracking-tight">
+              Reports
+            </h1>
+            <p className="breadcrumb text-slate-400 text-xs sm:text-sm mt-0.5 font-medium">
               Dashboard <span>&gt;</span> Reports
             </p>
           </div>
-          <button className="export-report-btn" onClick={handlePrintExport}>
+          <button
+            className="export-report-btn w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl shadow-sm flex justify-center items-center gap-2 transition-all"
+            onClick={handlePrintExport}
+          >
             <Download size={16} />
             Export Report
           </button>
         </div>
 
         {/* CONTROLS TABS */}
-        <div className="flex bg-slate-200/60 p-1.5 rounded-xl w-full sm:w-fit my-6 overflow-x-auto">
+        <div className="flex bg-slate-200/60 p-1 sm:p-1.5 rounded-lg sm:rounded-xl w-full sm:w-max mb-5 sm:mb-8 overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => (
             <button
               key={tab}
-              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+              className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-md sm:rounded-lg text-[11px] sm:text-sm font-bold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap flex-shrink-0 ${
                 activeTab === tab
                   ? "bg-white text-slate-900 shadow-sm"
                   : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
@@ -265,7 +270,7 @@ export default function Reports() {
             }
           `}</style>
 
-          <div className="flex items-center gap-3 bg-white border border-slate-200 px-4 py-3 rounded-xl shadow-sm hover:border-purple-300 hover:shadow-md transition-all w-full max-w-sm relative">
+          <div className="flex items-center gap-2 sm:gap-3 bg-white border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 rounded-xl shadow-sm hover:border-purple-300 hover:shadow-md transition-all w-full sm:max-w-sm relative">
             <Calendar size={18} className="text-purple-500 flex-shrink-0" />
             <div className="flex-1 w-full">
               <DatePicker
@@ -280,6 +285,8 @@ export default function Reports() {
                 className="w-full bg-transparent outline-none cursor-pointer text-sm text-slate-700 font-bold placeholder:text-slate-400 placeholder:font-medium"
                 dateFormat="MMM d, yyyy"
                 maxDate={new Date()}
+                id="reportDateRange"
+                name="reportDateRange"
               />
             </div>
           </div>
@@ -287,7 +294,7 @@ export default function Reports() {
 
         {/* ANALYTIC KPI SUMMARY GRID */}
         {(activeTab === "Overview" || activeTab === "Sales Report") && (
-          <div className="report-stats-grid mb-6">
+          <div className="report-stats-grid grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
             {[
               {
                 title: "Total Revenue",
@@ -316,12 +323,25 @@ export default function Reports() {
                 icon: <Users size={20} />,
               },
             ].map((stat, i) => (
-              <div key={i} className="report-stat-card">
-                <div className="report-icon-wrapper">{stat.icon}</div>
-                <div className="stat-content">
-                  <h3>{stat.title}</h3>
-                  <h1>{stat.value}</h1>
-                  <p className="stat-change-text">{stat.change}</p>
+              <div
+                key={i}
+                className="report-stat-card bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm flex flex-col xl:flex-row items-start xl:items-center gap-2.5 sm:gap-4 hover:shadow-md transition-shadow"
+              >
+                <div className="report-icon-wrapper w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 shrink-0">
+                  {React.cloneElement(stat.icon, {
+                    className: "w-4 h-4 sm:w-5 sm:h-5",
+                  })}
+                </div>
+                <div className="stat-content flex flex-col">
+                  <h3 className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider line-clamp-1">
+                    {stat.title}
+                  </h3>
+                  <h1 className="text-base sm:text-2xl font-black text-slate-900 mt-0.5 sm:mt-1">
+                    {stat.value}
+                  </h1>
+                  <p className="stat-change-text text-emerald-500 text-[9px] sm:text-[10px] font-bold mt-0.5">
+                    {stat.change}
+                  </p>
                 </div>
               </div>
             ))}
@@ -334,7 +354,7 @@ export default function Reports() {
           (activeTab === "Overview" ||
             activeTab === "Sales Report" ||
             activeTab === "Menu Report") && (
-            <div className="bg-white rounded-2xl border border-slate-100 p-16 text-center text-slate-500 font-medium shadow-sm mb-6">
+            <div className="bg-white rounded-2xl border border-slate-100 p-8 sm:p-16 text-center text-slate-500 font-medium shadow-sm mb-6 sm:mb-8 mx-0">
               <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar size={32} className="text-slate-400" />
               </div>
@@ -355,30 +375,33 @@ export default function Reports() {
             activeTab === "Sales Report" ||
             activeTab === "Menu Report") && (
             <div
-              className="report-chart-grid mb-6"
-              style={{
-                gridTemplateColumns:
-                  activeTab === "Overview" ? "2fr 1fr" : "1fr",
-              }}
+              className={`report-chart-grid mb-6 sm:mb-8 grid grid-cols-1 ${
+                activeTab === "Overview" ? "lg:grid-cols-3" : "lg:grid-cols-1"
+              } gap-4 sm:gap-6`}
             >
               {/* SMOOTH AREA-LINE CHART */}
               {(activeTab === "Overview" || activeTab === "Sales Report") && (
-                <div className="chart-card linear-graph-block">
-                  <div className="chart-header-node">
+                <div
+                  className={`chart-card linear-graph-block bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col min-h-[280px] sm:min-h-[400px] ${
+                    activeTab === "Overview" ? "lg:col-span-2" : "lg:col-span-1"
+                  }`}
+                >
+                  <div className="chart-header-node flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <div>
-                      <h2>Revenue Overview</h2>
-                      <p>Gross performance trends over this cycle</p>
+                      <h2 className="text-lg font-bold text-slate-900">
+                        Revenue Overview
+                      </h2>
+                      <p className="text-xs text-slate-400 font-medium mt-1">
+                        Gross performance trends over this cycle
+                      </p>
                     </div>
-                    <button className="chart-toggle-btn">By Day</button>
+                    <button className="chart-toggle-btn w-full sm:w-auto bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold px-4 py-2 rounded-lg transition-colors">
+                      By Day
+                    </button>
                   </div>
 
-                  <div className="chart-wrapper-canvas">
-                    <ResponsiveContainer
-                      width="100%"
-                      height="100%"
-                      minWidth={1}
-                      minHeight={1}
-                    >
+                  <div className="chart-wrapper-canvas w-full h-[250px] sm:h-[300px] mt-2">
+                    <ResponsiveContainer width="99%" height="100%">
                       <AreaChart
                         data={revenueTrendData}
                         margin={{ top: 10, right: 5, left: -20, bottom: 0 }}
@@ -453,14 +476,22 @@ export default function Reports() {
 
               {/* DOUGHNUT PIE CHART */}
               {(activeTab === "Overview" || activeTab === "Menu Report") && (
-                <div className="chart-card distribution-graph-block">
-                  <div className="chart-header-node">
-                    <h2>Sales By Category</h2>
-                    <p>Performance weight by preparation tier</p>
+                <div
+                  className={`chart-card distribution-graph-block bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col min-h-[280px] sm:min-h-[400px] ${
+                    activeTab === "Overview" ? "lg:col-span-1" : "lg:col-span-1"
+                  }`}
+                >
+                  <div className="chart-header-node mb-4 sm:mb-6">
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Sales By Category
+                    </h2>
+                    <p className="text-xs text-slate-400 font-medium mt-1">
+                      Performance weight by preparation tier
+                    </p>
                   </div>
 
-                  <div className="pie-section-wrapper">
-                    <div className="pie-canvas-container">
+                  <div className="pie-section-wrapper flex flex-col sm:flex-row lg:flex-col items-center justify-center flex-1 gap-6">
+                    <div className="pie-canvas-container relative w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] shrink-0">
                       <ResponsiveContainer
                         width="100%"
                         height="100%"
@@ -484,24 +515,30 @@ export default function Reports() {
                           <Tooltip formatter={(value) => [`${value}% Share`]} />
                         </PieChart>
                       </ResponsiveContainer>
-                      <div className="pie-center-label">
-                        <PieIcon size={18} className="text-slate-400" />
+                      <div className="pie-center-label absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <PieIcon
+                          size={20}
+                          className="text-slate-200 sm:w-6 sm:h-6"
+                        />
                       </div>
                     </div>
 
-                    <div className="pie-details-legend">
+                    <div className="pie-details-legend w-full flex flex-col gap-2">
                       {categoryDistributionData.map((item, index) => (
-                        <div key={index} className="legend-row-item">
-                          <div className="legend-indicator">
+                        <div
+                          key={index}
+                          className="legend-row-item flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100"
+                        >
+                          <div className="legend-indicator flex items-center gap-2.5">
                             <span
-                              className="color-indicator-dot"
+                              className="color-indicator-dot w-3 h-3 rounded-full shadow-sm"
                               style={{ backgroundColor: item.color }}
                             />
-                            <span className="legend-name-text">
+                            <span className="legend-name-text text-sm font-bold text-slate-700">
                               {item.name}
                             </span>
                           </div>
-                          <span className="legend-percentage-value">
+                          <span className="legend-percentage-value text-sm font-black text-slate-900">
                             {item.value}%
                           </span>
                         </div>
@@ -517,27 +554,33 @@ export default function Reports() {
         {reportData &&
           totalOrders > 0 &&
           (activeTab === "Overview" || activeTab === "Menu Report") && (
-            <div className="top-items-card">
-              <div className="table-title-node">
-                <h2>Top Selling Items</h2>
-                <p>
+            <div className="top-items-card bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-6 sm:mb-8">
+              <div className="table-title-node mb-4 sm:mb-6">
+                <h2 className="text-lg font-bold text-slate-900">
+                  Top Selling Items
+                </h2>
+                <p className="text-xs text-slate-400 font-medium mt-1">
                   High velocity restaurant performance entries listed by
                   inventory rank
                 </p>
               </div>
 
-              <div className="report-table-wrapper">
-                <table className="report-table">
-                  <thead>
+              <div className="report-table-wrapper overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                <table className="report-table w-full text-left border-collapse min-w-[500px]">
+                  <thead className="bg-slate-50/80 text-slate-400 text-[10px] sm:text-xs uppercase tracking-wider font-bold border-b border-slate-100">
                     <tr>
-                      <th style={{ width: "60px" }}>#</th>
-                      <th>Item</th>
-                      <th>Category</th>
-                      <th style={{ textAlign: "center" }}>Quantity</th>
-                      <th style={{ textAlign: "right" }}>Revenue</th>
+                      <th className="p-3 sm:p-4 pl-4 sm:pl-6 w-10 sm:w-16">
+                        #
+                      </th>
+                      <th className="p-3 sm:p-4">Item</th>
+                      <th className="p-3 sm:p-4">Category</th>
+                      <th className="p-3 sm:p-4 text-center">Qty</th>
+                      <th className="p-3 sm:p-4 pr-4 sm:pr-6 text-right">
+                        Revenue
+                      </th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-100 text-sm">
                     {topItems.length === 0 ? (
                       <tr>
                         <td
@@ -549,19 +592,34 @@ export default function Reports() {
                       </tr>
                     ) : (
                       topItems.map((item, index) => (
-                        <tr key={index}>
-                          <td className="rank-index-cell">{index + 1}</td>
-                          <td>
-                            <div className="item-info">
-                              <img src={item.image} alt={item.name} />
-                              <span className="item-name-bold">
+                        <tr
+                          key={index}
+                          className="hover:bg-slate-50/50 transition-colors"
+                        >
+                          <td className="rank-index-cell p-3 sm:p-4 pl-4 sm:pl-6 font-bold text-slate-400 text-xs sm:text-sm">
+                            {index + 1}
+                          </td>
+                          <td className="p-3 sm:p-4">
+                            <div className="item-info flex items-center gap-2 sm:gap-3">
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl object-cover shadow-sm border border-slate-200"
+                              />
+                              <span className="item-name-bold font-bold text-slate-900 text-xs sm:text-sm line-clamp-1">
                                 {item.name}
                               </span>
                             </div>
                           </td>
-                          <td className="category-text-dim">{item.category}</td>
-                          <td className="qty-center-cell">{item.quantity}</td>
-                          <td className="revenue-right-cell">{item.revenue}</td>
+                          <td className="category-text-dim p-3 sm:p-4 font-medium text-slate-500 text-xs sm:text-sm">
+                            {item.category}
+                          </td>
+                          <td className="qty-center-cell p-3 sm:p-4 text-center font-bold text-slate-700 text-xs sm:text-sm">
+                            {item.quantity}
+                          </td>
+                          <td className="revenue-right-cell p-3 sm:p-4 pr-4 sm:pr-6 text-right font-black text-emerald-600 text-xs sm:text-sm">
+                            {item.revenue}
+                          </td>
                         </tr>
                       ))
                     )}
@@ -573,7 +631,7 @@ export default function Reports() {
 
         {/* ORDERS & CUSTOMERS PLACEHOLDER */}
         {(activeTab === "Orders" || activeTab === "Customers") && (
-          <div className="bg-white rounded-2xl border border-slate-100 p-16 text-center text-slate-500 font-medium shadow-sm mt-4">
+          <div className="bg-white rounded-2xl border border-slate-100 p-8 sm:p-16 text-center text-slate-500 font-medium shadow-sm mt-4 mx-0">
             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
               {activeTab === "Orders" ? (
                 <ShoppingBag size={32} className="text-slate-400" />

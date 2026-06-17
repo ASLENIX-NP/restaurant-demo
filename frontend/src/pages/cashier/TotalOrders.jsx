@@ -54,6 +54,8 @@ const TotalOrders = () => {
               className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
             />
             <input
+              id="searchOrders"
+              name="searchOrders"
               type="text"
               placeholder="Search by Order ID, Table, Customer, or Status..."
               value={searchTerm}
@@ -83,34 +85,73 @@ const TotalOrders = () => {
             <tbody className="divide-y divide-slate-100 text-sm">
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="text-center py-16 text-slate-400 font-medium">
+                  <td
+                    colSpan="7"
+                    className="text-center py-16 text-slate-400 font-medium"
+                  >
                     No orders found matching your search.
                   </td>
                 </tr>
               ) : (
                 filteredOrders.map((order) => {
-                  const subtotal = (order.items || []).reduce((sum, item) => sum + item.qty * (parseFloat(item.price) || 0), 0);
-                  const total = order.amount || subtotal + (subtotal > 0 ? 50 : 0);
-                  const itemCount = (order.items || []).reduce((sum, item) => sum + item.qty, 0);
+                  const subtotal = (order.items || []).reduce(
+                    (sum, item) =>
+                      sum + item.qty * (parseFloat(item.price) || 0),
+                    0
+                  );
+                  const total =
+                    order.amount || subtotal + (subtotal > 0 ? 50 : 0);
+                  const itemCount = (order.items || []).reduce(
+                    (sum, item) => sum + item.qty,
+                    0
+                  );
 
                   return (
-                    <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="p-4 pl-6 font-bold text-slate-900">{order.id}</td>
+                    <tr
+                      key={order.id}
+                      className="hover:bg-slate-50/50 transition-colors"
+                    >
+                      <td className="p-4 pl-6 font-bold text-slate-900">
+                        {order.id}
+                      </td>
                       <td className="p-4">
-                        <div className="font-semibold text-slate-800">{order.table || "Walk-in"}</div>
-                        <div className="text-xs text-slate-500">{order.customer || "Guest"}</div>
+                        <div className="font-semibold text-slate-800">
+                          {order.table || "Walk-in"}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {order.customer || "Guest"}
+                        </div>
                       </td>
-                      <td className="p-4 text-center font-semibold text-slate-600">{itemCount}</td>
+                      <td className="p-4 text-center font-semibold text-slate-600">
+                        {itemCount}
+                      </td>
                       <td className="p-4 text-right font-bold text-slate-900">
-                        Rs. {total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        Rs.{" "}
+                        {total.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
                       </td>
                       <td className="p-4 text-center">
-                        <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">{order.paymentMethod || "Cash"}</span>
+                        <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
+                          {order.paymentMethod || "Cash"}
+                        </span>
                       </td>
                       <td className="p-4 text-center">
-                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${order.status === "Completed" ? "bg-emerald-50 text-emerald-600" : order.status === "Cancelled" ? "bg-rose-50 text-rose-600" : "bg-amber-50 text-amber-600"}`}>{order.status}</span>
+                        <span
+                          className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                            order.status === "Completed"
+                              ? "bg-emerald-50 text-emerald-600"
+                              : order.status === "Cancelled"
+                              ? "bg-rose-50 text-rose-600"
+                              : "bg-amber-50 text-amber-600"
+                          }`}
+                        >
+                          {order.status}
+                        </span>
                       </td>
-                      <td className="p-4 pr-6 text-right text-slate-500 font-medium">{order.time || "N/A"}</td>
+                      <td className="p-4 pr-6 text-right text-slate-500 font-medium">
+                        {order.time || "N/A"}
+                      </td>
                     </tr>
                   );
                 })

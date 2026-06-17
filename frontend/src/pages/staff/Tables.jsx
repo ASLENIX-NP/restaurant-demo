@@ -27,7 +27,8 @@ const Tables = () => {
   const [formStatus, setFormStatus] = useState("Available");
   const [formCustomer, setFormCustomer] = useState("");
 
-  const { tables, setTables, updateTableStatus, fetchTables } = useTables();
+  const { tables, addTable, editTable, updateTableStatus, fetchTables } =
+    useTables();
   const { orders, cancelOrder, completeOrder, fetchOrders } = useOrders();
 
   useEffect(() => {
@@ -129,43 +130,41 @@ const Tables = () => {
   };
 
   // --- Form Submissions ---
-  const saveAddTable = (e) => {
+  const saveAddTable = async (e) => {
     e.preventDefault();
 
     const newId =
       tables.length > 0 ? Math.max(...tables.map((t) => t.id)) + 1 : 1;
-    const newTable = {
-      id: newId,
-      name: `Table ${newId}`,
-      seats: 4, // Default fallback
-      status: formStatus,
-      currentCustomer:
-        formStatus === "Available" || formStatus === "Cleaning"
-          ? "No Customer"
-          : formCustomer || "Anonymous",
-    };
+    const newCustomer =
+      formStatus === "Available" || formStatus === "Cleaning"
+        ? "No Customer"
+        : formCustomer || "Anonymous";
 
-    setTables([...tables, newTable]);
+    if (addTable) {
+      await addTable({
+        name: `Table ${newId}`,
+        seats: parseInt(formSeats, 10) || 4,
+        status: formStatus,
+        currentCustomer: newCustomer,
+      });
+    }
     closeModal();
   };
 
-  const saveEditTable = (e) => {
+  const saveEditTable = async (e) => {
     e.preventDefault();
-    setTables(
-      tables.map((t) =>
-        t.id === selectedTable.id
-          ? {
-              ...t,
-              seats: selectedTable.seats || 4,
-              status: formStatus,
-              currentCustomer:
-                formStatus === "Available" || formStatus === "Cleaning"
-                  ? "No Customer"
-                  : formCustomer,
-            }
-          : t
-      )
-    );
+    const newCustomer =
+      formStatus === "Available" || formStatus === "Cleaning"
+        ? "No Customer"
+        : formCustomer || "Anonymous";
+
+    if (editTable) {
+      await editTable(selectedTable._id || selectedTable.id, {
+        seats: parseInt(formSeats, 10) || 4,
+        status: formStatus,
+        currentCustomer: newCustomer,
+      });
+    }
     closeModal();
   };
 
@@ -260,39 +259,45 @@ const Tables = () => {
                 className={`bg-white rounded-3xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer ${config.border}`}
               >
                 <div className="p-5 pb-4 flex justify-between items-start">
-                    <h3 className="text-lg font-black text-slate-900">
-                      {table.name || `Table ${table.id}`}
-                    </h3>
-                    <span
-                      className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${config.bg} ${config.text}`}
-                    >
-                      {config.icon} {table.status}
-                    </span>
+                  <h3 className="text-lg font-black text-slate-900">
+                    {table.name || `Table ${table.id}`}
+                  </h3>
+                  <span
+                    className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${config.bg} ${config.text}`}
+                  >
+                    {config.icon} {table.status}
+                  </span>
                 </div>
 
                 <div className="px-5 pb-5 flex flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-inner ${config.bg} ${config.text}`}>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-inner ${config.bg} ${config.text}`}
+                    >
                       <Utensils size={20} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Capacity</p>
-                      <p className="text-sm font-bold text-slate-900">{table.seats || 4} Seats</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
+                        Capacity
+                      </p>
+                      <p className="text-sm font-bold text-slate-900">
+                        {table.seats || 4} Seats
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 shadow-inner border border-slate-100">
                       <User size={20} />
-                      </div>
-                    <div className="truncate">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                          Customer
-                        </p>
-                        <p className="text-sm font-bold text-slate-900 truncate">
-                          {table.customer || "No Customer"}
-                        </p>
-                      </div>
                     </div>
+                    <div className="truncate">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        Customer
+                      </p>
+                      <p className="text-sm font-bold text-slate-900 truncate">
+                        {table.customer || "No Customer"}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
@@ -361,12 +366,22 @@ const Tables = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Capacity</span>
-                      <span className="font-bold text-slate-900 flex items-center gap-1.5"><Utensils size={14} className="text-slate-400"/> {selectedTable.seats || 4} Seats</span>
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                        Capacity
+                      </span>
+                      <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                        <Utensils size={14} className="text-slate-400" />{" "}
+                        {selectedTable.seats || 4} Seats
+                      </span>
                     </div>
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Customer</span>
-                      <span className="font-bold text-slate-900 flex items-center gap-1.5 truncate"><User size={14} className="text-slate-400"/> {selectedTable.customer || "No Customer"}</span>
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                        Customer
+                      </span>
+                      <span className="font-bold text-slate-900 flex items-center gap-1.5 truncate">
+                        <User size={14} className="text-slate-400" />{" "}
+                        {selectedTable.customer || "No Customer"}
+                      </span>
                     </div>
                   </div>
 
@@ -400,12 +415,12 @@ const Tables = () => {
                   </div>
 
                   <div className="flex gap-3 mt-6 border-t border-slate-100 pt-5">
-                  <button
-                    onClick={closeModal}
+                    <button
+                      onClick={closeModal}
                       className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-md text-sm"
-                  >
-                    Close Details
-                  </button>
+                    >
+                      Close Details
+                    </button>
                   </div>
                 </div>
               </>
@@ -472,21 +487,21 @@ const Tables = () => {
                   )}
                 </div>
 
-                  {/* Modal Footer */}
-                  <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex gap-3">
-                    <button
-                      type="button"
-                      onClick={closeModal}
-                      className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition shadow-sm"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition shadow-md"
-                    >
-                      {activeModal === "add" ? "Create Table" : "Save Changes"}
-                    </button>
+                {/* Modal Footer */}
+                <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition shadow-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition shadow-md"
+                  >
+                    {activeModal === "add" ? "Create Table" : "Save Changes"}
+                  </button>
                 </div>
               </form>
             )}

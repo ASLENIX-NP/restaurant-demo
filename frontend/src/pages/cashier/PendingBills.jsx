@@ -40,7 +40,12 @@ export default function PendingBillsPage() {
     cancelOrder,
     fetchOrders,
   } = useOrders() || {};
-  const { tables = [], updateTableStatus, fetchTables } = useTables() || {};
+  const {
+    tables = [],
+    editTable,
+    updateTableStatus,
+    fetchTables,
+  } = useTables() || {};
 
   useEffect(() => {
     if (fetchOrders) fetchOrders();
@@ -49,7 +54,9 @@ export default function PendingBillsPage() {
 
   // Dynamically generate pending bills from live global orders
   const pendingBillsData = useMemo(() => {
-    const activeOrders = orders.filter((order) => order.status !== "Completed" && order.status !== "Cancelled"); // Only show unpaid and active orders
+    const activeOrders = orders.filter(
+      (order) => order.status !== "Completed" && order.status !== "Cancelled"
+    ); // Only show unpaid and active orders
     const grouped = {};
 
     activeOrders.forEach((order) => {
@@ -201,12 +208,44 @@ export default function PendingBillsPage() {
     setTimeout(() => {
       const tableObj = tables.find((t) => t.name === selectedInvoice.table);
       if (tableObj) {
-        updateTableStatus(tableObj.id, "Available", "No Customer");
+        if (editTable) {
+          editTable(tableObj._id || tableObj.id, {
+            status: "Available",
+            currentCustomer: "No Customer",
+            reservationTime: null,
+          });
+        } else if (updateTableStatus) {
+          updateTableStatus(
+            tableObj._id || tableObj.id,
+            "Available",
+            "No Customer"
+          );
+        }
       } else {
         const match = selectedInvoice.table.match(/\d+/);
         if (match) {
           updateTableStatus(parseInt(match[0], 10), "Available", "No Customer");
         }
+      }
+
+      // Automatically remove the table from active reservations if applicable
+      try {
+        const savedRes = localStorage.getItem("restaurant_reservations");
+        if (savedRes) {
+          let parsedRes = JSON.parse(savedRes);
+          const filteredRes = parsedRes.filter(
+            (r) => r.table !== selectedInvoice.table
+          );
+          if (filteredRes.length !== parsedRes.length) {
+            localStorage.setItem(
+              "restaurant_reservations",
+              JSON.stringify(filteredRes)
+            );
+            window.dispatchEvent(new Event("storage"));
+          }
+        }
+      } catch (e) {
+        console.error("Failed to clear reservation:", e);
       }
 
       const finalDetails = {
@@ -248,12 +287,44 @@ export default function PendingBillsPage() {
   const executeCancelBill = () => {
     const tableObj = tables.find((t) => t.name === selectedInvoice.table);
     if (tableObj) {
-      updateTableStatus(tableObj.id, "Available", "No Customer");
+      if (editTable) {
+        editTable(tableObj._id || tableObj.id, {
+          status: "Available",
+          currentCustomer: "No Customer",
+          reservationTime: null,
+        });
+      } else if (updateTableStatus) {
+        updateTableStatus(
+          tableObj._id || tableObj.id,
+          "Available",
+          "No Customer"
+        );
+      }
     } else {
       const match = selectedInvoice.table.match(/\d+/);
       if (match) {
         updateTableStatus(parseInt(match[0], 10), "Available", "No Customer");
       }
+    }
+
+    // Automatically remove the table from active reservations if applicable
+    try {
+      const savedRes = localStorage.getItem("restaurant_reservations");
+      if (savedRes) {
+        let parsedRes = JSON.parse(savedRes);
+        const filteredRes = parsedRes.filter(
+          (r) => r.table !== selectedInvoice.table
+        );
+        if (filteredRes.length !== parsedRes.length) {
+          localStorage.setItem(
+            "restaurant_reservations",
+            JSON.stringify(filteredRes)
+          );
+          window.dispatchEvent(new Event("storage"));
+        }
+      }
+    } catch (e) {
+      console.error("Failed to clear reservation:", e);
     }
 
     if (selectedInvoice.orderIds) {
@@ -347,6 +418,8 @@ export default function PendingBillsPage() {
             <div className="pending-search">
               <Search size={17} />
               <input
+                id="searchBills"
+                name="searchBills"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search table, guest, or invoice"
@@ -365,11 +438,18 @@ export default function PendingBillsPage() {
             onClick={() => setActiveMetric("totalDue")}
             style={{
               cursor: "pointer",
-              backgroundColor: activeMetric === "totalDue" ? "#ffffff" : "#f8fafc",
-              boxShadow: activeMetric === "totalDue" ? "0 10px 25px -5px rgba(59, 130, 246, 0.15), 0 0 0 2px #3b82f6" : "0 1px 3px 0 rgba(0,0,0,0.1)",
-              transform: activeMetric === "totalDue" ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
+              backgroundColor:
+                activeMetric === "totalDue" ? "#ffffff" : "#f8fafc",
+              boxShadow:
+                activeMetric === "totalDue"
+                  ? "0 10px 25px -5px rgba(59, 130, 246, 0.15), 0 0 0 2px #3b82f6"
+                  : "0 1px 3px 0 rgba(0,0,0,0.1)",
+              transform:
+                activeMetric === "totalDue"
+                  ? "translateY(-4px) scale(1.02)"
+                  : "translateY(0) scale(1)",
               opacity: activeMetric === "totalDue" ? 1 : 0.6,
-              transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+              transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
             }}
           >
             <span className="metric-icon">
@@ -385,11 +465,18 @@ export default function PendingBillsPage() {
             onClick={() => setActiveMetric("unpaid")}
             style={{
               cursor: "pointer",
-              backgroundColor: activeMetric === "unpaid" ? "#ffffff" : "#f8fafc",
-              boxShadow: activeMetric === "unpaid" ? "0 10px 25px -5px rgba(244, 63, 94, 0.15), 0 0 0 2px #f43f5e" : "0 1px 3px 0 rgba(0,0,0,0.1)",
-              transform: activeMetric === "unpaid" ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
+              backgroundColor:
+                activeMetric === "unpaid" ? "#ffffff" : "#f8fafc",
+              boxShadow:
+                activeMetric === "unpaid"
+                  ? "0 10px 25px -5px rgba(244, 63, 94, 0.15), 0 0 0 2px #f43f5e"
+                  : "0 1px 3px 0 rgba(0,0,0,0.1)",
+              transform:
+                activeMetric === "unpaid"
+                  ? "translateY(-4px) scale(1.02)"
+                  : "translateY(0) scale(1)",
               opacity: activeMetric === "unpaid" ? 1 : 0.6,
-              transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+              transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
             }}
           >
             <span className="metric-icon red">
@@ -405,11 +492,18 @@ export default function PendingBillsPage() {
             onClick={() => setActiveMetric("largest")}
             style={{
               cursor: "pointer",
-              backgroundColor: activeMetric === "largest" ? "#ffffff" : "#f8fafc",
-              boxShadow: activeMetric === "largest" ? "0 10px 25px -5px rgba(16, 185, 129, 0.15), 0 0 0 2px #10b981" : "0 1px 3px 0 rgba(0,0,0,0.1)",
-              transform: activeMetric === "largest" ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
+              backgroundColor:
+                activeMetric === "largest" ? "#ffffff" : "#f8fafc",
+              boxShadow:
+                activeMetric === "largest"
+                  ? "0 10px 25px -5px rgba(16, 185, 129, 0.15), 0 0 0 2px #10b981"
+                  : "0 1px 3px 0 rgba(0,0,0,0.1)",
+              transform:
+                activeMetric === "largest"
+                  ? "translateY(-4px) scale(1.02)"
+                  : "translateY(0) scale(1)",
               opacity: activeMetric === "largest" ? 1 : 0.6,
-              transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+              transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
             }}
           >
             <span className="metric-icon green">
@@ -624,6 +718,8 @@ export default function PendingBillsPage() {
                   </button>
                 </div>
                 <input
+                  id="discountInput"
+                  name="discountInput"
                   type="number"
                   min="0"
                   max={discountType === "percentage" ? 100 : subtotal}
@@ -647,6 +743,8 @@ export default function PendingBillsPage() {
               <div className="checkout-section" style={{ marginTop: "1rem" }}>
                 <h3>Service Charge</h3>
                 <input
+                  id="serviceChargeInput"
+                  name="serviceChargeInput"
                   type="number"
                   min="0"
                   value={serviceCharge === 0 ? "" : serviceCharge}
@@ -820,7 +918,9 @@ export default function PendingBillsPage() {
                 Cancel Bill?
               </h2>
               <p className="text-sm text-slate-500 font-medium mb-6">
-                Are you sure you want to void this bill for <strong>{selectedInvoice.table}</strong>? This action cannot be undone and will be recorded in the ledger.
+                Are you sure you want to void this bill for{" "}
+                <strong>{selectedInvoice.table}</strong>? This action cannot be
+                undone and will be recorded in the ledger.
               </p>
               <div className="flex gap-3">
                 <button

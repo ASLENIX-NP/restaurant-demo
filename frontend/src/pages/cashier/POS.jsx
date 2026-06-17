@@ -161,6 +161,8 @@ const POS = () => {
               className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
             />
             <input
+              id="searchPOSItems"
+              name="searchPOSItems"
               type="text"
               placeholder="Search items..."
               value={searchTerm}
