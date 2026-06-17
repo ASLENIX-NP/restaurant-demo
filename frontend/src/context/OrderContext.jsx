@@ -33,11 +33,56 @@ export const OrderProvider = ({ children }) => {
 
     const socket = io("http://localhost:5001");
 
-    socket.on("newOrder", fetchOrders);
-    socket.on("orderUpdated", fetchOrders);
-    socket.on("orderStatusUpdated", fetchOrders);
-    socket.on("orderCompleted", fetchOrders);
-    socket.on("orderCancelled", fetchOrders);
+    socket.on("newOrder", (newOrder) => {
+      setOrders((prevOrders) => {
+        // Prevent duplicates just in case
+        if (
+          prevOrders.find((o) => o.id === newOrder.id || o._id === newOrder._id)
+        )
+          return prevOrders;
+        return [newOrder, ...prevOrders];
+      });
+    });
+
+    socket.on("orderUpdated", (updatedOrder) => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === updatedOrder.id || order._id === updatedOrder._id
+            ? updatedOrder
+            : order
+        )
+      );
+    });
+
+    socket.on("orderStatusUpdated", (updatedOrder) => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === updatedOrder.id || order._id === updatedOrder._id
+            ? updatedOrder
+            : order
+        )
+      );
+    });
+
+    socket.on("orderCompleted", (completedOrder) => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === completedOrder.id || order._id === completedOrder._id
+            ? completedOrder
+            : order
+        )
+      );
+    });
+
+    socket.on("orderCancelled", (cancelledOrder) => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === cancelledOrder.id || order._id === cancelledOrder._id
+            ? cancelledOrder
+            : order
+        )
+      );
+    });
 
     return () => socket.disconnect();
   }, [fetchOrders]);
