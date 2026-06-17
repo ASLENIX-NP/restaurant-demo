@@ -17,7 +17,13 @@ import {
   Upload,
   RefreshCw,
   Camera,
-  ChevronDown
+  ChevronDown,
+  ChevronRight,
+  Crown,
+  ClipboardList,
+  Banknote,
+  ChefHat,
+  Utensils
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -326,18 +332,30 @@ const Settings = () => {
                     </div>
                     <h2 className="text-lg font-black text-slate-900">Role & Access</h2>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {[
-                      { name: "Admin (Full Access)", icon: "👑" },
-                      { name: "Manager", icon: "📋" },
-                      { name: "Cashier", icon: "💰" },
-                      { name: "Chef / Kitchen", icon: "👨‍🍳" },
-                      { name: "Waiter / Staff", icon: "🍽️" },
-                    ].map((role) => (
-                      <button key={role.name} className="w-full flex items-center gap-3 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 hover:border-slate-200 text-slate-700 font-bold text-sm transition-all text-left">
-                        <span className="text-xl">{role.icon}</span> {role.name}
-                      </button>
-                    ))}
+                      { name: "Admin (Full Access)", icon: Crown, iconColor: "text-purple-600", bg: "bg-purple-50", border: "border-purple-100/60" },
+                      { name: "Manager", icon: ClipboardList, iconColor: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100/60" },
+                      { name: "Cashier", icon: Banknote, iconColor: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100/60" },
+                      { name: "Chef / Kitchen", icon: ChefHat, iconColor: "text-orange-600", bg: "bg-orange-50", border: "border-orange-100/60" },
+                      { name: "Waiter / Staff", icon: Utensils, iconColor: "text-rose-600", bg: "bg-rose-50", border: "border-rose-100/60" },
+                    ].map((role) => {
+                      const Icon = role.icon;
+                      return (
+                        <button key={role.name} className="w-full flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white hover:bg-slate-50 hover:border-slate-200 hover:shadow-sm transition-all text-left group">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border ${role.bg} ${role.border}`}>
+                              <Icon size={20} className={role.iconColor} />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{role.name}</h4>
+                              <p className="text-[11px] font-medium text-slate-400 mt-0.5">Manage permissions & access</p>
+                            </div>
+                          </div>
+                          <ChevronRight size={18} className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

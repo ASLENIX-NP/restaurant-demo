@@ -80,8 +80,8 @@ const Kitchen = () => {
         {/* METRICS & STATS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
           {/* New Orders Stat */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <ClipboardList size={22} />
             </div>
             <div>
@@ -91,8 +91,8 @@ const Kitchen = () => {
           </div>
 
           {/* Preparing Stat */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <ChefHat size={22} />
             </div>
             <div>
@@ -102,8 +102,8 @@ const Kitchen = () => {
           </div>
 
           {/* Ready Stat */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <Utensils size={22} />
             </div>
             <div>
@@ -113,8 +113,8 @@ const Kitchen = () => {
           </div>
 
           {/* Completed Stat */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <CheckCircle2 size={22} />
             </div>
             <div>
@@ -183,44 +183,52 @@ const OrderCard = ({ order, colorTheme, isCompleted = false }) => {
   
   // Theme color maps for Tailwind utilities
   const themeMap = {
-    orange: { bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200", topBorder: "border-t-orange-400" },
-    amber: { bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-200", topBorder: "border-t-amber-400" },
-    emerald: { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200", topBorder: "border-t-emerald-400" },
-    slate: { bg: "bg-slate-100", text: "text-slate-500", border: "border-slate-200", topBorder: "border-t-slate-400" }
+    orange: { bg: "bg-orange-50", text: "text-orange-600", dot: "bg-orange-500", gradient: "from-orange-50 to-transparent" },
+    amber: { bg: "bg-amber-50", text: "text-amber-600", dot: "bg-amber-500", gradient: "from-amber-50 to-transparent" },
+    emerald: { bg: "bg-emerald-50", text: "text-emerald-600", dot: "bg-emerald-500", gradient: "from-emerald-50 to-transparent" },
+    slate: { bg: "bg-slate-50", text: "text-slate-500", dot: "bg-slate-400", gradient: "from-slate-50 to-transparent" }
   };
 
   const theme = themeMap[colorTheme];
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border border-slate-100 p-4 border-t-4 ${theme.topBorder} transition-transform hover:-translate-y-1 ${isCompleted ? 'opacity-75' : ''}`}>
+    <div className={`group relative bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-slate-100 hover:border-slate-200 ${isCompleted ? 'opacity-75' : ''}`}>
       
-      {/* Top Details */}
-      <div className="flex justify-between items-start mb-3">
-        <h4 className="font-black text-slate-900 text-lg">{order.id}</h4>
-        <span className="flex items-center gap-1 text-[11px] font-bold text-slate-400">
-          <Clock size={12} /> {order.time}
-        </span>
-      </div>
+      {/* Background Subtle Gradient */}
+      <div className={`absolute inset-0 bg-gradient-to-b ${theme.gradient} opacity-50 pointer-events-none`} />
+      
+      {/* Status Top Accent Line */}
+      <div className={`h-1.5 w-full ${theme.dot} transition-all duration-300 group-hover:h-2`} />
 
-      {/* Meta Info */}
-      <div className="text-xs font-bold text-slate-500 mb-4 pb-3 border-b border-slate-100 flex flex-col gap-1">
-        <div>{order.table} <span className="mx-1 text-slate-300">•</span> {order.type}</div>
-        <div className="text-[10px] text-slate-400">Server: {order.server}</div>
-      </div>
+      <div className="p-5 relative z-10 flex-1 flex flex-col">
+        {/* Top Details */}
+        <div className="flex justify-between items-start mb-4">
+          <h4 className="font-black text-slate-900 text-lg tracking-tight">{order.id}</h4>
+          <span className="flex items-center gap-1 text-[11px] font-bold text-slate-400 bg-white/60 px-2 py-1 rounded-md border border-slate-100/50 backdrop-blur-sm">
+            <Clock size={12} /> {order.time}
+          </span>
+        </div>
 
-      {/* Food Items */}
-      <ul className="space-y-2 mb-5">
-        {order.items.map((item, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm font-semibold text-slate-700">
-            <span className={`mt-1.5 w-1.5 h-1.5 rounded-full ${theme.bg.replace('bg-', 'bg-').replace('-50', '-400')}`} />
-            {item}
-          </li>
-        ))}
-      </ul>
+        {/* Meta Info */}
+        <div className="text-xs font-bold text-slate-500 mb-4 pb-3 border-b border-slate-100/60 flex flex-col gap-1">
+          <div>{order.table} <span className="mx-1 text-slate-300">•</span> {order.type}</div>
+          <div className="text-[10px] text-slate-400 mt-0.5">Server: {order.server}</div>
+        </div>
 
-      {/* Status Badge */}
-      <div className={`text-center py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider border ${theme.bg} ${theme.text} ${theme.border}`}>
-        {order.statusText}
+        {/* Food Items */}
+        <ul className="space-y-2 mb-5 flex-1">
+          {order.items.map((item, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm font-semibold text-slate-700">
+              <span className={`mt-1.5 w-1.5 h-1.5 rounded-full shadow-sm shrink-0 ${theme.dot}`} />
+              <span className="leading-tight">{item}</span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Status Badge */}
+        <div className={`text-center py-2 rounded-xl text-[11px] font-black uppercase tracking-wider shadow-sm border ${theme.bg} ${theme.text} border-white/50 backdrop-blur-sm`}>
+          {order.statusText}
+        </div>
       </div>
       
     </div>

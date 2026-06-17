@@ -5,13 +5,13 @@ import {
   Utensils,
   CheckCircle2,
   AlertTriangle,
-  TrendingUp,
   X,
   Edit2,
   Trash2,
   Receipt,
   User,
   Clock,
+  Users,
 } from "lucide-react";
 
 import "../../styles/adminTables.css"; // Kept for any global custom overrides
@@ -118,24 +118,28 @@ const AdminTables = () => {
       bg: "bg-emerald-50",
       text: "text-emerald-600",
       dot: "bg-emerald-500",
+      gradient: "from-emerald-50 to-transparent",
     },
     occupied: {
       border: "border-t-rose-400",
       bg: "bg-rose-50",
       text: "text-rose-600",
       dot: "bg-rose-500",
+      gradient: "from-rose-50 to-transparent",
     },
     reserved: {
       border: "border-t-amber-400",
       bg: "bg-amber-50",
       text: "text-amber-600",
       dot: "bg-amber-500",
+      gradient: "from-amber-50 to-transparent",
     },
     cleaning: {
       border: "border-t-blue-400",
       bg: "bg-blue-50",
       text: "text-blue-600",
       dot: "bg-blue-500",
+      gradient: "from-blue-50 to-transparent",
     },
   };
 
@@ -240,8 +244,8 @@ const AdminTables = () => {
         {/* METRICS & STATS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
           {/* Total */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <Utensils size={22} />
             </div>
             <div>
@@ -255,8 +259,8 @@ const AdminTables = () => {
           </div>
 
           {/* Available */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <CheckCircle2 size={22} />
             </div>
             <div>
@@ -274,9 +278,9 @@ const AdminTables = () => {
           </div>
 
           {/* Occupied */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
-              <TrendingUp size={22} />
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+              <Users size={22} />
             </div>
             <div>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">
@@ -293,8 +297,8 @@ const AdminTables = () => {
           </div>
 
           {/* Reserved */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <AlertTriangle size={22} />
             </div>
             <div>
@@ -362,57 +366,74 @@ const AdminTables = () => {
                     onClick={() =>
                       setSelectedTableId(isSelected ? null : table.id)
                     }
-                    className={`bg-white rounded-2xl border-t-4 border-x border-b shadow-sm overflow-hidden flex flex-col justify-between transition-all cursor-pointer ${
-                      style.border
-                    } ${
+                    className={`group relative bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 ${
                       isSelected
-                        ? "ring-2 ring-purple-400 border-x-purple-100 border-b-purple-100 scale-[1.02]"
-                        : "border-x-slate-100 border-b-slate-100 hover:shadow-md"
+                        ? "ring-4 ring-purple-500/20 border-purple-300 scale-[1.02]"
+                        : "border-slate-100 hover:border-slate-200"
                     }`}
                   >
-                    <div className="p-5">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-lg font-black text-slate-900">
-                          {table.name}
-                        </h3>
-                        <span
-                          className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${style.bg} ${style.text}`}
-                        >
+                    {/* Background Subtle Gradient */}
+                    <div className={`absolute inset-0 bg-gradient-to-b ${style.gradient} opacity-50 pointer-events-none`} />
+                    
+                    {/* Status Top Accent Line */}
+                    <div className={`h-1.5 w-full ${style.dot} transition-all duration-300 group-hover:h-2`} />
+
+                    <div className="p-6 relative z-10">
+                      <div className="flex justify-between items-start mb-5">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${style.bg} ${style.text} group-hover:scale-110 transition-transform duration-300`}>
+                            <Utensils size={24} />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                              {table.name}
+                            </h3>
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                              {table.seats || 4} Seats
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between mb-5 p-3 rounded-xl bg-white/60 border border-slate-100/50 backdrop-blur-sm">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${table.customer !== "No Customer" ? "bg-blue-50 text-blue-500" : "bg-slate-50 text-slate-400"}`}>
+                            <User size={16} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                              Current Guest
+                            </p>
+                            <h4 className={`text-sm font-bold truncate max-w-[140px] ${table.customer !== "No Customer" ? "text-slate-900" : "text-slate-500"}`}>
+                              {table.customer}
+                            </h4>
+                          </div>
+                        </div>
+                        <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm border ${style.bg} ${style.text} border-white/50`}>
                           {table.status}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
-                          <User size={18} />
+                      <div className="bg-slate-900 rounded-xl p-3.5 flex justify-between items-center shadow-inner group-hover:bg-slate-800 transition-colors">
+                        <div className="flex items-center gap-2">
+                           <Receipt size={16} className="text-slate-400" />
+                           <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                             Billing
+                           </span>
                         </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-sm">
-                            {table.customer}
-                          </h4>
-                          <p className="text-xs font-medium text-slate-400">
-                            Current Guest
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="bg-slate-50 rounded-xl p-3 flex justify-between items-center">
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                          Billing
-                        </span>
-                        <span className="font-black text-slate-900 text-sm">
+                        <span className="font-black text-white text-sm">
                           Rs. {table.amount.toLocaleString()}
                         </span>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
+                    <div className="grid grid-cols-2 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/80 relative z-10">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleEditClick(table);
                         }}
-                        className="py-3 text-xs font-bold text-slate-600 hover:bg-white transition flex items-center justify-center gap-1.5"
+                        className="py-3.5 text-xs font-bold text-slate-600 hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
                       >
                         <Edit2 size={14} /> Edit
                       </button>
@@ -421,7 +442,7 @@ const AdminTables = () => {
                           e.stopPropagation();
                           handleDeleteClick(table.id);
                         }}
-                        className="py-3 text-xs font-bold text-rose-600 hover:bg-rose-50 transition flex items-center justify-center gap-1.5"
+                        className="py-3.5 text-xs font-bold text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-colors flex items-center justify-center gap-2"
                       >
                         <Trash2 size={14} /> Delete
                       </button>

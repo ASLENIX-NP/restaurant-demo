@@ -27,8 +27,7 @@ const Tables = () => {
   const [formStatus, setFormStatus] = useState("Available");
   const [formCustomer, setFormCustomer] = useState("");
 
-  const { tables, addTable, editTable, updateTableStatus, fetchTables } =
-    useTables();
+  const { tables, setTables, updateTableStatus, fetchTables } = useTables();
   const { orders, cancelOrder, completeOrder, fetchOrders } = useOrders();
 
   useEffect(() => {
@@ -69,35 +68,40 @@ const Tables = () => {
         return {
           bg: "bg-emerald-50",
           text: "text-emerald-600",
-          border: "border-t-emerald-400",
+          dot: "bg-emerald-500",
+          gradient: "from-emerald-50 to-transparent",
           icon: <CheckCircle2 size={14} />,
         };
       case "Occupied":
         return {
           bg: "bg-rose-50",
           text: "text-rose-600",
-          border: "border-t-rose-400",
+          dot: "bg-rose-500",
+          gradient: "from-rose-50 to-transparent",
           icon: <Users size={14} />,
         };
       case "Reserved":
         return {
           bg: "bg-amber-50",
           text: "text-amber-600",
-          border: "border-t-amber-400",
+          dot: "bg-amber-500",
+          gradient: "from-amber-50 to-transparent",
           icon: <CalendarClock size={14} />,
         };
       case "Cleaning":
         return {
           bg: "bg-blue-50",
           text: "text-blue-600",
-          border: "border-t-blue-400",
+          dot: "bg-blue-500",
+          gradient: "from-blue-50 to-transparent",
           icon: <Sparkles size={14} />,
         };
       default:
         return {
           bg: "bg-slate-50",
           text: "text-slate-600",
-          border: "border-t-slate-400",
+          dot: "bg-slate-500",
+          gradient: "from-slate-50 to-transparent",
           icon: <Utensils size={14} />,
         };
     }
@@ -130,41 +134,43 @@ const Tables = () => {
   };
 
   // --- Form Submissions ---
-  const saveAddTable = async (e) => {
+  const saveAddTable = (e) => {
     e.preventDefault();
 
     const newId =
       tables.length > 0 ? Math.max(...tables.map((t) => t.id)) + 1 : 1;
-    const newCustomer =
-      formStatus === "Available" || formStatus === "Cleaning"
-        ? "No Customer"
-        : formCustomer || "Anonymous";
+    const newTable = {
+      id: newId,
+      name: `Table ${newId}`,
+      seats: 4, // Default fallback
+      status: formStatus,
+      currentCustomer:
+        formStatus === "Available" || formStatus === "Cleaning"
+          ? "No Customer"
+          : formCustomer || "Anonymous",
+    };
 
-    if (addTable) {
-      await addTable({
-        name: `Table ${newId}`,
-        seats: parseInt(formSeats, 10) || 4,
-        status: formStatus,
-        currentCustomer: newCustomer,
-      });
-    }
+    setTables([...tables, newTable]);
     closeModal();
   };
 
-  const saveEditTable = async (e) => {
+  const saveEditTable = (e) => {
     e.preventDefault();
-    const newCustomer =
-      formStatus === "Available" || formStatus === "Cleaning"
-        ? "No Customer"
-        : formCustomer || "Anonymous";
-
-    if (editTable) {
-      await editTable(selectedTable._id || selectedTable.id, {
-        seats: parseInt(formSeats, 10) || 4,
-        status: formStatus,
-        currentCustomer: newCustomer,
-      });
-    }
+    setTables(
+      tables.map((t) =>
+        t.id === selectedTable.id
+          ? {
+              ...t,
+              seats: selectedTable.seats || 4,
+              status: formStatus,
+              currentCustomer:
+                formStatus === "Available" || formStatus === "Cleaning"
+                  ? "No Customer"
+                  : formCustomer,
+            }
+          : t
+      )
+    );
     closeModal();
   };
 
@@ -191,8 +197,8 @@ const Tables = () => {
 
         {/* DYNAMIC STATS GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 md:mb-8">
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
-            <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-inner border border-slate-100">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-inner border border-slate-100 group-hover:scale-110 transition-transform duration-300">
               <Utensils size={26} strokeWidth={2.5} />
             </div>
             <div>
@@ -205,8 +211,8 @@ const Tables = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-inner border border-emerald-100">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-inner border border-emerald-100 group-hover:scale-110 transition-transform duration-300">
               <CheckCircle2 size={26} strokeWidth={2.5} />
             </div>
             <div>
@@ -219,8 +225,8 @@ const Tables = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
-            <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner border border-rose-100">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner border border-rose-100 group-hover:scale-110 transition-transform duration-300">
               <Users size={26} strokeWidth={2.5} />
             </div>
             <div>
@@ -233,8 +239,8 @@ const Tables = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
-            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100 group-hover:scale-110 transition-transform duration-300">
               <AlertTriangle size={26} strokeWidth={2.5} />
             </div>
             <div>
@@ -256,57 +262,58 @@ const Tables = () => {
               <div
                 key={table.id}
                 onClick={() => handleOpenView(table)}
-                className={`bg-white rounded-3xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer ${config.border}`}
+              className={`group relative bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 border-slate-100 hover:border-slate-200`}
               >
-                <div className="p-5 pb-4 flex justify-between items-start">
-                  <h3 className="text-lg font-black text-slate-900">
-                    {table.name || `Table ${table.id}`}
-                  </h3>
-                  <span
-                    className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${config.bg} ${config.text}`}
-                  >
-                    {config.icon} {table.status}
-                  </span>
-                </div>
+              {/* Background Subtle Gradient */}
+              <div className={`absolute inset-0 bg-gradient-to-b ${config.gradient} opacity-50 pointer-events-none`} />
+              
+              {/* Status Top Accent Line */}
+              <div className={`h-1.5 w-full ${config.dot} transition-all duration-300 group-hover:h-2`} />
 
-                <div className="px-5 pb-5 flex flex-col gap-3">
+              <div className="p-6 relative z-10 flex-1 flex flex-col justify-between">
+                <div className="flex justify-between items-start mb-5">
                   <div className="flex items-center gap-3">
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-inner ${config.bg} ${config.text}`}
-                    >
-                      <Utensils size={20} />
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${config.bg} ${config.text} group-hover:scale-110 transition-transform duration-300`}>
+                      <Utensils size={24} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
-                        Capacity
-                      </p>
-                      <p className="text-sm font-bold text-slate-900">
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                        {table.name || `Table ${table.id}`}
+                      </h3>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
                         {table.seats || 4} Seats
                       </p>
                     </div>
                   </div>
+                </div>
+
+                <div className="flex items-center justify-between mb-2 p-3 rounded-xl bg-white/60 border border-slate-100/50 backdrop-blur-sm">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 shadow-inner border border-slate-100">
-                      <User size={20} />
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${table.customer && table.customer !== "No Customer" ? "bg-blue-50 text-blue-500" : "bg-slate-50 text-slate-400"}`}>
+                      <User size={16} />
                     </div>
                     <div className="truncate">
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        Customer
+                        Current Guest
                       </p>
-                      <p className="text-sm font-bold text-slate-900 truncate">
+                      <h4 className={`text-sm font-bold truncate max-w-[140px] ${table.customer && table.customer !== "No Customer" ? "text-slate-900" : "text-slate-500"}`}>
                         {table.customer || "No Customer"}
-                      </p>
+                      </h4>
                     </div>
                   </div>
+                  <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm border ${config.bg} ${config.text} border-white/50 flex items-center gap-1.5`}>
+                    {config.icon} {table.status}
+                  </span>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
+              <div className="grid grid-cols-2 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/80 relative z-10">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleOpenView(table);
                     }}
-                    className="py-3.5 text-xs font-bold text-slate-500 hover:bg-white hover:text-purple-600 transition-colors flex items-center justify-center gap-1.5"
+                  className="py-3.5 text-xs font-bold text-slate-600 hover:bg-white hover:text-purple-600 transition-colors flex items-center justify-center gap-2"
                   >
                     <Eye size={14} /> View
                   </button>
@@ -315,7 +322,7 @@ const Tables = () => {
                       e.stopPropagation();
                       handleOpenEdit(table);
                     }}
-                    className="py-3.5 text-xs font-bold text-slate-500 hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-1.5"
+                  className="py-3.5 text-xs font-bold text-slate-600 hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
                   >
                     <Edit2 size={14} /> Edit
                   </button>
@@ -366,22 +373,12 @@ const Tables = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                        Capacity
-                      </span>
-                      <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                        <Utensils size={14} className="text-slate-400" />{" "}
-                        {selectedTable.seats || 4} Seats
-                      </span>
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Capacity</span>
+                      <span className="font-bold text-slate-900 flex items-center gap-1.5"><Utensils size={14} className="text-slate-400"/> {selectedTable.seats || 4} Seats</span>
                     </div>
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                        Customer
-                      </span>
-                      <span className="font-bold text-slate-900 flex items-center gap-1.5 truncate">
-                        <User size={14} className="text-slate-400" />{" "}
-                        {selectedTable.customer || "No Customer"}
-                      </span>
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Customer</span>
+                      <span className="font-bold text-slate-900 flex items-center gap-1.5 truncate"><User size={14} className="text-slate-400"/> {selectedTable.customer || "No Customer"}</span>
                     </div>
                   </div>
 
@@ -415,12 +412,12 @@ const Tables = () => {
                   </div>
 
                   <div className="flex gap-3 mt-6 border-t border-slate-100 pt-5">
-                    <button
-                      onClick={closeModal}
+                  <button
+                    onClick={closeModal}
                       className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-md text-sm"
-                    >
-                      Close Details
-                    </button>
+                  >
+                    Close Details
+                  </button>
                   </div>
                 </div>
               </>
@@ -487,21 +484,21 @@ const Tables = () => {
                   )}
                 </div>
 
-                {/* Modal Footer */}
-                <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex gap-3">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition shadow-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition shadow-md"
-                  >
-                    {activeModal === "add" ? "Create Table" : "Save Changes"}
-                  </button>
+                  {/* Modal Footer */}
+                  <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex gap-3">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition shadow-sm"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition shadow-md"
+                    >
+                      {activeModal === "add" ? "Create Table" : "Save Changes"}
+                    </button>
                 </div>
               </form>
             )}

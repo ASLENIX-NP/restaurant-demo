@@ -39,7 +39,7 @@ const Dashboard = () => {
 
   const { orders, serveOrder, cancelOrder, completeOrder, fetchOrders } =
     useOrders();
-  const { tables, editTable, updateTableStatus, fetchTables } = useTables();
+  const { tables, setTables, updateTableStatus, fetchTables } = useTables();
 
   useEffect(() => {
     if (fetchOrders) fetchOrders();
@@ -96,30 +96,28 @@ const Dashboard = () => {
   };
 
   // Process and save updated table data properties
-  const handleSaveTableEdits = async (e) => {
+  const handleSaveTableEdits = (e) => {
     e.preventDefault();
-    let finalCustomer =
-      editStatus === "Available"
-        ? "No Customer"
-        : editCustomer.trim() || "No Customer";
+    setTables((prev) =>
+      prev.map((t) => {
+        if (t.id === editingTable.number) {
+          let finalCustomer =
+            editStatus === "Available"
+              ? "No Customer"
+              : editCustomer.trim() || "No Customer";
 
-    try {
-      if (editTable) {
-        await editTable(
-          editingTable._id || editingTable.id || editingTable.number,
-          {
+          return {
+            ...t,
             status: editStatus,
             currentCustomer: finalCustomer,
             seats: parseInt(editSeats, 10),
             reservationTime: editStatus === "Reserved" ? editTime : null,
-          }
-        );
-      }
-      setEditingTable(null);
-    } catch (err) {
-      console.error(err);
-      alert(err.message || "Failed to update table");
-    }
+          };
+        }
+        return t;
+      })
+    );
+    setEditingTable(null);
   };
 
   const handleCancelOrder = (order) => {
@@ -149,21 +147,24 @@ const Dashboard = () => {
     switch (status) {
       case "Occupied":
         return {
-          border: "border-t-rose-400",
           bg: "bg-rose-50",
           text: "text-rose-600",
+          dot: "bg-rose-500",
+          gradient: "from-rose-50 to-transparent",
         };
       case "Reserved":
         return {
-          border: "border-t-amber-400",
           bg: "bg-amber-50",
           text: "text-amber-600",
+          dot: "bg-amber-500",
+          gradient: "from-amber-50 to-transparent",
         };
       default:
         return {
-          border: "border-t-emerald-400",
           bg: "bg-emerald-50",
           text: "text-emerald-600",
+          dot: "bg-emerald-500",
+          gradient: "from-emerald-50 to-transparent",
         };
     }
   };
@@ -204,8 +205,8 @@ const Dashboard = () => {
 
         {/* STATS OVERVIEW CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 md:mb-8">
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner border border-blue-100">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner border border-blue-100 group-hover:scale-110 transition-transform duration-300">
               <Utensils size={26} strokeWidth={2.5} />
             </div>
             <div>
@@ -218,8 +219,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
-            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100 group-hover:scale-110 transition-transform duration-300">
               <Package size={26} strokeWidth={2.5} />
             </div>
             <div>
@@ -236,8 +237,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner border border-emerald-100">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner border border-emerald-100 group-hover:scale-110 transition-transform duration-300">
               <CheckCircle2 size={26} strokeWidth={2.5} />
             </div>
             <div>
@@ -250,8 +251,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
-            <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 shadow-inner border border-purple-100">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 shadow-inner border border-purple-100 group-hover:scale-110 transition-transform duration-300">
               <CalendarClock size={26} strokeWidth={2.5} />
             </div>
             <div>
@@ -296,45 +297,58 @@ const Dashboard = () => {
                   <div
                     key={index}
                     onClick={() => setSelectedTableDetails(table)}
-                    className={`bg-white rounded-3xl border-t-4 border-x border-b border-x-slate-100 border-b-slate-100 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer ${styles.border}`}
+              className={`group relative bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 border-slate-100 hover:border-slate-200`}
                   >
-                    <div className="p-5">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-lg font-black text-slate-900">
-                          {table.name || `Table ${table.number}`}
-                        </h3>
-                        <span
-                          className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${styles.bg} ${styles.text}`}
-                        >
-                          {table.status}
-                        </span>
-                      </div>
+              {/* Background Subtle Gradient */}
+              <div className={`absolute inset-0 bg-gradient-to-b ${styles.gradient} opacity-50 pointer-events-none`} />
+              
+              {/* Status Top Accent Line */}
+              <div className={`h-1.5 w-full ${styles.dot} transition-all duration-300 group-hover:h-2`} />
 
-                      <div className="flex items-center gap-4 mb-2">
-                        <div
-                          className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${styles.bg} ${styles.text}`}
-                        >
-                          <Utensils size={24} />
-                        </div>
-                        <div>
-                          <p className="text-xs font-black text-slate-900 mb-1">
-                            {table.label}
-                          </p>
-                          <p className="text-xs font-medium text-slate-500 mb-0.5">
-                            <strong className="text-slate-700">Guest:</strong>{" "}
-                            {table.customer}
-                          </p>
-                        </div>
-                      </div>
+              <div className="p-6 relative z-10 flex-1 flex flex-col justify-between">
+                <div className="flex justify-between items-start mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${styles.bg} ${styles.text} group-hover:scale-110 transition-transform duration-300`}>
+                      <Utensils size={24} />
                     </div>
+                    <div>
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                        {table.name || `Table ${table.number}`}
+                      </h3>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                        {table.label}
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-                    <div className="grid grid-cols-1 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/50">
+                <div className="flex items-center justify-between mb-2 p-3 rounded-xl bg-white/60 border border-slate-100/50 backdrop-blur-sm">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${table.customer && table.customer !== "No Customer" ? "bg-blue-50 text-blue-500" : "bg-slate-50 text-slate-400"}`}>
+                      <User size={16} />
+                    </div>
+                    <div className="truncate">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        Current Guest
+                      </p>
+                      <h4 className={`text-sm font-bold truncate max-w-[140px] ${table.customer && table.customer !== "No Customer" ? "text-slate-900" : "text-slate-500"}`}>
+                        {table.customer || "No Customer"}
+                      </h4>
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm border ${styles.bg} ${styles.text} border-white/50`}>
+                    {table.status}
+                  </span>
+                </div>
+              </div>
+
+                <div className="grid grid-cols-1 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/80 relative z-10">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           openEditModal(table);
                         }}
-                        className="py-3.5 text-xs font-bold text-slate-500 hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-1.5"
+                    className="py-3.5 text-xs font-bold text-slate-600 hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
                       >
                         <Edit2 size={14} /> Edit
                       </button>
@@ -432,27 +446,27 @@ const Dashboard = () => {
                   .map((order) => (
                     <div
                       key={order.id}
-                      className={`flex items-center justify-between p-4 rounded-2xl border transition-all hover:shadow-md ${
+                        className={`flex items-center justify-between p-4 rounded-2xl border transition-all hover:shadow-md ${
                         order.status === "Ready"
                           ? "bg-emerald-50/50 border-emerald-100"
-                          : "border-slate-100 bg-slate-50/50 hover:bg-white"
+                            : "border-slate-100 bg-slate-50/50 hover:bg-white"
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`border font-black text-[10px] px-2.5 py-1.5 rounded-lg shadow-sm tracking-wider ${
+                            className={`border font-black text-[10px] px-2.5 py-1.5 rounded-lg shadow-sm tracking-wider ${
                             order.status === "Ready"
                               ? "bg-emerald-500 text-white border-emerald-600"
-                              : "bg-slate-800 text-white border-slate-900"
+                                : "bg-slate-800 text-white border-slate-900"
                           }`}
                         >
                           {order.id}
                         </div>
                         <div>
-                          <h3 className="font-bold text-slate-900 text-sm leading-tight">
+                            <h3 className="font-bold text-slate-900 text-sm leading-tight">
                             {order.table || "Queue"}
                           </h3>
-                          <p className="text-[11px] font-medium text-slate-500 mt-0.5">
+                            <p className="text-[11px] font-medium text-slate-500 mt-0.5">
                             {(order.items || []).reduce(
                               (acc, item) => acc + item.qty,
                               0
@@ -463,7 +477,7 @@ const Dashboard = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border shadow-sm ${getOrderStatusStyles(
+                            className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border shadow-sm ${getOrderStatusStyles(
                             order.status
                           )}`}
                         >

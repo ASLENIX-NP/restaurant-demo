@@ -8,6 +8,8 @@ import {
   Truck,
   Eye,
   X,
+  ChefHat,
+  FileText
 } from "lucide-react";
 import { useOrders } from "../../context/OrderContext";
 
@@ -53,6 +55,8 @@ const Orders = () => {
         ? true
         : activeFilter === "Preparing"
         ? order.status === "Cooking" || order.status === "Ready"
+        : activeFilter === "Delivery"
+        ? order.type === "Delivery"
         : order.status === activeFilter;
 
     const matchesSearch = order.id
@@ -84,8 +88,11 @@ const Orders = () => {
         {/* METRICS & STATS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
           {/* Stat Card 1 */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
+          <div 
+            onClick={() => setActiveFilter("All Orders")}
+            className={`group bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer ${activeFilter === "All Orders" ? "ring-2 ring-slate-400 border-slate-400" : "border-slate-100"}`}
+          >
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 ${activeFilter === "All Orders" ? "bg-slate-800 text-white" : "bg-slate-50 text-slate-600"}`}>
               <Package size={22} />
             </div>
             <div>
@@ -104,8 +111,11 @@ const Orders = () => {
           </div>
 
           {/* Stat Card 2 */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+          <div 
+            onClick={() => setActiveFilter("Completed")}
+            className={`group bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer ${activeFilter === "Completed" ? "ring-2 ring-emerald-400 border-emerald-400" : "border-slate-100"}`}
+          >
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 ${activeFilter === "Completed" ? "bg-emerald-500 text-white" : "bg-emerald-50 text-emerald-600"}`}>
               <CheckCircle2 size={22} />
             </div>
             <div>
@@ -127,8 +137,11 @@ const Orders = () => {
           </div>
 
           {/* Stat Card 3 */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
+          <div 
+            onClick={() => setActiveFilter("Pending")}
+            className={`group bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer ${activeFilter === "Pending" ? "ring-2 ring-orange-400 border-orange-400" : "border-slate-100"}`}
+          >
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 ${activeFilter === "Pending" ? "bg-orange-500 text-white" : "bg-orange-50 text-orange-500"}`}>
               <Hourglass size={22} />
             </div>
             <div>
@@ -147,8 +160,11 @@ const Orders = () => {
           </div>
 
           {/* Stat Card 4 */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+          <div 
+            onClick={() => setActiveFilter("Delivery")}
+            className={`group bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer ${activeFilter === "Delivery" ? "ring-2 ring-blue-400 border-blue-400" : "border-slate-100"}`}
+          >
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 ${activeFilter === "Delivery" ? "bg-blue-500 text-white" : "bg-blue-50 text-blue-600"}`}>
               <Truck size={22} />
             </div>
             <div>
@@ -172,26 +188,52 @@ const Orders = () => {
           {/* Top Controls Bar */}
           <div className="p-5 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
             {/* Nav Tabs */}
-            <div className="flex bg-slate-50 p-1 rounded-xl">
-              {["All Orders", "Pending", "Preparing", "Completed"].map(
-                (tab) => (
+            <div className="inline-flex bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/60 overflow-x-auto max-w-full shadow-inner">
+              {[
+                { name: "All Orders", icon: FileText, activeColor: "text-slate-800", bgActive: "bg-slate-200", ringActive: "ring-slate-300/50" },
+                { name: "Pending", icon: Hourglass, activeColor: "text-orange-600", bgActive: "bg-orange-50", ringActive: "ring-orange-200/50" },
+                { name: "Preparing", icon: ChefHat, activeColor: "text-amber-600", bgActive: "bg-amber-50", ringActive: "ring-amber-200/50" },
+                { name: "Delivery", icon: Truck, activeColor: "text-blue-600", bgActive: "bg-blue-50", ringActive: "ring-blue-200/50" },
+                { name: "Completed", icon: CheckCircle2, activeColor: "text-emerald-600", bgActive: "bg-emerald-50", ringActive: "ring-emerald-200/50" }
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeFilter === tab.name;
+                
+                let count = 0;
+                if (tab.name === "All Orders") count = formattedOrders.length;
+                else if (tab.name === "Pending") count = formattedOrders.filter(o => o.status === "Pending").length;
+                else if (tab.name === "Preparing") count = formattedOrders.filter(o => o.status === "Cooking" || o.status === "Ready").length;
+                else if (tab.name === "Delivery") count = formattedOrders.filter(o => o.type === "Delivery").length;
+                else if (tab.name === "Completed") count = formattedOrders.filter(o => o.status === "Completed").length;
+
+                return (
                   <button
-                    key={tab}
-                    onClick={() => setActiveFilter(tab)}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                      activeFilter === tab
-                        ? "bg-slate-900 text-white shadow-sm"
-                        : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+                    key={tab.name}
+                    onClick={() => setActiveFilter(tab.name)}
+                    className={`group flex items-center whitespace-nowrap gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 transform active:scale-95 ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-md ring-1 ring-slate-200/50 scale-[1.02] z-10"
+                        : "text-slate-500 hover:text-slate-700 hover:bg-white/60 hover:shadow-sm"
                     }`}
                   >
-                    {tab}
+                    <Icon size={16} className={`transition-colors duration-300 ${isActive ? tab.activeColor : "text-slate-400 group-hover:text-slate-500"}`} />
+                    {tab.name}
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-black transition-colors duration-300 ${
+                        isActive
+                          ? `${tab.bgActive} ${tab.activeColor} ring-1 ${tab.ringActive}`
+                          : "bg-slate-200/50 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-500"
+                      }`}
+                    >
+                      {count}
+                    </span>
                   </button>
-                )
-              )}
+                );
+              })}
             </div>
 
             {/* Search Bar */}
-            <div className="relative w-full sm:w-64">
+            <div className="relative w-full sm:w-72">
               <Search
                 size={16}
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
@@ -199,7 +241,7 @@ const Orders = () => {
               <input
                 type="text"
                 placeholder="Search order..."
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-slate-400 transition-all placeholder:text-slate-400"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-50 transition-all placeholder:text-slate-400 shadow-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />

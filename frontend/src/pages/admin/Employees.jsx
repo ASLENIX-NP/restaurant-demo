@@ -164,6 +164,39 @@ const Employees = () => {
     }
   };
 
+  const handleApproveClick = async (employeeId) => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:5001/api/auth/users/${employeeId}/status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: "Active" }),
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to approve user.");
+      }
+
+      setEmployees(
+        employees.map((emp) =>
+          (emp._id || emp.tempId || emp.id) === employeeId
+            ? { ...emp, status: "Active", justApproved: true }
+            : emp
+        )
+      );
+      showNotification("Employee approved successfully!", "success");
+    } catch (error) {
+      showNotification(error.message, "error");
+    }
+  };
+
   const handleOpenAdd = () => {
     setIsEditing(false);
     setEditingId(null);
@@ -228,7 +261,7 @@ const Employees = () => {
         setEmployees(
           employees.map((emp) =>
             (emp._id || emp.tempId) === editingId
-              ? { ...emp, status: newEmployee.status }
+              ? { ...emp, status: newEmployee.status, justApproved: newEmployee.status === "Active" ? true : emp.justApproved }
               : emp
           )
         );
@@ -265,10 +298,42 @@ const Employees = () => {
           throw new Error(data.message || "Failed to register employee.");
         }
 
-        setEmployees([...employees, data.user]); // Add the new user to the state
+        // Map returned basic info into full local state object
+        let finalUser = {
+          ...data.user,
+          _id: data.user.id,
+          name: newEmployee.name,
+          email: newEmployee.email,
+          phone: newEmployee.phone,
+          shift: newEmployee.shift,
+          salary: newEmployee.salary,
+          image: newEmployee.image,
+          justApproved: true
+        };
+
+        // Automatically approve/set status since an Admin is creating them
+        if (newEmployee.status !== "Pending") {
+          const token = sessionStorage.getItem("token");
+          const statusRes = await fetch(
+            `http://localhost:5001/api/auth/users/${data.user.id}/status`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ status: newEmployee.status }),
+            }
+          );
+          if (statusRes.ok) {
+            finalUser.status = newEmployee.status;
+          }
+        }
+
+        setEmployees([finalUser, ...employees]); // Add the new user to the state
         setShowModal(false);
         showNotification(
-          "Employee added successfully! They are currently Pending approval.",
+          `Employee added successfully and marked as ${finalUser.status}!`,
           "success"
         );
       } catch (error) {
@@ -295,6 +360,10 @@ const Employees = () => {
 
     return matchesSearch && matchesRole && matchesStatus;
   }).sort((a, b) => {
+    // Prioritize newly added or approved employees
+    if (a.justApproved && !b.justApproved) return -1;
+    if (!a.justApproved && b.justApproved) return 1;
+
     if (sortBy === "Name (A - Z)") {
       return (a.name || "").localeCompare(b.name || "");
     }
@@ -401,8 +470,8 @@ const Employees = () => {
 
         {/* METRICS & STATS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
-            <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <Users size={24} />
             </div>
             <div>
@@ -418,8 +487,8 @@ const Employees = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
-            <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <CheckCircle2 size={24} />
             </div>
             <div>
@@ -435,8 +504,8 @@ const Employees = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
-            <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <ChefHat size={24} />
             </div>
             <div>
@@ -452,8 +521,8 @@ const Employees = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
-            <div className="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
+          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+            <div className="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <XCircleIcon size={24} />
             </div>
             <div>
@@ -597,7 +666,7 @@ const Employees = () => {
                         <XCircleIcon size={14} /> Reject
                       </button>
                       <button
-                        onClick={() => handleOpenEdit(employee)}
+                        onClick={() => handleApproveClick(employee._id || employee.id || employee.tempId)}
                         className="flex-1 flex items-center justify-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-wide bg-emerald-50 hover:bg-emerald-100 transition-colors px-4 py-2 rounded-lg border border-emerald-200 shadow-sm"
                       >
                         <CheckCircle2 size={14} /> Approve
@@ -714,7 +783,7 @@ const Employees = () => {
                                   Reject
                                 </button>
                                 <button
-                                  onClick={() => handleOpenEdit(employee)}
+                                  onClick={() => handleApproveClick(employee._id || employee.id || employee.tempId)}
                                   className="px-3 py-1 text-xs font-bold rounded-md bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition"
                                 >
                                   Approve

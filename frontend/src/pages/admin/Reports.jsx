@@ -9,7 +9,7 @@ import {
   BarChart3,
   PieChart as PieIcon,
 } from "lucide-react";
-import { io } from "socket.io-client";
+import { useSocket } from "../../context/SocketContext";
 import {
   AreaChart,
   Area,
@@ -29,6 +29,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import "../../styles/reports.css";
 
 export default function Reports() {
+  const socket = useSocket();
   const [activeTab, setActiveTab] = useState("Overview");
   const [reportData, setReportData] = useState(null);
 
@@ -78,8 +79,8 @@ export default function Reports() {
 
     fetchReports(startDate, endDate);
 
-    const socket = io("http://localhost:5001");
-
+    if (!socket) return;
+    
     const handleUpdate = () => fetchReports(startDate, endDate);
 
     socket.on("newOrder", handleUpdate);
@@ -87,8 +88,13 @@ export default function Reports() {
     socket.on("orderStatusUpdated", handleUpdate);
     socket.on("orderCompleted", handleUpdate);
 
-    return () => socket.disconnect();
-  }, [startDate, endDate]);
+    return () => {
+      socket.off("newOrder", handleUpdate);
+      socket.off("orderUpdated", handleUpdate);
+      socket.off("orderStatusUpdated", handleUpdate);
+      socket.off("orderCompleted", handleUpdate);
+    };
+  }, [startDate, endDate, socket]);
 
   const totalRevenue = reportData?.overall?.totalRevenue || 0;
   const totalOrders = reportData?.overall?.totalOrders || 0;

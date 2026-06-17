@@ -13,11 +13,12 @@ import {
   X,
   Image as ImageIcon,
 } from "lucide-react";
-import { io } from "socket.io-client";
+import { useSocket } from "../../context/SocketContext";
 
 import "../../styles/menu.css"; // Kept for any global custom overrides
 
 const Menu = () => {
+  const socket = useSocket();
   const [menuItems, setMenuItems] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -37,12 +38,13 @@ const Menu = () => {
 
   useEffect(() => {
     loadProducts();
-
-    const socket = io("http://localhost:5001");
+    
+    if (!socket) return;
+    
     socket.on("menuUpdated", loadProducts);
-
-    return () => socket.disconnect();
-  }, []);
+    
+    return () => socket.off("menuUpdated", loadProducts);
+  }, [socket]);
 
   const loadProducts = async () => {
     setLoading(true);
@@ -214,8 +216,8 @@ const Menu = () => {
 
         {/* METRICS & STATS GRID */}
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+          <div className="group bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <Utensils size={18} />
             </div>
             <div>
@@ -228,8 +230,8 @@ const Menu = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col gap-3">
-            <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+          <div className="group bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col gap-3">
+            <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <FolderOpen size={18} />
             </div>
             <div>
@@ -242,8 +244,8 @@ const Menu = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col gap-3">
-            <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
+          <div className="group bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <CheckCircle2 size={18} />
             </div>
             <div>
@@ -256,8 +258,8 @@ const Menu = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col gap-3">
-            <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
+          <div className="group bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col gap-3">
+            <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <XCircle size={18} />
             </div>
             <div>
@@ -270,8 +272,8 @@ const Menu = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col gap-3">
-            <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
+          <div className="group bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col gap-3">
+            <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <Banknote size={18} />
             </div>
             <div>
@@ -284,8 +286,8 @@ const Menu = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col gap-3">
-            <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
+          <div className="group bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col gap-3">
+            <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
               <Flame size={18} />
             </div>
             <div>
