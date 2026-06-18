@@ -10,12 +10,15 @@ import {
   Table2,
   Package,
   ShoppingCart,
+  Star,
 } from "lucide-react";
 import { io } from "socket.io-client";
 import "../../styles/takeorders.css"; // Kept for any global custom overrides
 import { useOrders } from "../../context/OrderContext";
 import { useAuth } from "../../context/AuthContext";
 import { useTables } from "../../context/TableContext";
+
+const API_URL = `http://${window.location.hostname}:5001`;
 
 export default function TakeOrder() {
   const { addOrder } = useOrders();
@@ -29,7 +32,8 @@ export default function TakeOrder() {
   const [menuItems, setMenuItems] = useState([]);
   const [orderNote, setOrderNote] = useState("");
 
-  const serverName = user?.name || user?.username || user?.role || "Staff Member";
+  const serverName =
+    user?.name || user?.username || user?.role || "Staff Member";
 
   const dynamicTables = [
     "All Tables",
@@ -51,7 +55,7 @@ export default function TakeOrder() {
 
   const loadProducts = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:5001/api/menu");
+      const response = await fetch(`${API_URL}/api/menu`);
       if (response.ok) {
         const data = await response.json();
         setMenuItems(
@@ -69,7 +73,7 @@ export default function TakeOrder() {
   useEffect(() => {
     loadProducts();
 
-    const socket = io("http://localhost:5001");
+    const socket = io(API_URL);
     socket.on("menuUpdated", loadProducts);
 
     return () => socket.disconnect();
@@ -151,7 +155,7 @@ export default function TakeOrder() {
 
     try {
       const token = sessionStorage.getItem("token");
-      const response = await fetch("http://localhost:5001/api/orders", {
+      const response = await fetch(`${API_URL}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -243,15 +247,21 @@ export default function TakeOrder() {
               <UtensilsCrossed className="text-purple-600" size={28} />
               Take Order
             </h1>
-            <p className="text-slate-500 text-sm mt-1 font-medium">Select a table and add items to send to the kitchen.</p>
+            <p className="text-slate-500 text-sm mt-1 font-medium">
+              Select a table and add items to send to the kitchen.
+            </p>
           </div>
           <div className="bg-white px-5 py-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
             <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center border border-purple-100">
               <User size={18} />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Current Server</p>
-              <p className="text-sm font-black text-slate-900 leading-none">{serverName}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">
+                Current Server
+              </p>
+              <p className="text-sm font-black text-slate-900 leading-none">
+                {serverName}
+              </p>
             </div>
           </div>
         </div>
@@ -321,6 +331,11 @@ export default function TakeOrder() {
                     <span className="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg z-10 shadow-sm">
                       Available
                     </span>
+                {item.isSpecial && (
+                  <span className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg z-10 shadow-sm flex items-center gap-1">
+                    <Star size={10} fill="currentColor" /> Special
+                  </span>
+                )}
                     <img
                       src={
                         item.image ||
@@ -367,7 +382,9 @@ export default function TakeOrder() {
                   <h3 className="font-black text-slate-900 text-xl tracking-tight flex items-center gap-2">
                     <ShoppingCart size={20} className="text-purple-600" /> Cart
                   </h3>
-                  <p className="text-xs font-medium text-slate-500 mt-1">Review and send to kitchen</p>
+                  <p className="text-xs font-medium text-slate-500 mt-1">
+                    Review and send to kitchen
+                  </p>
                 </div>
                 <span className="bg-purple-50 text-purple-700 font-black text-xs px-3 py-1.5 rounded-lg shadow-sm border border-purple-200">
                   {selectedTable}
@@ -379,8 +396,12 @@ export default function TakeOrder() {
                   <User size={14} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Order taken by</p>
-                  <p className="text-sm font-bold text-slate-800">{serverName}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    Order taken by
+                  </p>
+                  <p className="text-sm font-bold text-slate-800">
+                    {serverName}
+                  </p>
                 </div>
               </div>
             </div>
@@ -400,7 +421,10 @@ export default function TakeOrder() {
                 </div>
               ) : (
                 cart.map((item) => (
-                  <div className="flex gap-3 items-center group p-2 hover:bg-slate-50 rounded-xl transition-colors" key={item.id}>
+                  <div
+                    className="flex gap-3 items-center group p-2 hover:bg-slate-50 rounded-xl transition-colors"
+                    key={item.id}
+                  >
                     <img
                       src={
                         item.image ||

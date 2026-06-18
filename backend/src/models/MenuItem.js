@@ -9,7 +9,7 @@ const menuItemSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      required: [true, "Please add a description"],
+      default: "",
     },
     price: {
       type: Number,
@@ -26,6 +26,10 @@ const menuItemSchema = new mongoose.Schema(
     image: {
       type: String,
       default: "",
+    },
+    isSpecial: {
+      type: Boolean,
+      default: false,
     },
   },
   {

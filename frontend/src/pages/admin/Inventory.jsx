@@ -15,12 +15,13 @@ import {
   Truck,
   X,
 } from "lucide-react";
-import { useSocket } from "../../context/SocketContext";
+import { io } from "socket.io-client";
 
 import "../../styles/inventory.css";
 
+const API_URL = `http://${window.location.hostname}:5001`;
+
 const Inventory = () => {
-  const socket = useSocket();
   const [items, setItems] = useState([]);
   const [purchaseHistory, setPurchaseHistory] = useState([]);
   const [categories, setCategories] = useState(["Oils & Sauces", "Grains", "Meat & Poultry", "Vegetables", "Dairy"]);
@@ -53,7 +54,7 @@ const Inventory = () => {
   const fetchInventory = useCallback(async () => {
     try {
       const token = sessionStorage.getItem("token");
-      const res = await fetch("http://localhost:5001/api/inventory", {
+      const res = await fetch(`${API_URL}/api/inventory`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -69,7 +70,7 @@ const Inventory = () => {
   const fetchLogs = useCallback(async () => {
     try {
       const token = sessionStorage.getItem("token");
-      const res = await fetch("http://localhost:5001/api/inventory/logs", {
+      const res = await fetch(`${API_URL}/api/inventory/logs`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -88,14 +89,10 @@ const Inventory = () => {
   useEffect(() => {
     fetchInventory();
     fetchLogs();
-    
-    if (!socket) return;
-    
-    const handleUpdate = () => { fetchInventory(); fetchLogs(); };
-    socket.on("inventoryUpdated", handleUpdate);
-    
-    return () => socket.off("inventoryUpdated", handleUpdate);
-  }, [fetchInventory, fetchLogs, socket]);
+    const socket = io(API_URL);
+    socket.on("inventoryUpdated", () => { fetchInventory(); fetchLogs(); });
+    return () => socket.disconnect();
+  }, [fetchInventory, fetchLogs]);
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -131,8 +128,8 @@ const Inventory = () => {
       const token = sessionStorage.getItem("token");
       const method = isEditing ? "PUT" : "POST";
       const url = isEditing 
-        ? `http://localhost:5001/api/inventory/${currentItemCode}`
-        : `http://localhost:5001/api/inventory`;
+        ? `${API_URL}/api/inventory/${currentItemCode}`
+        : `${API_URL}/api/inventory`;
 
       const response = await fetch(url, {
         method,
@@ -165,7 +162,7 @@ const Inventory = () => {
   const handleConfirmDelete = async () => {
     try {
       const token = sessionStorage.getItem("token");
-      const response = await fetch(`http://localhost:5001/api/inventory/${itemToDelete}`, {
+      const response = await fetch(`${API_URL}/api/inventory/${itemToDelete}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -190,7 +187,7 @@ const Inventory = () => {
     if (!adjustmentItemCode || !adjustmentQty || parseFloat(adjustmentQty) <= 0) return;
     try {
       const token = sessionStorage.getItem("token");
-      const response = await fetch(`http://localhost:5001/api/inventory/${adjustmentItemCode}/adjust`, {
+      const response = await fetch(`${API_URL}/api/inventory/${adjustmentItemCode}/adjust`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ type: adjustmentType, qty: adjustmentQty })
@@ -244,43 +241,43 @@ const Inventory = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
-          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
               <Package size={22} />
             </div>
             <div>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Items</h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1 tracking-tight">{items.length}</h2>
+              <h2 className="text-2xl font-black text-slate-900 mt-1">{items.length}</h2>
               <p className="text-xs font-bold text-slate-400 mt-0.5">All inventory items</p>
             </div>
           </div>
-          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
               <CheckCircle2 size={22} />
             </div>
             <div>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">In Stock</h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1 tracking-tight">{items.filter((i) => i.status === "In Stock").length}</h2>
+              <h2 className="text-2xl font-black text-slate-900 mt-1">{items.filter((i) => i.status === "In Stock").length}</h2>
               <p className="text-xs font-bold text-emerald-500 mt-0.5">Active availability</p>
             </div>
           </div>
-          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
               <AlertTriangle size={22} />
             </div>
             <div>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Low Stock</h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1 tracking-tight">{items.filter((i) => i.status === "Low Stock").length}</h2>
+              <h2 className="text-2xl font-black text-slate-900 mt-1">{items.filter((i) => i.status === "Low Stock").length}</h2>
               <p className="text-xs font-bold text-amber-500 mt-0.5">Requires attention</p>
             </div>
           </div>
-          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
               <XCircle size={22} />
             </div>
             <div>
               <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Out of Stock</h4>
-              <h2 className="text-2xl font-black text-slate-900 mt-1 tracking-tight">{items.filter((i) => i.status === "Out of Stock").length}</h2>
+              <h2 className="text-2xl font-black text-slate-900 mt-1">{items.filter((i) => i.status === "Out of Stock").length}</h2>
               <p className="text-xs font-bold text-rose-500 mt-0.5">Needs immediate reorder</p>
             </div>
           </div>
@@ -288,49 +285,36 @@ const Inventory = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-9 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-slate-100 flex flex-col xl:flex-row gap-4 justify-between items-center bg-slate-50/50">
-              
-              {/* Categories Tab Bar */}
-              <div className="inline-flex bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/60 overflow-x-auto max-w-full shadow-inner mb-2 xl:mb-0 w-full xl:w-auto">
-                {["All Categories", ...categories].map((cat, index) => {
-                  const isActive = filterCategory === cat;
-                  const count = cat === "All Categories" ? items.length : items.filter(item => item.category === cat).length;
-                  
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => setFilterCategory(cat)}
-                      className={`group flex items-center whitespace-nowrap gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 transform active:scale-95 ${
-                        isActive
-                          ? "bg-white text-slate-900 shadow-md ring-1 ring-slate-200/50 scale-[1.02] z-10"
-                          : "text-slate-500 hover:text-slate-700 hover:bg-white/60 hover:shadow-sm"
-                      }`}
-                    >
-                      {cat}
-                      <span
-                        className={`px-2 py-0.5 rounded-md text-[10px] font-black transition-colors duration-300 ${
-                          isActive
-                            ? "bg-slate-200 text-slate-800 ring-1 ring-slate-300/50"
-                            : "bg-slate-200/50 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-500"
-                        }`}
-                      >
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="relative w-full xl:max-w-md">
+            <div className="p-4 border-b border-slate-100 flex flex-wrap gap-3 items-center bg-slate-50/50">
+              <div className="relative flex-1 min-w-[200px]">
                 <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search item or code..."
+                  placeholder="Search item..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-50 transition-all placeholder:text-slate-400 shadow-sm"
+                  className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 transition-all placeholder:text-slate-400"
                 />
               </div>
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:border-purple-400 font-medium"
+              >
+                <option value="All Categories">All Categories</option>
+                {categories.map((cat, idx) => (
+                  <option key={idx} value={cat}>{cat}</option>
+                ))}
+              </select>
+              <select className="bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:border-purple-400 font-medium">
+                <option>All Units</option>
+              </select>
+              <select className="bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:border-purple-400 font-medium">
+                <option>All Status</option>
+              </select>
+              <button className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition">
+                <SlidersHorizontal size={14} /> Filter
+              </button>
             </div>
 
             <div className="overflow-x-auto">

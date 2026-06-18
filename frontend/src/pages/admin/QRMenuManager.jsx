@@ -3,6 +3,8 @@ import { QrCode, Star, Eye, EyeOff, Search, Printer, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { io } from "socket.io-client";
 
+const API_URL = `http://${window.location.hostname}:5001`;
+
 const QRMenuManager = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [search, setSearch] = useState("");
@@ -15,7 +17,7 @@ const QRMenuManager = () => {
   useEffect(() => {
     loadProducts();
 
-    const socket = io("http://localhost:5001");
+    const socket = io(API_URL);
     socket.on("menuUpdated", loadProducts);
 
     return () => socket.disconnect();
@@ -23,7 +25,7 @@ const QRMenuManager = () => {
 
   const loadProducts = async () => {
     try {
-      const response = await fetch("http://localhost:5001/api/menu");
+      const response = await fetch(`${API_URL}/api/menu`);
       if (response.ok) {
         const data = await response.json();
         setMenuItems(data);
@@ -46,14 +48,18 @@ const QRMenuManager = () => {
 
     try {
       const token = sessionStorage.getItem("token");
-      await fetch(`http://localhost:5001/api/menu/${item._id || item.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ ...item, isAvailable: updatedStatus }),
-      });
+      const response = await fetch(
+        `${API_URL}/api/menu/${item._id || item.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ...item, isAvailable: updatedStatus }),
+        }
+      );
+      if (!response.ok) throw new Error("Server rejected update");
     } catch (error) {
       console.error("Error updating visibility:", error);
       loadProducts(); // Revert on failure
@@ -71,16 +77,26 @@ const QRMenuManager = () => {
 
     try {
       const token = sessionStorage.getItem("token");
-      await fetch(`http://localhost:5001/api/menu/${item._id || item.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ ...item, isSpecial: updatedSpecial }),
-      });
+      const response = await fetch(
+        `${API_URL}/api/menu/${item._id || item.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ...item, isSpecial: updatedSpecial }),
+        }
+      );
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || "Backend rejected update.");
+      }
     } catch (error) {
       console.error("Error updating special status:", error);
+      alert(
+        `Failed to save the Star status: ${error.message}\n\nPlease make sure "isSpecial: { type: Boolean }" is added to your backend MongoDB Menu schema.`
+      );
       loadProducts(); // Revert on failure
     }
   };

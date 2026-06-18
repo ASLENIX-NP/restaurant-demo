@@ -373,15 +373,21 @@ const AdminTables = () => {
                     }`}
                   >
                     {/* Background Subtle Gradient */}
-                    <div className={`absolute inset-0 bg-gradient-to-b ${style.gradient} opacity-50 pointer-events-none`} />
-                    
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-b ${style.gradient} opacity-50 pointer-events-none`}
+                    />
+
                     {/* Status Top Accent Line */}
-                    <div className={`h-1.5 w-full ${style.dot} transition-all duration-300 group-hover:h-2`} />
+                    <div
+                      className={`h-1.5 w-full ${style.dot} transition-all duration-300 group-hover:h-2`}
+                    />
 
                     <div className="p-6 relative z-10">
                       <div className="flex justify-between items-start mb-5">
                         <div className="flex items-center gap-3">
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${style.bg} ${style.text} group-hover:scale-110 transition-transform duration-300`}>
+                          <div
+                            className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${style.bg} ${style.text} group-hover:scale-110 transition-transform duration-300`}
+                          >
                             <Utensils size={24} />
                           </div>
                           <div>
@@ -397,31 +403,45 @@ const AdminTables = () => {
 
                       <div className="flex items-center justify-between mb-5 p-3 rounded-xl bg-white/60 border border-slate-100/50 backdrop-blur-sm">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${table.customer !== "No Customer" ? "bg-blue-50 text-blue-500" : "bg-slate-50 text-slate-400"}`}>
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              table.customer !== "No Customer"
+                                ? "bg-blue-50 text-blue-500"
+                                : "bg-slate-50 text-slate-400"
+                            }`}
+                          >
                             <User size={16} />
                           </div>
                           <div>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                               Current Guest
                             </p>
-                            <h4 className={`text-sm font-bold truncate max-w-[140px] ${table.customer !== "No Customer" ? "text-slate-900" : "text-slate-500"}`}>
+                            <h4
+                              className={`text-sm font-bold truncate max-w-[140px] ${
+                                table.customer !== "No Customer"
+                                  ? "text-slate-900"
+                                  : "text-slate-500"
+                              }`}
+                            >
                               {table.customer}
                             </h4>
                           </div>
                         </div>
-                        <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm border ${style.bg} ${style.text} border-white/50`}>
+                        <span
+                          className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm border ${style.bg} ${style.text} border-white/50`}
+                        >
                           {table.status}
                         </span>
                       </div>
 
-                      <div className="bg-slate-900 rounded-xl p-3.5 flex justify-between items-center shadow-inner group-hover:bg-slate-800 transition-colors">
+                      <div className="bg-slate-50/80 rounded-xl p-3.5 flex justify-between items-center border border-slate-100 group-hover:bg-slate-100 transition-colors">
                         <div className="flex items-center gap-2">
-                           <Receipt size={16} className="text-slate-400" />
-                           <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
-                             Billing
-                           </span>
+                          <Receipt size={16} className="text-slate-500" />
+                          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                            Billing
+                          </span>
                         </div>
-                        <span className="font-black text-white text-sm">
+                        <span className="font-black text-slate-900 text-sm">
                           Rs. {table.amount.toLocaleString()}
                         </span>
                       </div>

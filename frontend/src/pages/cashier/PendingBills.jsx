@@ -20,7 +20,7 @@ import {
   XCircle,
   Hourglass,
   Utensils,
-  FileText
+  FileText,
 } from "lucide-react";
 import "../../styles/pendingBills.css";
 import { useEffect } from "react";
@@ -467,16 +467,50 @@ export default function PendingBillsPage() {
         <section className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 mt-4">
           <div className="inline-flex bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/60 overflow-x-auto max-w-full shadow-inner">
             {[
-              { name: "All", icon: FileText, activeColor: "text-blue-600", bgActive: "bg-blue-50", ringActive: "ring-blue-200/50" },
-              { name: "Pending", icon: Hourglass, activeColor: "text-amber-600", bgActive: "bg-amber-50", ringActive: "ring-amber-200/50" },
-              { name: "Cooking", icon: ChefHat, activeColor: "text-orange-600", bgActive: "bg-orange-50", ringActive: "ring-orange-200/50" },
-              { name: "Ready", icon: CheckCircle, activeColor: "text-emerald-600", bgActive: "bg-emerald-50", ringActive: "ring-emerald-200/50" },
-              { name: "Served", icon: Utensils, activeColor: "text-purple-600", bgActive: "bg-purple-50", ringActive: "ring-purple-200/50" }
+              {
+                name: "All",
+                icon: FileText,
+                activeColor: "text-blue-600",
+                bgActive: "bg-blue-50",
+                ringActive: "ring-blue-200/50",
+              },
+              {
+                name: "Pending",
+                icon: Hourglass,
+                activeColor: "text-amber-600",
+                bgActive: "bg-amber-50",
+                ringActive: "ring-amber-200/50",
+              },
+              {
+                name: "Cooking",
+                icon: ChefHat,
+                activeColor: "text-orange-600",
+                bgActive: "bg-orange-50",
+                ringActive: "ring-orange-200/50",
+              },
+              {
+                name: "Ready",
+                icon: CheckCircle,
+                activeColor: "text-emerald-600",
+                bgActive: "bg-emerald-50",
+                ringActive: "ring-emerald-200/50",
+              },
+              {
+                name: "Served",
+                icon: Utensils,
+                activeColor: "text-purple-600",
+                bgActive: "bg-purple-50",
+                ringActive: "ring-purple-200/50",
+              },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeFilter === tab.name;
-              const count = tab.name === "All" ? pendingBillsData.length : pendingBillsData.filter((b) => b.kitchenStatus === tab.name).length;
-              
+              const count =
+                tab.name === "All"
+                  ? pendingBillsData.length
+                  : pendingBillsData.filter((b) => b.kitchenStatus === tab.name)
+                      .length;
+
               return (
                 <button
                   key={tab.name}
@@ -487,7 +521,14 @@ export default function PendingBillsPage() {
                       : "text-slate-500 hover:text-slate-700 hover:bg-white/60 hover:shadow-sm"
                   }`}
                 >
-                  <Icon size={16} className={`transition-colors duration-300 ${isActive ? tab.activeColor : "text-slate-400 group-hover:text-slate-500"}`} />
+                  <Icon
+                    size={16}
+                    className={`transition-colors duration-300 ${
+                      isActive
+                        ? tab.activeColor
+                        : "text-slate-400 group-hover:text-slate-500"
+                    }`}
+                  />
                   {tab.name}
                   <span
                     className={`px-2 py-0.5 rounded-md text-[10px] font-black transition-colors duration-300 ${
@@ -509,12 +550,34 @@ export default function PendingBillsPage() {
             const isSelected = selectedInvoiceId === bill.id;
 
             const statusStyles = {
-              pending: { bg: "bg-amber-50", text: "text-amber-600", dot: "bg-amber-500", gradient: "from-amber-50 to-transparent" },
-              cooking: { bg: "bg-orange-50", text: "text-orange-600", dot: "bg-orange-500", gradient: "from-orange-50 to-transparent" },
-              ready: { bg: "bg-emerald-50", text: "text-emerald-600", dot: "bg-emerald-500", gradient: "from-emerald-50 to-transparent" },
-              served: { bg: "bg-blue-50", text: "text-blue-600", dot: "bg-blue-500", gradient: "from-blue-50 to-transparent" },
+              pending: {
+                bg: "bg-amber-50",
+                text: "text-amber-600",
+                dot: "bg-amber-500",
+                gradient: "from-amber-50 to-transparent",
+              },
+              cooking: {
+                bg: "bg-orange-50",
+                text: "text-orange-600",
+                dot: "bg-orange-500",
+                gradient: "from-orange-50 to-transparent",
+              },
+              ready: {
+                bg: "bg-emerald-50",
+                text: "text-emerald-600",
+                dot: "bg-emerald-500",
+                gradient: "from-emerald-50 to-transparent",
+              },
+              served: {
+                bg: "bg-blue-50",
+                text: "text-blue-600",
+                dot: "bg-blue-500",
+                gradient: "from-blue-50 to-transparent",
+              },
             };
-            const style = statusStyles[bill.kitchenStatus.toLowerCase()] || statusStyles.pending;
+            const style =
+              statusStyles[bill.kitchenStatus.toLowerCase()] ||
+              statusStyles.pending;
 
             return (
               <div
@@ -527,15 +590,21 @@ export default function PendingBillsPage() {
                 }`}
               >
                 {/* Background Subtle Gradient */}
-                <div className={`absolute inset-0 bg-gradient-to-b ${style.gradient} opacity-50 pointer-events-none`} />
-                
+                <div
+                  className={`absolute inset-0 bg-gradient-to-b ${style.gradient} opacity-50 pointer-events-none`}
+                />
+
                 {/* Status Top Accent Line */}
-                <div className={`h-1.5 w-full ${style.dot} transition-all duration-300 group-hover:h-2`} />
+                <div
+                  className={`h-1.5 w-full ${style.dot} transition-all duration-300 group-hover:h-2`}
+                />
 
                 <div className="p-6 relative z-10">
                   <div className="flex justify-between items-start mb-5">
                     <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${style.bg} ${style.text} group-hover:scale-110 transition-transform duration-300`}>
+                      <div
+                        className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${style.bg} ${style.text} group-hover:scale-110 transition-transform duration-300`}
+                      >
                         <Table2 size={24} />
                       </div>
                       <div>
@@ -543,7 +612,10 @@ export default function PendingBillsPage() {
                           {bill.table}
                         </h3>
                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 line-clamp-1">
-                          {bill.orderIds[0]} {bill.orderIds.length > 1 ? `(+${bill.orderIds.length - 1})` : ""}
+                          {bill.orderIds[0]}{" "}
+                          {bill.orderIds.length > 1
+                            ? `(+${bill.orderIds.length - 1})`
+                            : ""}
                         </p>
                       </div>
                     </div>
@@ -551,7 +623,9 @@ export default function PendingBillsPage() {
 
                   <div className="flex items-center justify-between mb-5 p-3 rounded-xl bg-white/60 border border-slate-100/50 backdrop-blur-sm">
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 text-slate-400`}>
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 text-slate-400`}
+                      >
                         <User size={16} />
                       </div>
                       <div>
@@ -563,24 +637,30 @@ export default function PendingBillsPage() {
                         </h4>
                       </div>
                     </div>
-                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm border ${style.bg} ${style.text} border-white/50`}>
+                    <span
+                      className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm border ${style.bg} ${style.text} border-white/50`}
+                    >
                       {bill.kitchenStatus}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 mb-5 text-[11px] font-bold text-slate-500">
-                     <div className="flex items-center gap-1.5"><Clock size={14}/> {bill.time}</div>
-                     <div className="flex items-center gap-1.5"><User size={14}/> {bill.guests} guests</div>
+                    <div className="flex items-center gap-1.5">
+                      <Clock size={14} /> {bill.time}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <User size={14} /> {bill.guests} guests
+                    </div>
                   </div>
 
-                  <div className="bg-slate-900 rounded-xl p-3.5 flex justify-between items-center shadow-inner group-hover:bg-slate-800 transition-colors">
+                  <div className="bg-slate-50/80 rounded-xl p-3.5 flex justify-between items-center border border-slate-100 group-hover:bg-slate-100 transition-colors">
                     <div className="flex items-center gap-2">
-                       <Receipt size={16} className="text-slate-400" />
-                       <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
-                         Total Due
-                       </span>
+                      <Receipt size={16} className="text-slate-500" />
+                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        Total Due
+                      </span>
                     </div>
-                    <span className="font-black text-white text-sm">
+                    <span className="font-black text-slate-900 text-sm">
                       Rs. {bill.amount.toLocaleString()}
                     </span>
                   </div>

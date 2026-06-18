@@ -12,6 +12,7 @@ import {
   Trash2,
   X,
   Image as ImageIcon,
+  Star,
 } from "lucide-react";
 import { useSocket } from "../../context/SocketContext";
 
@@ -34,15 +35,16 @@ const Menu = () => {
     description: "",
     image: "",
     isAvailable: true,
+    isSpecial: false,
   });
 
   useEffect(() => {
     loadProducts();
-    
+
     if (!socket) return;
-    
+
     socket.on("menuUpdated", loadProducts);
-    
+
     return () => socket.off("menuUpdated", loadProducts);
   }, [socket]);
 
@@ -99,6 +101,7 @@ const Menu = () => {
       description: "",
       image: "",
       isAvailable: true,
+      isSpecial: false,
     });
     setShowAddModal(true);
   };
@@ -114,6 +117,7 @@ const Menu = () => {
       description: item.description || "",
       image: item.image || "",
       isAvailable: item.isAvailable !== false,
+      isSpecial: item.isSpecial || false,
     });
     setShowAddModal(true);
   };
@@ -390,8 +394,14 @@ const Menu = () => {
                               </div>
                             )}
                             <div>
-                              <h4 className="font-bold text-slate-900">
+                              <h4 className="font-bold text-slate-900 flex items-center gap-2">
                                 {item.name}
+                                {item.isSpecial && (
+                                  <span className="bg-amber-100 text-amber-600 text-[9px] px-1.5 py-0.5 rounded-md uppercase font-black tracking-wider flex items-center gap-0.5">
+                                    <Star size={10} fill="currentColor" />{" "}
+                                    Special
+                                  </span>
+                                )}
                               </h4>
                               <p className="text-[11px] text-slate-500 font-medium mt-0.5 line-clamp-1 max-w-[250px]">
                                 {item.description || "No description provided"}
@@ -535,24 +545,48 @@ const Menu = () => {
                 />
               </div>
 
-              {/* Status Dropdown */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                  Status
-                </label>
-                <select
-                  value={newItem.isAvailable}
-                  onChange={(e) =>
-                    setNewItem({
-                      ...newItem,
-                      isAvailable: e.target.value === "true",
-                    })
-                  }
-                  className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm cursor-pointer"
-                >
-                  <option value="true">Active (Available)</option>
-                  <option value="false">Inactive (Unavailable)</option>
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                {/* Status Dropdown */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                    Status
+                  </label>
+                  <select
+                    value={newItem.isAvailable}
+                    onChange={(e) =>
+                      setNewItem({
+                        ...newItem,
+                        isAvailable: e.target.value === "true",
+                      })
+                    }
+                    className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm cursor-pointer"
+                  >
+                    <option value="true">Active (Available)</option>
+                    <option value="false">Inactive (Unavailable)</option>
+                  </select>
+                </div>
+
+                {/* Special Checkbox */}
+                <div className="flex items-center pt-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newItem.isSpecial}
+                      onChange={(e) =>
+                        setNewItem({ ...newItem, isSpecial: e.target.checked })
+                      }
+                      className="w-5 h-5 accent-amber-500 border-slate-300 rounded cursor-pointer"
+                    />
+                    <span className="text-[13px] font-bold text-slate-700 flex items-center gap-1.5">
+                      <Star
+                        size={16}
+                        className="text-amber-500"
+                        fill="currentColor"
+                      />{" "}
+                      Chef's Special
+                    </span>
+                  </label>
+                </div>
               </div>
 
               <div>

@@ -22,6 +22,8 @@ import {
 
 import "../../styles/employees.css"; // Kept for any global custom overrides
 
+const API_URL = `http://${window.location.hostname}:5001`;
+
 const Employees = () => {
   const navigate = useNavigate();
 
@@ -69,7 +71,7 @@ const Employees = () => {
       setLoading(true);
       try {
         const token = sessionStorage.getItem("token");
-        const response = await fetch("http://localhost:5001/api/auth/users", {
+        const response = await fetch(`${API_URL}/api/auth/users`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -98,7 +100,7 @@ const Employees = () => {
       const token = sessionStorage.getItem("token");
       // We use the 'update status' endpoint to deactivate, which is safer than deleting.
       const response = await fetch(
-        `http://localhost:5001/api/auth/users/${employeeToDelete}/status`,
+        `${API_URL}/api/auth/users/${employeeToDelete}/status`,
         {
           method: "PUT",
           headers: {
@@ -136,7 +138,7 @@ const Employees = () => {
     try {
       const token = sessionStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:5001/api/auth/users/${employeeToReject}`,
+        `${API_URL}/api/auth/users/${employeeToReject}`,
         {
           method: "DELETE",
           headers: {
@@ -159,39 +161,6 @@ const Employees = () => {
         "User rejected and data deleted successfully.",
         "success"
       );
-    } catch (error) {
-      showNotification(error.message, "error");
-    }
-  };
-
-  const handleApproveClick = async (employeeId) => {
-    try {
-      const token = sessionStorage.getItem("token");
-      const response = await fetch(
-        `http://localhost:5001/api/auth/users/${employeeId}/status`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ status: "Active" }),
-        }
-      );
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to approve user.");
-      }
-
-      setEmployees(
-        employees.map((emp) =>
-          (emp._id || emp.tempId || emp.id) === employeeId
-            ? { ...emp, status: "Active", justApproved: true }
-            : emp
-        )
-      );
-      showNotification("Employee approved successfully!", "success");
     } catch (error) {
       showNotification(error.message, "error");
     }
@@ -241,7 +210,7 @@ const Employees = () => {
       try {
         const token = sessionStorage.getItem("token");
         const response = await fetch(
-          `http://localhost:5001/api/auth/users/${editingId}/status`,
+          `${API_URL}/api/auth/users/${editingId}/status`,
           {
             method: "PUT",
             headers: {
@@ -261,7 +230,7 @@ const Employees = () => {
         setEmployees(
           employees.map((emp) =>
             (emp._id || emp.tempId) === editingId
-              ? { ...emp, status: newEmployee.status, justApproved: newEmployee.status === "Active" ? true : emp.justApproved }
+              ? { ...emp, status: newEmployee.status }
               : emp
           )
         );
@@ -279,61 +248,26 @@ const Employees = () => {
 
       // Connect to the backend registration endpoint
       try {
-        const response = await fetch(
-          "http://localhost:5001/api/auth/register",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              ...newEmployee,
-              confirmPassword: newEmployee.password, // The backend expects this
-            }),
-          }
-        );
+        const response = await fetch(`${API_URL}/api/auth/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...newEmployee,
+            confirmPassword: newEmployee.password, // The backend expects this
+          }),
+        });
 
         const data = await response.json();
         if (!response.ok) {
           throw new Error(data.message || "Failed to register employee.");
         }
 
-        // Map returned basic info into full local state object
-        let finalUser = {
-          ...data.user,
-          _id: data.user.id,
-          name: newEmployee.name,
-          email: newEmployee.email,
-          phone: newEmployee.phone,
-          shift: newEmployee.shift,
-          salary: newEmployee.salary,
-          image: newEmployee.image,
-          justApproved: true
-        };
-
-        // Automatically approve/set status since an Admin is creating them
-        if (newEmployee.status !== "Pending") {
-          const token = sessionStorage.getItem("token");
-          const statusRes = await fetch(
-            `http://localhost:5001/api/auth/users/${data.user.id}/status`,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ status: newEmployee.status }),
-            }
-          );
-          if (statusRes.ok) {
-            finalUser.status = newEmployee.status;
-          }
-        }
-
-        setEmployees([finalUser, ...employees]); // Add the new user to the state
+        setEmployees([...employees, data.user]); // Add the new user to the state
         setShowModal(false);
         showNotification(
-          `Employee added successfully and marked as ${finalUser.status}!`,
+          "Employee added successfully! They are currently Pending approval.",
           "success"
         );
       } catch (error) {
@@ -343,38 +277,36 @@ const Employees = () => {
     }
   };
 
-  const filteredEmployees = employees.filter((employee) => {
-    const safeName = employee?.name || "";
-    const safeEmail = employee?.email || "";
-    const safeRole = employee?.role || "";
-    const safeSearch = search || "";
+  const filteredEmployees = employees
+    .filter((employee) => {
+      const safeName = employee?.name || "";
+      const safeEmail = employee?.email || "";
+      const safeRole = employee?.role || "";
+      const safeSearch = search || "";
 
-    const matchesSearch =
-      safeName.toLowerCase().includes(safeSearch.toLowerCase()) ||
-      safeEmail.toLowerCase().includes(safeSearch.toLowerCase()) ||
-      safeRole.toLowerCase().includes(safeSearch.toLowerCase());
+      const matchesSearch =
+        safeName.toLowerCase().includes(safeSearch.toLowerCase()) ||
+        safeEmail.toLowerCase().includes(safeSearch.toLowerCase()) ||
+        safeRole.toLowerCase().includes(safeSearch.toLowerCase());
 
-    const matchesRole = roleFilter === "All" || employee?.role === roleFilter;
-    const matchesStatus =
-      statusFilter === "All" || employee?.status === statusFilter;
+      const matchesRole = roleFilter === "All" || employee?.role === roleFilter;
+      const matchesStatus =
+        statusFilter === "All" || employee?.status === statusFilter;
 
-    return matchesSearch && matchesRole && matchesStatus;
-  }).sort((a, b) => {
-    // Prioritize newly added or approved employees
-    if (a.justApproved && !b.justApproved) return -1;
-    if (!a.justApproved && b.justApproved) return 1;
-
-    if (sortBy === "Name (A - Z)") {
-      return (a.name || "").localeCompare(b.name || "");
-    }
-    if (sortBy === "Name (Z - A)") {
-      return (b.name || "").localeCompare(a.name || "");
-    }
-    if (sortBy === "Newest First") {
-      return (b._id || "").localeCompare(a._id || "");
-    }
-    return 0;
-  });
+      return matchesSearch && matchesRole && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (sortBy === "Name (A - Z)") {
+        return (a.name || "").localeCompare(b.name || "");
+      }
+      if (sortBy === "Name (Z - A)") {
+        return (b.name || "").localeCompare(a.name || "");
+      }
+      if (sortBy === "Newest First") {
+        return (b._id || "").localeCompare(a._id || "");
+      }
+      return 0;
+    });
 
   // Metric Computations
   const totalEmployees = employees.length;
@@ -470,8 +402,8 @@ const Employees = () => {
 
         {/* METRICS & STATS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
-          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-            <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
               <Users size={24} />
             </div>
             <div>
@@ -487,8 +419,8 @@ const Employees = () => {
             </div>
           </div>
 
-          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-            <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
               <CheckCircle2 size={24} />
             </div>
             <div>
@@ -504,8 +436,8 @@ const Employees = () => {
             </div>
           </div>
 
-          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-            <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
               <ChefHat size={24} />
             </div>
             <div>
@@ -521,8 +453,8 @@ const Employees = () => {
             </div>
           </div>
 
-          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-            <div className="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5">
+            <div className="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
               <XCircleIcon size={24} />
             </div>
             <div>
@@ -666,7 +598,7 @@ const Employees = () => {
                         <XCircleIcon size={14} /> Reject
                       </button>
                       <button
-                        onClick={() => handleApproveClick(employee._id || employee.id || employee.tempId)}
+                        onClick={() => handleOpenEdit(employee)}
                         className="flex-1 flex items-center justify-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-wide bg-emerald-50 hover:bg-emerald-100 transition-colors px-4 py-2 rounded-lg border border-emerald-200 shadow-sm"
                       >
                         <CheckCircle2 size={14} /> Approve
@@ -783,7 +715,7 @@ const Employees = () => {
                                   Reject
                                 </button>
                                 <button
-                                  onClick={() => handleApproveClick(employee._id || employee.id || employee.tempId)}
+                                  onClick={() => handleOpenEdit(employee)}
                                   className="px-3 py-1 text-xs font-bold rounded-md bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition"
                                 >
                                   Approve

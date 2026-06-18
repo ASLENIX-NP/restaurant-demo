@@ -9,7 +9,7 @@ import {
   BarChart3,
   PieChart as PieIcon,
 } from "lucide-react";
-import { useSocket } from "../../context/SocketContext";
+import { io } from "socket.io-client";
 import {
   AreaChart,
   Area,
@@ -28,8 +28,9 @@ import "react-datepicker/dist/react-datepicker.css";
 // Links the stylesheet cleanly
 import "../../styles/reports.css";
 
+const API_URL = `http://${window.location.hostname}:5001`;
+
 export default function Reports() {
-  const socket = useSocket();
   const [activeTab, setActiveTab] = useState("Overview");
   const [reportData, setReportData] = useState(null);
 
@@ -56,7 +57,7 @@ export default function Reports() {
       setLoading(true);
       try {
         const token = sessionStorage.getItem("token");
-        let url = "http://localhost:5001/api/reports/dashboard";
+        let url = `${API_URL}/api/reports/dashboard`;
         if (start && end) {
           const formattedStart = start.toISOString().split("T")[0];
           const formattedEnd = end.toISOString().split("T")[0];
@@ -79,8 +80,8 @@ export default function Reports() {
 
     fetchReports(startDate, endDate);
 
-    if (!socket) return;
-    
+    const socket = io(API_URL);
+
     const handleUpdate = () => fetchReports(startDate, endDate);
 
     socket.on("newOrder", handleUpdate);
@@ -88,13 +89,8 @@ export default function Reports() {
     socket.on("orderStatusUpdated", handleUpdate);
     socket.on("orderCompleted", handleUpdate);
 
-    return () => {
-      socket.off("newOrder", handleUpdate);
-      socket.off("orderUpdated", handleUpdate);
-      socket.off("orderStatusUpdated", handleUpdate);
-      socket.off("orderCompleted", handleUpdate);
-    };
-  }, [startDate, endDate, socket]);
+    return () => socket.disconnect();
+  }, [startDate, endDate]);
 
   const totalRevenue = reportData?.overall?.totalRevenue || 0;
   const totalOrders = reportData?.overall?.totalOrders || 0;
