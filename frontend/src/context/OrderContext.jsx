@@ -1,245 +1,209 @@
 import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-} from "react";
-import { io } from "socket.io-client";
+ createContext,
+ useContext,
+ useEffect,
+ useState,
+ useCallback,
+} from"react";
+import { io } from"socket.io-client";
+import apiClient from"../api/apiClient";
 
 const OrderContext = createContext();
 
 export const OrderProvider = ({ children }) => {
-  const [orders, setOrders] = useState([]);
+ const [orders, setOrders] = useState([]);
 
-  const fetchOrders = useCallback(async () => {
-    try {
-      const token = sessionStorage.getItem("token");
-      if (!token) return;
-      const response = await fetch("http://localhost:5001/api/orders", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data);
-      }
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    }
-  }, []);
+ const fetchOrders = useCallback(async () => {
+ try {
+ const { data } = await apiClient.get("/api/orders");
+ setOrders(data);
+ } catch (error) {
+ console.error("Error fetching orders:", error);
+ }
+ }, []);
 
-  useEffect(() => {
-    fetchOrders();
+ useEffect(() => {
+ fetchOrders();
 
-    const socket = io("http://localhost:5001");
+ const socket = io(import.meta.env.VITE_API_URL ||"http://localhost:5001");
 
-    socket.on("newOrder", (newOrder) => {
-      setOrders((prevOrders) => {
-        // Prevent duplicates just in case
-        if (
-          prevOrders.find((o) => o.id === newOrder.id || o._id === newOrder._id)
-        )
-          return prevOrders;
-        return [newOrder, ...prevOrders];
-      });
-    });
+ socket.on("newOrder", (newOrder) => {
+ setOrders((prevOrders) => {
+ // Prevent duplicates just in case
+ if (
+ prevOrders.find((o) => o.id === newOrder.id || o._id === newOrder._id)
+ )
+ return prevOrders;
+ return [newOrder, ...prevOrders];
+ });
+ });
 
-    socket.on("orderUpdated", (updatedOrder) => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.id === updatedOrder.id || order._id === updatedOrder._id
-            ? updatedOrder
-            : order
-        )
-      );
-    });
+ socket.on("orderUpdated", (updatedOrder) => {
+ setOrders((prevOrders) =>
+ prevOrders.map((order) =>
+ order.id === updatedOrder.id || order._id === updatedOrder._id
+ ? updatedOrder
+ : order
+ )
+ );
+ });
 
-    socket.on("orderStatusUpdated", (updatedOrder) => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.id === updatedOrder.id || order._id === updatedOrder._id
-            ? updatedOrder
-            : order
-        )
-      );
-    });
+ socket.on("orderStatusUpdated", (updatedOrder) => {
+ setOrders((prevOrders) =>
+ prevOrders.map((order) =>
+ order.id === updatedOrder.id || order._id === updatedOrder._id
+ ? updatedOrder
+ : order
+ )
+ );
+ });
 
-    socket.on("orderCompleted", (completedOrder) => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.id === completedOrder.id || order._id === completedOrder._id
-            ? completedOrder
-            : order
-        )
-      );
-    });
+ socket.on("orderCompleted", (completedOrder) => {
+ setOrders((prevOrders) =>
+ prevOrders.map((order) =>
+ order.id === completedOrder.id || order._id === completedOrder._id
+ ? completedOrder
+ : order
+ )
+ );
+ });
 
-    socket.on("orderCancelled", (cancelledOrder) => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.id === cancelledOrder.id || order._id === cancelledOrder._id
-            ? cancelledOrder
-            : order
-        )
-      );
-    });
+ socket.on("orderCancelled", (cancelledOrder) => {
+ setOrders((prevOrders) =>
+ prevOrders.map((order) =>
+ order.id === cancelledOrder.id || order._id === cancelledOrder._id
+ ? cancelledOrder
+ : order
+ )
+ );
+ });
 
-    return () => socket.disconnect();
-  }, [fetchOrders]);
+ return () => socket.disconnect();
+ }, [fetchOrders]);
 
-  // AUTO-INCREMENT ELAPSED TIME
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) => {
-          // Only increment timer for active kitchen orders
-          if (order.status === "Pending" || order.status === "Cooking") {
-            return {
-              ...order,
-              elapsedMinutes: (order.elapsedMinutes || 0) + 1,
-            };
-          }
-          return order;
-        })
-      );
-    }, 60000); // Runs every 60,000ms (1 minute)
-    return () => clearInterval(timer);
-  }, []);
+ // AUTO-INCREMENT ELAPSED TIME
+ useEffect(() => {
+ const timer = setInterval(() => {
+ setOrders((prevOrders) =>
+ prevOrders.map((order) => {
+ // Only increment timer for active kitchen orders
+ if (order.status ==="Pending" || order.status ==="Cooking") {
+ return {
+ ...order,
+ elapsedMinutes: (order.elapsedMinutes || 0) + 1,
+ };
+ }
+ return order;
+ })
+ );
+ }, 60000); // Runs every 60,000ms (1 minute)
+ return () => clearInterval(timer);
+ }, []);
 
-  // ADD ORDER (Frontend state update, backend handles the actual creation via POST in TakeOrder.jsx)
-  const addOrder = (order) => {
-    setOrders((prev) => [order, ...prev]);
-  };
+ // ADD ORDER (Frontend state update, backend handles the actual creation via POST in TakeOrder.jsx)
+ const addOrder = (order) => {
+ setOrders((prev) => [order, ...prev]);
+ };
 
-  // STATUS UPDATES
-  const updateStatus = async (id, status) => {
-    try {
-      const token = sessionStorage.getItem("token");
-      if (!token) return;
+ // STATUS UPDATES
+ const updateStatus = async (id, status) => {
+ try {
+ // Optimistic update for snappy UI
+ setOrders((prev) =>
+ prev.map((o) => (o.id === id || o._id === id ? { ...o, status } : o))
+ );
 
-      // Optimistic update for snappy UI
-      setOrders((prev) =>
-        prev.map((o) => (o.id === id || o._id === id ? { ...o, status } : o))
-      );
+ await apiClient.put(`/api/orders/${encodeURIComponent(id)}/status`, {
+ status,
+ });
+ } catch (err) {
+ console.error(err);
+ fetchOrders(); // Revert on failure
+ }
+ };
 
-      await fetch(
-        `http://localhost:5001/api/orders/${encodeURIComponent(id)}/status`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ status }),
-        }
-      );
-    } catch (err) {
-      console.error(err);
-      fetchOrders(); // Revert on failure
-    }
-  };
+ const startCooking = (id) => updateStatus(id,"Cooking");
+ const markReady = (id) => updateStatus(id,"Ready");
+ const serveOrder = (id) => updateStatus(id,"Served");
 
-  const startCooking = (id) => updateStatus(id, "Cooking");
-  const markReady = (id) => updateStatus(id, "Ready");
-  const serveOrder = (id) => updateStatus(id, "Served");
+ // COMPLETE
+ const completeOrder = async (id, finalDetails = {}) => {
+ try {
+ // Optimistic update
+ setOrders((prev) =>
+ prev.map((order) => {
+ if (order.id === id || order._id === id) {
+ let finalAmount = finalDetails.amount;
+ if (!finalAmount) {
+ const subtotal = (order.items || []).reduce(
+ (sum, i) => sum + i.qty * (parseFloat(i.price) || 0),
+ 0
+ );
+ finalAmount = subtotal + (subtotal > 0 ? 50 : 0);
+ }
+ return {
+ ...order,
+ ...finalDetails,
+ amount: finalAmount,
+ status:"Completed",
+ };
+ }
+ return order;
+ })
+ );
 
-  // COMPLETE
-  const completeOrder = async (id, finalDetails = {}) => {
-    try {
-      const token = sessionStorage.getItem("token");
-      if (!token) return;
+ await apiClient.put(
+ `/api/orders/${encodeURIComponent(id)}/complete`,
+ finalDetails
+ );
+ } catch (err) {
+ console.error(err);
+ fetchOrders();
+ }
+ };
 
-      // Optimistic update
-      setOrders((prev) =>
-        prev.map((order) => {
-          if (order.id === id || order._id === id) {
-            let finalAmount = finalDetails.amount;
-            if (!finalAmount) {
-              const subtotal = (order.items || []).reduce(
-                (sum, i) => sum + i.qty * (parseFloat(i.price) || 0),
-                0
-              );
-              finalAmount = subtotal + (subtotal > 0 ? 50 : 0);
-            }
-            return {
-              ...order,
-              ...finalDetails,
-              amount: finalAmount,
-              status: "Completed",
-            };
-          }
-          return order;
-        })
-      );
+ // CANCEL
+ const cancelOrder = async (id) => {
+ try {
+ setOrders((prev) =>
+ prev.map((order) =>
+ order.id === id || order._id === id
+ ? { ...order, status:"Cancelled" }
+ : order
+ )
+ );
 
-      await fetch(
-        `http://localhost:5001/api/orders/${encodeURIComponent(id)}/complete`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(finalDetails),
-        }
-      );
-    } catch (err) {
-      console.error(err);
-      fetchOrders();
-    }
-  };
+ await apiClient.put(`/api/orders/${encodeURIComponent(id)}/cancel`);
+ } catch (err) {
+ console.error(err);
+ fetchOrders();
+ }
+ };
 
-  // CANCEL
-  const cancelOrder = async (id) => {
-    try {
-      const token = sessionStorage.getItem("token");
-      if (!token) return;
+ return (
+ <OrderContext.Provider
+ value={{
+ orders,
 
-      setOrders((prev) =>
-        prev.map((order) =>
-          order.id === id || order._id === id
-            ? { ...order, status: "Cancelled" }
-            : order
-        )
-      );
+ setOrders,
 
-      await fetch(
-        `http://localhost:5001/api/orders/${encodeURIComponent(id)}/cancel`,
-        {
-          method: "PUT",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-    } catch (err) {
-      console.error(err);
-      fetchOrders();
-    }
-  };
+ addOrder,
 
-  return (
-    <OrderContext.Provider
-      value={{
-        orders,
+ startCooking,
 
-        setOrders,
+ markReady,
 
-        addOrder,
+ serveOrder,
 
-        startCooking,
+ completeOrder,
 
-        markReady,
-
-        serveOrder,
-
-        completeOrder,
-
-        cancelOrder,
-        fetchOrders,
-      }}
-    >
-      {children}
-    </OrderContext.Provider>
-  );
+ cancelOrder,
+ fetchOrders,
+ }}
+ >
+ {children}
+ </OrderContext.Provider>
+ );
 };
 
 export const useOrders = () => useContext(OrderContext);

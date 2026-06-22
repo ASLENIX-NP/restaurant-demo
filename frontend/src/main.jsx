@@ -1,41 +1,41 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
+import React from"react";
+import ReactDOM from"react-dom/client";
 
-import App from "./App";
+import App from"./App";
 
-import "./index.css";
-
-import {
-  OrderProvider,
-} from "./context/OrderContext";
+import"./index.css";
 
 import {
-  AuthProvider,
-} from "./context/AuthContext";
+ OrderProvider,
+} from"./context/OrderContext";
 
 import {
-  TableProvider,
-} from "./context/TableContext";
+ AuthProvider,
+} from"./context/AuthContext";
+
+import {
+ TableProvider,
+} from"./context/TableContext";
 
 ReactDOM.createRoot(
-  document.getElementById("root")
+ document.getElementById("root")
 ).render(
 
-  <React.StrictMode>
+ <React.StrictMode>
 
-    <AuthProvider>
+ <AuthProvider>
 
-      <OrderProvider>
+ <OrderProvider>
 
-        <TableProvider>
+ <TableProvider>
 
-          <App />
+ <App />
 
-        </TableProvider>
+ </TableProvider>
 
-      </OrderProvider>
+ </OrderProvider>
 
-    </AuthProvider>
+ </AuthProvider>
 
-  </React.StrictMode>
+ </React.StrictMode>
 );

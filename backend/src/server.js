@@ -34,7 +34,12 @@ app.use("/api/menu", require("./routes/menuRoutes"));
 app.use("/api/tables", require("./routes/tableRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/reports", require("./routes/reportRoutes"));
+app.use("/api/logs", require("./routes/logRoutes"));
 app.use("/api/inventory", require("./routes/inventoryRoutes"));
+app.use("/api/settings", require("./routes/settingsRoutes"));
+app.use("/api/reservations", require("./routes/reservationRoutes"));
+app.use("/api/shifts", require("./routes/shiftRoutes"));
+app.use("/api/customers", require("./routes/customerRoutes"));
 
 // Basic Health Check Route to verify it's working
 app.get("/api/health", (req, res) => {

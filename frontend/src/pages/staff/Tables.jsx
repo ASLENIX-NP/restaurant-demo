@@ -1,512 +1,514 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from"react";
 import {
-  Plus,
-  Utensils,
-  CheckCircle2,
-  AlertTriangle,
-  Users,
-  Sparkles,
-  Eye,
-  Edit2,
-  X,
-  User,
-  CalendarClock,
-} from "lucide-react";
+ Plus,
+ Utensils,
+ CheckCircle2,
+ AlertTriangle,
+ Users,
+ Sparkles,
+ Eye,
+ Edit2,
+ X,
+ User,
+ CalendarClock,
+} from"lucide-react";
 
-import "../../styles/tables.css"; // Kept for any global custom overrides
-import { useTables } from "../../context/TableContext";
-import { useOrders } from "../../context/OrderContext";
+import"../../styles/tables.css"; // Kept for any global custom overrides
+import { useTables } from"../../context/TableContext";
+import { useOrders } from"../../context/OrderContext";
 
 const Tables = () => {
-  // --- UI & Data State Management ---
-  const [activeModal, setActiveModal] = useState(null); // 'add' | 'edit' | 'view' | null
-  const [selectedTable, setSelectedTable] = useState(null);
+ // --- UI & Data State Management ---
+ const [activeModal, setActiveModal] = useState(null); //'add' |'edit' |'view' | null
+ const [selectedTable, setSelectedTable] = useState(null);
 
-  // Form states
-  const [formSeats, setFormSeats] = useState("");
-  const [formStatus, setFormStatus] = useState("Available");
-  const [formCustomer, setFormCustomer] = useState("");
+ // Form states
+ const [formSeats, setFormSeats] = useState("");
+ const [formStatus, setFormStatus] = useState("Available");
+ const [formCustomer, setFormCustomer] = useState("");
 
-  const { tables, setTables, updateTableStatus, fetchTables } = useTables();
-  const { orders, cancelOrder, completeOrder, fetchOrders } = useOrders();
+ const { tables, addTable, editTable, updateTableStatus, fetchTables } = useTables();
+ const { orders, cancelOrder, completeOrder, fetchOrders } = useOrders();
 
-  useEffect(() => {
-    if (fetchTables) fetchTables();
-    if (fetchOrders) fetchOrders();
-  }, [fetchTables, fetchOrders]);
+ useEffect(() => {
+ if (fetchTables) fetchTables();
+ if (fetchOrders) fetchOrders();
+ }, [fetchTables, fetchOrders]);
 
-  const tablesList = tables.map((t) => {
-    const tableOrders = orders.filter(
-      (o) => o.table === t.name && o.status !== "Completed"
-    );
-    const activeOrder = tableOrders.flatMap((o) =>
-      o.items.map((i) => ({ ...i }))
-    );
-    return {
-      ...t,
-      customer: t.currentCustomer,
-      activeOrder: activeOrder.length > 0 ? activeOrder : null,
-    };
-  });
+ const tablesList = tables.map((t) => {
+ const tableOrders = orders.filter(
+ (o) => o.table === t.name && o.status !=="Completed"
+ );
+ const activeOrder = tableOrders.flatMap((o) =>
+ o.items.map((i) => ({ ...i }))
+ );
+ return {
+ ...t,
+ customer: t.currentCustomer,
+ activeOrder: activeOrder.length > 0 ? activeOrder : null,
+ };
+ });
 
-  // --- Dynamic Dashboard Counters ---
-  const totalTables = tablesList.length;
-  const availableCount = tablesList.filter(
-    (t) => t.status === "Available"
-  ).length;
-  const occupiedCount = tablesList.filter(
-    (t) => t.status === "Occupied"
-  ).length;
-  const reservedCount = tablesList.filter(
-    (t) => t.status === "Reserved"
-  ).length;
+ // --- Dynamic Dashboard Counters ---
+ const totalTables = tablesList.length;
+ const availableCount = tablesList.filter(
+ (t) => t.status ==="Available"
+ ).length;
+ const occupiedCount = tablesList.filter(
+ (t) => t.status ==="Occupied"
+ ).length;
+ const reservedCount = tablesList.filter(
+ (t) => t.status ==="Reserved"
+ ).length;
 
-  // --- Visual Helpers ---
-  const getStatusConfig = (status) => {
-    switch (status) {
-      case "Available":
-        return {
-          bg: "bg-emerald-50",
-          text: "text-emerald-600",
-          dot: "bg-emerald-500",
-          gradient: "from-emerald-50 to-transparent",
-          icon: <CheckCircle2 size={14} />,
-        };
-      case "Occupied":
-        return {
-          bg: "bg-rose-50",
-          text: "text-rose-600",
-          dot: "bg-rose-500",
-          gradient: "from-rose-50 to-transparent",
-          icon: <Users size={14} />,
-        };
-      case "Reserved":
-        return {
-          bg: "bg-amber-50",
-          text: "text-amber-600",
-          dot: "bg-amber-500",
-          gradient: "from-amber-50 to-transparent",
-          icon: <CalendarClock size={14} />,
-        };
-      case "Cleaning":
-        return {
-          bg: "bg-blue-50",
-          text: "text-blue-600",
-          dot: "bg-blue-500",
-          gradient: "from-blue-50 to-transparent",
-          icon: <Sparkles size={14} />,
-        };
-      default:
-        return {
-          bg: "bg-slate-50",
-          text: "text-slate-600",
-          dot: "bg-slate-500",
-          gradient: "from-slate-50 to-transparent",
-          icon: <Utensils size={14} />,
-        };
-    }
-  };
+ // --- Visual Helpers ---
+ const getStatusConfig = (status) => {
+ switch (status) {
+ case"Available":
+ return {
+ bg:"bg-emerald-50",
+ text:"text-emerald-600",
+ dot:"bg-emerald-500",
+ gradient:"from-emerald-50 to-transparent",
+ icon: <CheckCircle2 size={14} />,
+ };
+ case"Occupied":
+ return {
+ bg:"bg-rose-50",
+ text:"text-rose-600",
+ dot:"bg-rose-500",
+ gradient:"from-rose-50 to-transparent",
+ icon: <Users size={14} />,
+ };
+ case"Reserved":
+ return {
+ bg:"bg-amber-50",
+ text:"text-amber-600",
+ dot:"bg-amber-500",
+ gradient:"from-amber-50 to-transparent",
+ icon: <CalendarClock size={14} />,
+ };
+ case"Cleaning":
+ return {
+ bg:"bg-blue-50",
+ text:"text-blue-600",
+ dot:"bg-blue-500",
+ gradient:"from-blue-50 to-transparent",
+ icon: <Sparkles size={14} />,
+ };
+ default:
+ return {
+ bg:"bg-slate-50",
+ text:"text-slate-600",
+ dot:"bg-slate-500",
+ gradient:"from-slate-50 to-transparent",
+ icon: <Utensils size={14} />,
+ };
+ }
+ };
 
-  // --- Action Handlers ---
-  const handleOpenAdd = () => {
-    setFormSeats("");
-    setFormStatus("Available");
-    setFormCustomer("No Customer");
-    setActiveModal("add");
-  };
+ // --- Action Handlers ---
+ const handleOpenAdd = () => {
+ setFormSeats("");
+ setFormStatus("Available");
+ setFormCustomer("No Customer");
+ setActiveModal("add");
+ };
 
-  const handleOpenEdit = (table) => {
-    setSelectedTable(table);
-    setFormSeats(table.seats);
-    setFormStatus(table.status);
-    setFormCustomer(table.customer);
-    setActiveModal("edit");
-  };
+ const handleOpenEdit = (table) => {
+ setSelectedTable(table);
+ setFormSeats(table.seats);
+ setFormStatus(table.status);
+ setFormCustomer(table.customer);
+ setActiveModal("edit");
+ };
 
-  const handleOpenView = (table) => {
-    setSelectedTable(table);
-    setActiveModal("view");
-  };
+ const handleOpenView = (table) => {
+ setSelectedTable(table);
+ setActiveModal("view");
+ };
 
-  const closeModal = () => {
-    setActiveModal(null);
-    setSelectedTable(null);
-  };
+ const closeModal = () => {
+ setActiveModal(null);
+ setSelectedTable(null);
+ };
 
-  // --- Form Submissions ---
-  const saveAddTable = (e) => {
-    e.preventDefault();
+ // --- Form Submissions ---
+ const saveAddTable = async (e) => {
+ e.preventDefault();
 
-    const newId =
-      tables.length > 0 ? Math.max(...tables.map((t) => t.id)) + 1 : 1;
-    const newTable = {
-      id: newId,
-      name: `Table ${newId}`,
-      seats: 4, // Default fallback
-      status: formStatus,
-      currentCustomer:
-        formStatus === "Available" || formStatus === "Cleaning"
-          ? "No Customer"
-          : formCustomer || "Anonymous",
-    };
+ const newId =
+ tables.length > 0 ? Math.max(...tables.map((t) => t.id || t._id || 0)) + 1 : 1;
+ const newTable = {
+ id: newId,
+ name: `Table ${newId}`,
+ seats: parseInt(formSeats, 10) || 4,
+ status: formStatus,
+ currentCustomer:
+ formStatus ==="Available" || formStatus ==="Cleaning"
+ ?"No Customer"
+ : formCustomer ||"Anonymous",
+ };
 
-    setTables([...tables, newTable]);
-    closeModal();
-  };
+ try {
+ await addTable(newTable);
+ closeModal();
+ } catch (err) {
+ console.error("Failed to add table:", err);
+ alert("Error adding table:" + (err.message ||"Unknown error"));
+ }
+ };
 
-  const saveEditTable = (e) => {
-    e.preventDefault();
-    setTables(
-      tables.map((t) =>
-        t.id === selectedTable.id
-          ? {
-              ...t,
-              seats: selectedTable.seats || 4,
-              status: formStatus,
-              currentCustomer:
-                formStatus === "Available" || formStatus === "Cleaning"
-                  ? "No Customer"
-                  : formCustomer,
-            }
-          : t
-      )
-    );
-    closeModal();
-  };
+ const saveEditTable = async (e) => {
+ e.preventDefault();
+ try {
+ await editTable(selectedTable._id || selectedTable.id, {
+ seats: parseInt(formSeats, 10) || 4,
+ status: formStatus,
+ currentCustomer:
+ formStatus ==="Available" || formStatus ==="Cleaning"
+ ?"No Customer"
+ : formCustomer,
+ });
+ closeModal();
+ } catch (err) {
+ console.error("Failed to edit table:", err);
+ alert("Error editing table:" + (err.message ||"Unknown error"));
+ }
+ };
 
-  return (
-    <div className="min-h-screen bg-slate-50 p-4 sm:p-6 md:p-8 text-slate-800 font-sans">
-      <main className="max-w-[1600px] mx-auto">
-        {/* HEADER SECTION */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
-          <div>
-            <h1 className="text-2xl md:text-[28px] font-bold text-slate-900 tracking-tight">
-              Restaurant Tables
-            </h1>
-            <p className="text-slate-400 text-sm mt-0.5 font-medium">
-              Manage live table availability and seating
-            </p>
-          </div>
-          <button
-            onClick={handleOpenAdd}
-            className="w-full sm:w-auto justify-center bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
-          >
-            <Plus size={16} /> Add Table
-          </button>
-        </div>
+ return (
+ <div className="min-h-screen bg-slate-50 p-3 sm:p-6 md:p-8 text-slate-800 font-sans w-full overflow-x-hidden">
+ <main className="max-w-[1600px] mx-auto pb-24 lg:pb-12">
+ {/* HEADER SECTION */}
+ <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
+ <div>
+ <h1 className="text-2xl md:text-[28px] font-bold text-slate-900 tracking-tight">
+ Restaurant Tables
+ </h1>
+ <p className="text-slate-400 text-sm mt-0.5 font-medium">
+ Manage live table availability and seating
+ </p>
+ </div>
+ <button
+ onClick={handleOpenAdd}
+ className="w-full sm:w-auto justify-center bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
+ >
+ <Plus size={16} /> Add Table
+ </button>
+ </div>
 
-        {/* DYNAMIC STATS GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 md:mb-8">
-          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-            <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-inner border border-slate-100 group-hover:scale-110 transition-transform duration-300">
-              <Utensils size={26} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
-                Total Tables
-              </h4>
-              <h2 className="text-3xl font-black text-slate-900 leading-none">
-                {totalTables}
-              </h2>
-            </div>
-          </div>
+ {/* DYNAMIC STATS GRID */}
+ <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 md:mb-8">
+ <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+ <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-inner border border-slate-100 group-hover:scale-110 transition-transform duration-300">
+ <Utensils size={26} strokeWidth={2.5} />
+ </div>
+ <div>
+ <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
+ Total Tables
+ </h4>
+ <h2 className="text-3xl font-black text-slate-900 leading-none">
+ {totalTables}
+ </h2>
+ </div>
+ </div>
 
-          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-inner border border-emerald-100 group-hover:scale-110 transition-transform duration-300">
-              <CheckCircle2 size={26} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
-                Available
-              </h4>
-              <h2 className="text-3xl font-black text-slate-900 leading-none">
-                {availableCount}
-              </h2>
-            </div>
-          </div>
+ <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+ <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-inner border border-emerald-100 group-hover:scale-110 transition-transform duration-300">
+ <CheckCircle2 size={26} strokeWidth={2.5} />
+ </div>
+ <div>
+ <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
+ Available
+ </h4>
+ <h2 className="text-3xl font-black text-slate-900 leading-none">
+ {availableCount}
+ </h2>
+ </div>
+ </div>
 
-          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-            <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner border border-rose-100 group-hover:scale-110 transition-transform duration-300">
-              <Users size={26} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
-                Occupied
-              </h4>
-              <h2 className="text-3xl font-black text-slate-900 leading-none">
-                {occupiedCount}
-              </h2>
-            </div>
-          </div>
+ <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+ <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner border border-rose-100 group-hover:scale-110 transition-transform duration-300">
+ <Users size={26} strokeWidth={2.5} />
+ </div>
+ <div>
+ <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
+ Occupied
+ </h4>
+ <h2 className="text-3xl font-black text-slate-900 leading-none">
+ {occupiedCount}
+ </h2>
+ </div>
+ </div>
 
-          <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100 group-hover:scale-110 transition-transform duration-300">
-              <AlertTriangle size={26} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
-                Reserved
-              </h4>
-              <h2 className="text-3xl font-black text-slate-900 leading-none">
-                {reservedCount}
-              </h2>
-            </div>
-          </div>
-        </div>
+ <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+ <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100 group-hover:scale-110 transition-transform duration-300">
+ <AlertTriangle size={26} strokeWidth={2.5} />
+ </div>
+ <div>
+ <h4 className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">
+ Reserved
+ </h4>
+ <h2 className="text-3xl font-black text-slate-900 leading-none">
+ {reservedCount}
+ </h2>
+ </div>
+ </div>
+ </div>
 
-        {/* MAIN GRID LAYOUT */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-          {tablesList.map((table) => {
-            const config = getStatusConfig(table.status);
-            return (
-              <div
-                key={table.id}
-                onClick={() => handleOpenView(table)}
-              className={`group relative bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 border-slate-100 hover:border-slate-200`}
-              >
-              {/* Background Subtle Gradient */}
-              <div className={`absolute inset-0 bg-gradient-to-b ${config.gradient} opacity-50 pointer-events-none`} />
-              
-              {/* Status Top Accent Line */}
-              <div className={`h-1.5 w-full ${config.dot} transition-all duration-300 group-hover:h-2`} />
+ {/* MAIN GRID LAYOUT */}
+ <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+ {tablesList.map((table) => {
+ const config = getStatusConfig(table.status);
+ return (
+ <div
+ key={table.id}
+ onClick={() => handleOpenView(table)}
+ className={`group relative bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 border-slate-100 hover:border-slate-200`}
+ >
+ {/* Background Subtle Gradient */}
+ <div className={`absolute inset-0 bg-gradient-to-b ${config.gradient} opacity-50 pointer-events-none`} />
+ 
+ {/* Status Top Accent Line */}
+ <div className={`h-1.5 w-full ${config.dot} transition-all duration-300 group-hover:h-2`} />
 
-              <div className="p-6 relative z-10 flex-1 flex flex-col justify-between">
-                <div className="flex justify-between items-start mb-5">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${config.bg} ${config.text} group-hover:scale-110 transition-transform duration-300`}>
-                      <Utensils size={24} />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                        {table.name || `Table ${table.id}`}
-                      </h3>
-                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
-                        {table.seats || 4} Seats
-                      </p>
-                    </div>
-                  </div>
-                </div>
+ <div className="p-6 relative z-10 flex-1 flex flex-col justify-between">
+ <div className="flex justify-between items-start mb-5">
+ <div className="flex items-center gap-3">
+ <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${config.bg} ${config.text} group-hover:scale-110 transition-transform duration-300`}>
+ <Utensils size={24} />
+ </div>
+ <div>
+ <h3 className="text-xl font-black text-slate-900 tracking-tight">
+ {table.name || `Table ${table.id}`}
+ </h3>
+ <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+ {table.seats || 4} Seats
+ </p>
+ </div>
+ </div>
+ </div>
 
-                <div className="flex items-center justify-between mb-2 p-3 rounded-xl bg-white/60 border border-slate-100/50 backdrop-blur-sm">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${table.customer && table.customer !== "No Customer" ? "bg-blue-50 text-blue-500" : "bg-slate-50 text-slate-400"}`}>
-                      <User size={16} />
-                    </div>
-                    <div className="truncate">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        Current Guest
-                      </p>
-                      <h4 className={`text-sm font-bold truncate max-w-[140px] ${table.customer && table.customer !== "No Customer" ? "text-slate-900" : "text-slate-500"}`}>
-                        {table.customer || "No Customer"}
-                      </h4>
-                    </div>
-                  </div>
-                  <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm border ${config.bg} ${config.text} border-white/50 flex items-center gap-1.5`}>
-                    {config.icon} {table.status}
-                  </span>
-                </div>
-              </div>
+ <div className="flex items-center justify-between mb-2 p-3 rounded-xl bg-white/60 border border-slate-100/50 backdrop-blur-sm">
+ <div className="flex items-center gap-3">
+ <div className={`w-8 h-8 rounded-full flex items-center justify-center ${table.customer && table.customer !=="No Customer" ?"bg-blue-50 text-blue-500" :"bg-slate-50 text-slate-400"}`}>
+ <User size={16} />
+ </div>
+ <div className="truncate">
+ <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+ Current Guest
+ </p>
+ <h4 className={`text-sm font-bold truncate max-w-[140px] ${table.customer && table.customer !=="No Customer" ?"text-slate-900" :"text-slate-500"}`}>
+ {table.customer ||"No Customer"}
+ </h4>
+ </div>
+ </div>
+ <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm border ${config.bg} ${config.text} border-white/50 flex items-center gap-1.5`}>
+ {config.icon} {table.status}
+ </span>
+ </div>
+ </div>
 
-              <div className="grid grid-cols-2 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/80 relative z-10">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenView(table);
-                    }}
-                  className="py-3.5 text-xs font-bold text-slate-600 hover:bg-white hover:text-purple-600 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Eye size={14} /> View
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenEdit(table);
-                    }}
-                  className="py-3.5 text-xs font-bold text-slate-600 hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Edit2 size={14} /> Edit
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </main>
+ <div className="grid grid-cols-2 border-t border-slate-100 divide-x divide-slate-100 bg-slate-50/80 relative z-10">
+ <button
+ onClick={(e) => {
+ e.stopPropagation();
+ handleOpenView(table);
+ }}
+ className="py-3.5 text-xs font-bold text-slate-600 hover:bg-white hover:text-purple-600 transition-colors flex items-center justify-center gap-2"
+ >
+ <Eye size={14} /> View
+ </button>
+ <button
+ onClick={(e) => {
+ e.stopPropagation();
+ handleOpenEdit(table);
+ }}
+ className="py-3.5 text-xs font-bold text-slate-600 hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
+ >
+ <Edit2 size={14} /> Edit
+ </button>
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ </main>
 
-      {/* ================= MODAL WINDOWS UI ================= */}
-      {activeModal && (
-        <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity"
-          onClick={closeModal}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-xl w-[95%] max-w-sm sm:max-w-md overflow-hidden flex flex-col max-h-[90vh] animate-slide-in"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* VIEW MODAL */}
-            {activeModal === "view" && selectedTable && (
-              <>
-                <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
-                  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                    <Eye size={18} className="text-purple-500" />
-                    {selectedTable.name || `Table ${selectedTable.id}`} Details
-                  </h2>
-                  <button
-                    onClick={closeModal}
-                    className="text-slate-400 hover:text-slate-600 bg-white p-1 rounded-lg border border-slate-200 shadow-sm transition"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-                <div className="p-6 overflow-y-auto space-y-4">
-                  <div className="flex justify-between items-center bg-slate-50 border border-slate-100 rounded-xl p-4">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Status
-                    </span>
-                    <span
-                      className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                        getStatusConfig(selectedTable.status).bg
-                      } ${getStatusConfig(selectedTable.status).text}`}
-                    >
-                      {selectedTable.status}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Capacity</span>
-                      <span className="font-bold text-slate-900 flex items-center gap-1.5"><Utensils size={14} className="text-slate-400"/> {selectedTable.seats || 4} Seats</span>
-                    </div>
-                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Customer</span>
-                      <span className="font-bold text-slate-900 flex items-center gap-1.5 truncate"><User size={14} className="text-slate-400"/> {selectedTable.customer || "No Customer"}</span>
-                    </div>
-                  </div>
+ {/* ================= MODAL WINDOWS UI ================= */}
+ {activeModal && (
+ <div
+ className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity"
+ onClick={closeModal}
+ >
+ <div
+ className="bg-white rounded-2xl shadow-xl w-[95%] max-w-sm sm:max-w-md overflow-hidden flex flex-col max-h-[90vh] animate-slide-in"
+ onClick={(e) => e.stopPropagation()}
+ >
+ {/* VIEW MODAL */}
+ {activeModal ==="view" && selectedTable && (
+ <>
+ <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
+ <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+ <Eye size={18} className="text-purple-500" />
+ {selectedTable.name || `Table ${selectedTable.id}`} Details
+ </h2>
+ <button
+ onClick={closeModal}
+ className="text-slate-400 hover:text-slate-600 bg-white p-1 rounded-lg border border-slate-200 shadow-sm transition"
+ >
+ <X size={16} />
+ </button>
+ </div>
+ <div className="p-6 overflow-y-auto space-y-4">
+ <div className="flex justify-between items-center bg-slate-50 border border-slate-100 rounded-xl p-4">
+ <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+ Status
+ </span>
+ <span
+ className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
+ getStatusConfig(selectedTable.status).bg
+ } ${getStatusConfig(selectedTable.status).text}`}
+ >
+ {selectedTable.status}
+ </span>
+ </div>
+ <div className="grid grid-cols-2 gap-4">
+ <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+ <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Capacity</span>
+ <span className="font-bold text-slate-900 flex items-center gap-1.5"><Utensils size={14} className="text-slate-400"/> {selectedTable.seats || 4} Seats</span>
+ </div>
+ <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+ <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Customer</span>
+ <span className="font-bold text-slate-900 flex items-center gap-1.5 truncate"><User size={14} className="text-slate-400"/> {selectedTable.customer ||"No Customer"}</span>
+ </div>
+ </div>
 
-                  {/* Active Orders List */}
-                  <h3 className="text-base font-black text-slate-900 mt-6 mb-2">
-                    Ordered Items Tracking
-                  </h3>
-                  <hr className="border-slate-100 mb-3" />
+ {/* Active Orders List */}
+ <h3 className="text-base font-black text-slate-900 mt-6 mb-2">
+ Ordered Items Tracking
+ </h3>
+ <hr className="border-slate-100 mb-3" />
 
-                  <div className="max-h-[180px] overflow-y-auto flex flex-col gap-2 pr-2">
-                    {!selectedTable.activeOrder ||
-                    selectedTable.activeOrder.length === 0 ? (
-                      <p className="text-slate-500 italic text-sm py-2">
-                        No active orders running for this table.
-                      </p>
-                    ) : (
-                      selectedTable.activeOrder.map((item, idx) => (
-                        <div
-                          className="flex justify-between items-center p-2.5 bg-slate-50 rounded-lg border-l-4 border-slate-300 shadow-sm"
-                          key={idx}
-                        >
-                          <div className="flex gap-2.5 text-sm text-slate-800">
-                            <span className="font-semibold">{item.name}</span>
-                            <strong className="text-slate-500">
-                              x{item.qty}
-                            </strong>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
+ <div className="max-h-[180px] overflow-y-auto flex flex-col gap-2 pr-2">
+ {!selectedTable.activeOrder ||
+ selectedTable.activeOrder.length === 0 ? (
+ <p className="text-slate-500 italic text-sm py-2">
+ No active orders running for this table.
+ </p>
+ ) : (
+ selectedTable.activeOrder.map((item, idx) => (
+ <div
+ className="flex justify-between items-center p-2.5 bg-slate-50 rounded-lg border-l-4 border-slate-300 shadow-sm"
+ key={idx}
+ >
+ <div className="flex gap-2.5 text-sm text-slate-800">
+ <span className="font-semibold">{item.name}</span>
+ <strong className="text-slate-500">
+ x{item.qty}
+ </strong>
+ </div>
+ </div>
+ ))
+ )}
+ </div>
 
-                  <div className="flex gap-3 mt-6 border-t border-slate-100 pt-5">
-                  <button
-                    onClick={closeModal}
-                      className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-md text-sm"
-                  >
-                    Close Details
-                  </button>
-                  </div>
-                </div>
-              </>
-            )}
+ <div className="flex gap-3 mt-6 border-t border-slate-100 pt-5">
+ <button
+ onClick={closeModal}
+ className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-md text-sm"
+ >
+ Close Details
+ </button>
+ </div>
+ </div>
+ </>
+ )}
 
-            {/* ADD / EDIT FORM MODALS */}
-            {(activeModal === "add" || activeModal === "edit") && (
-              <form
-                onSubmit={activeModal === "add" ? saveAddTable : saveEditTable}
-              >
-                <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
-                  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                    {activeModal === "add" ? (
-                      <Plus size={18} className="text-blue-500" />
-                    ) : (
-                      <Edit2 size={18} className="text-blue-500" />
-                    )}
-                    {activeModal === "add"
-                      ? "Add New Table"
-                      : `Edit ${
-                          selectedTable?.name || `Table ${selectedTable?.id}`
-                        }`}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    className="text-slate-400 hover:text-slate-600 bg-white p-1 rounded-lg border border-slate-200 shadow-sm transition"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
+ {/* ADD / EDIT FORM MODALS */}
+ {(activeModal ==="add" || activeModal ==="edit") && (
+ <form
+ onSubmit={activeModal ==="add" ? saveAddTable : saveEditTable}
+ >
+ <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
+ <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+ {activeModal ==="add" ? (
+ <Plus size={18} className="text-blue-500" />
+ ) : (
+ <Edit2 size={18} className="text-blue-500" />
+ )}
+ {activeModal ==="add"
+ ?"Add New Table"
+ : `Edit ${
+ selectedTable?.name || `Table ${selectedTable?.id}`
+ }`}
+ </h2>
+ <button
+ type="button"
+ onClick={closeModal}
+ className="text-slate-400 hover:text-slate-600 bg-white p-1 rounded-lg border border-slate-200 shadow-sm transition"
+ >
+ <X size={16} />
+ </button>
+ </div>
 
-                <div className="p-6 space-y-4 overflow-y-auto">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                      Current Status
-                    </label>
-                    <select
-                      value={formStatus}
-                      onChange={(e) => setFormStatus(e.target.value)}
-                      className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-all font-bold text-sm cursor-pointer text-slate-700 mt-1.5"
-                    >
-                      <option value="Available">Available</option>
-                      <option value="Occupied">Occupied</option>
-                      <option value="Reserved">Reserved</option>
-                      <option value="Cleaning">Cleaning</option>
-                    </select>
-                  </div>
+ <div className="p-6 space-y-4 overflow-y-auto">
+ <div>
+ <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ Current Status
+ </label>
+ <select
+ value={formStatus}
+ onChange={(e) => setFormStatus(e.target.value)}
+ className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-all font-bold text-base sm:text-sm cursor-pointer text-slate-700 mt-1.5"
+ >
+ <option value="Available">Available</option>
+ <option value="Occupied">Occupied</option>
+ <option value="Reserved">Reserved</option>
+ <option value="Cleaning">Cleaning</option>
+ </select>
+ </div>
 
-                  {formStatus !== "Available" && formStatus !== "Cleaning" && (
-                    <div className="animate-slide-in">
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                        Customer Name
-                      </label>
-                      <input
-                        type="text"
-                        value={formCustomer}
-                        onChange={(e) => setFormCustomer(e.target.value)}
-                        placeholder="Enter customer name"
-                        required
-                        className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-all font-bold text-sm text-slate-900 mt-1.5"
-                      />
-                    </div>
-                  )}
-                </div>
+ {formStatus !=="Available" && formStatus !=="Cleaning" && (
+ <div className="animate-slide-in">
+ <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ Customer Name
+ </label>
+ <input
+ type="text"
+ value={formCustomer}
+ onChange={(e) => setFormCustomer(e.target.value)}
+ placeholder="Enter customer name"
+ className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-all font-bold text-base sm:text-sm text-slate-900 mt-1.5"
+ />
+ </div>
+ )}
+ </div>
 
-                  {/* Modal Footer */}
-                  <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex gap-3">
-                    <button
-                      type="button"
-                      onClick={closeModal}
-                      className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition shadow-sm"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition shadow-md"
-                    >
-                      {activeModal === "add" ? "Create Table" : "Save Changes"}
-                    </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+ {/* Modal Footer */}
+ <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex gap-3">
+ <button
+ type="button"
+ onClick={closeModal}
+ className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition shadow-sm"
+ >
+ Cancel
+ </button>
+ <button
+ type="submit"
+ className="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition shadow-md"
+ >
+ {activeModal ==="add" ?"Create Table" :"Save Changes"}
+ </button>
+ </div>
+ </form>
+ )}
+ </div>
+ </div>
+ )}
+ </div>
+ );
 };
 
 export default Tables;

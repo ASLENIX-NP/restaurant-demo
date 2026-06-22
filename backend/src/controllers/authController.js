@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Admin = require("../models/Admin");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { createLog } = require("./logController");
 
 // Register a new user (Status defaults to Pending)
 exports.register = async (req, res) => {
@@ -107,29 +108,61 @@ exports.login = async (req, res) => {
       user = await User.findOne({ username });
     }
     if (!user) {
+      // Log failed attempt for non-existent user
+      createLog({
+        user: username,
+        role: "Unknown",
+        action: "Failed Login",
+        device: req.headers["user-agent"],
+        ip: req.ip,
+        status: "Failed",
+      });
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      // Log failed attempt for existing user with wrong password
+      createLog({
+        user: username,
+        role: user.role,
+        action: "Failed Login",
+        device: req.headers["user-agent"],
+        ip: req.ip,
+        status: "Failed",
+      });
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
     // Enforce Approval System
-    if (user.status === "Pending")
+    if (user.status === "Pending") {
+      createLog({ user: username, role: user.role, action: "Login Denied (Pending)", device: req.headers["user-agent"], ip: req.ip, status: "Failed" });
       return res
         .status(403)
         .json({ message: "Your account is pending Admin approval." });
-    if (user.status === "Inactive")
+    }
+    if (user.status === "Inactive") {
+      createLog({ user: username, role: user.role, action: "Login Denied (Inactive)", device: req.headers["user-agent"], ip: req.ip, status: "Failed" });
       return res
         .status(403)
         .json({ message: "Your account has been deactivated." });
+    }
 
     const token = jwt.sign(
       { userId: user._id, role: user.role, username: user.username },
       process.env.JWT_SECRET || "fallback_secret_key",
       { expiresIn: "12h" }
     );
+
+    // Log successful login
+    createLog({
+      user: user.username,
+      role: user.role,
+      action: "Logged In",
+      device: req.headers["user-agent"],
+      ip: req.ip,
+      status: "Success",
+    });
 
     res.status(200).json({
       success: true,
@@ -143,7 +176,10 @@ exports.login = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ message: "Server error during login" });
+    res.status(500).json({
+      message: "Server error during login",
+      error: error?.message,
+    });
   }
 };
 
@@ -151,7 +187,7 @@ exports.login = async (req, res) => {
 exports.getUsers = async (req, res) => {
   try {
     // Since Admins are now in the Admin collection, User.find() automatically only gets employees!
-    const users = await User.find({}).select("-password");
+    const users = await User.find({}).select("-password").lean();
     res.status(200).json(users);
   } catch (error) {
     console.error("Get users error:", error);
@@ -205,16 +241,11 @@ exports.updateUserStatus = async (req, res) => {
 // Get user profile (Self)
 exports.getProfile = async (req, res) => {
   try {
-    let user = await Admin.findById(req.user.userId).select("-password");
-    if (!user) {
-      user = await User.findById(req.user.userId).select("-password");
-    }
-
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!req.user) return res.status(404).json({ message: "User not found" });
 
     res.status(200).json({
       success: true,
-      user,
+      user: req.user,
     });
   } catch (error) {
     console.error("Get profile error:", error);
@@ -225,9 +256,9 @@ exports.getProfile = async (req, res) => {
 // Update user profile (Self)
 exports.updateProfile = async (req, res) => {
   try {
-    let user = await Admin.findById(req.user.userId);
+    let user = await Admin.findById(req.user._id);
     if (!user) {
-      user = await User.findById(req.user.userId);
+      user = await User.findById(req.user._id);
     }
 
     if (!user) return res.status(404).json({ message: "User not found" });

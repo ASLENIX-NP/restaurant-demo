@@ -13,4 +13,8 @@ const inventoryItemSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+inventoryItemSchema.index({ category: 1 });
+inventoryItemSchema.index({ status: 1 });
+inventoryItemSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model("InventoryItem", inventoryItemSchema);

@@ -1,48 +1,48 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from"react-router-dom";
 
-import "../../styles/navbar.css";
+import"../../styles/navbar.css";
 
 const Navbar = ({ title }) => {
 
-  const navigate = useNavigate();
+ const navigate = useNavigate();
 
-  // LOGOUT
-  const handleLogout = () => {
+ // LOGOUT
+ const handleLogout = () => {
 
-    localStorage.removeItem("user");
+ localStorage.removeItem("user");
 
-    navigate("/");
-  };
+ navigate("/");
+ };
 
-  return (
-    <div className="navbar">
+ return (
+ <div className="navbar">
 
-      <div className="navbar-left">
-        <h2>{title}</h2>
-      </div>
+ <div className="navbar-left">
+ <h2>{title}</h2>
+ </div>
 
-      <div className="navbar-right">
+ <div className="navbar-right">
 
-        <input
-          type="text"
-          placeholder="Search..."
-          className="search-input"
-        />
+ <input
+ type="text"
+ placeholder="Search..."
+ className="search-input"
+ />
 
-        <div className="profile-circle">
-          A
-        </div>
+ <div className="profile-circle">
+ A
+ </div>
 
-        <button
-          className="logout-btn"
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
+ <button
+ className="logout-btn"
+ onClick={handleLogout}
+ >
+ Logout
+ </button>
 
-      </div>
-    </div>
-  );
+ </div>
+ </div>
+ );
 };
 
 export default Navbar;

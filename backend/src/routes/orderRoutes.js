@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const orderController = require("../controllers/OrderController");
+const orderController = require("../controllers/orderController");
 const { protect, authorize } = require("../middleware/authMiddleware");
 
 // Get all orders and create new orders (Available to all logged-in staff)

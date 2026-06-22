@@ -12,7 +12,7 @@ const getStatus = (qty) => {
 // @route   GET /api/inventory
 exports.getItems = async (req, res) => {
   try {
-    const items = await InventoryItem.find().sort({ createdAt: -1 });
+    const items = await InventoryItem.find().sort({ createdAt: -1 }).lean();
     res.status(200).json(items);
   } catch (error) {
     res.status(500).json({ message: "Server error fetching inventory" });
@@ -108,7 +108,7 @@ exports.adjustStock = async (req, res) => {
 // @route   GET /api/inventory/logs
 exports.getLogs = async (req, res) => {
   try {
-    const logs = await InventoryLog.find().sort({ createdAt: -1 }).limit(50);
+    const logs = await InventoryLog.find().sort({ createdAt: -1 }).limit(50).lean();
     res.status(200).json(logs);
   } catch (error) {
     res.status(500).json({ message: "Server error fetching logs" });

@@ -1,41 +1,43 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const Admin = require("../models/Admin");
 
-// Protect routes - verify token exists and is valid
-exports.protect = (req, res, next) => {
+exports.protect = async (req, res, next) => {
   let token;
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
-    token = req.headers.authorization.split(" ")[1];
+    try {
+      token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback_secret_key");
+
+      // Find user in either Admin or User collection
+      req.user = await Admin.findById(decoded.userId).select("-password") || await User.findById(decoded.userId).select("-password");
+
+      if (!req.user) {
+        return res.status(401).json({ message: "Not authorized, user not found" });
+      }
+
+      next();
+    } catch (error) {
+      res.status(401).json({ message: "Not authorized, token failed" });
+    }
   }
 
-  if (!token)
-    return res
-      .status(401)
-      .json({ message: "Not authorized to access this route" });
-
-  try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "fallback_secret_key"
-    );
-    req.user = decoded; // Contains { userId, role, username }
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: "Token is invalid or expired" });
+  if (!token) {
+    res.status(401).json({ message: "Not authorized, no token" });
   }
 };
 
-// Authorize specific roles
 exports.authorize = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res
-        .status(403)
-        .json({
-          message: `Role '${req.user.role}' is not authorized to access this action`,
-        });
+    if (!req.user || !roles.includes(req.user.role)) {
+      const role = req.user?.role;
+      return res.status(403).json({
+        message: `User role '${role}' is not authorized to access this route.`,
+      });
     }
     next();
   };

@@ -44,4 +44,10 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Performance indexes for faster queries
+orderSchema.index({ status: 1 });
+orderSchema.index({ createdAt: -1 });
+orderSchema.index({ table: 1 });
+orderSchema.index({ date: -1 });
+
 module.exports = mongoose.model("Order", orderSchema);

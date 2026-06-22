@@ -5,7 +5,7 @@ const Table = require("../models/Table");
 // @access  Private (All logged-in staff)
 exports.getTables = async (req, res) => {
   try {
-    const tables = await Table.find({});
+    const tables = await Table.find({}).lean();
     res.status(200).json(tables);
   } catch (error) {
     console.error("Error fetching tables:", error);
@@ -60,18 +60,8 @@ exports.createTable = async (req, res) => {
 // @access  Private (All logged-in staff)
 exports.updateTable = async (req, res) => {
   try {
-    // Prevent standard staff from reserving tables (Only Cashier/Admin)
+    // Standard staff are now allowed to reserve tables as per request
     if (req.body.status === "Reserved") {
-      if (
-        req.user &&
-        req.user.role !== "Admin" &&
-        req.user.role !== "Cashier"
-      ) {
-        return res.status(403).json({
-          message:
-            "Staff cannot reserve tables. Please ask a Cashier or Admin.",
-        });
-      }
 
       // Enforce customer name requirement for reservations
       if (

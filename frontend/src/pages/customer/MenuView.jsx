@@ -1,475 +1,106 @@
-import { useState } from "react";
-
-import {
-  useParams,
-} from "react-router-dom";
-
-import "../../styles/menuview.css";
-
-const menuSections = [
-
-  /* MOMO */
-
-  {
-    title: "Momo",
-
-    categories: [
-
-      {
-        type: "Chicken",
-        available: true,
-
-        items: [
-
-          {
-            name:
-              "Chicken Steam Momo",
-
-            price: 320,
-
-            image:
-              "https://images.pexels.com/photos/7363686/pexels-photo-7363686.jpeg",
-          },
-
-          {
-            name:
-              "Chicken Fry Momo",
-
-            price: 380,
-
-            image:
-              "https://images.pexels.com/photos/6646037/pexels-photo-6646037.jpeg",
-          },
-
-          {
-            name:
-              "Chicken Kothey Momo",
-
-            price: 420,
-
-            image:
-              "https://images.pexels.com/photos/7625056/pexels-photo-7625056.jpeg",
-          },
-
-        ],
-      },
-
-      {
-        type: "Buff",
-        available: true,
-
-        items: [
-
-          {
-            name:
-              "Buff Steam Momo",
-
-            price: 300,
-
-            image:
-              "https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg",
-          },
-
-          {
-            name:
-              "Buff Sadeko Momo",
-
-            price: 450,
-
-            image:
-              "https://images.pexels.com/photos/6646043/pexels-photo-6646043.jpeg",
-          },
-
-        ],
-      },
-
-      {
-        type: "Pork",
-        available: false,
-
-        items: [],
-      },
-
-    ],
-  },
-
-  /* PIZZA */
-
-  {
-    title: "Pizza",
-
-    categories: [
-
-      {
-        type: "Chicken",
-        available: true,
-
-        items: [
-
-          {
-            name:
-              "Chicken Cheese Pizza",
-
-            price: 950,
-
-            image:
-              "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1200&auto=format&fit=crop",
-          },
-
-          {
-            name:
-              "Chicken BBQ Pizza",
-
-            price: 1100,
-
-            image:
-              "https://images.unsplash.com/photo-1594007654729-407eedc4be65?q=80&w=1200&auto=format&fit=crop",
-          },
-
-        ],
-      },
-
-      {
-        type: "Veg",
-        available: true,
-
-        items: [
-
-          {
-            name:
-              "Veg Loaded Pizza",
-
-            price: 850,
-
-            image:
-              "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?q=80&w=1200&auto=format&fit=crop",
-          },
-
-        ],
-      },
-
-    ],
-  },
-
-  /* BURGER */
-
-  {
-    title: "Burger",
-
-    categories: [
-
-      {
-        type: "Chicken",
-        available: true,
-
-        items: [
-
-          {
-            name:
-              "Chicken Crispy Burger",
-
-            price: 450,
-
-            image:
-              "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1200&auto=format&fit=crop",
-          },
-
-        ],
-      },
-
-      {
-        type: "Buff",
-        available: true,
-
-        items: [
-
-          {
-            name:
-              "Buff Grill Burger",
-
-            price: 480,
-
-            image:
-              "https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=1200&auto=format&fit=crop",
-          },
-
-        ],
-      },
-
-      {
-        type: "Veg",
-        available: false,
-
-        items: [],
-      },
-
-    ],
-  },
-
-  /* DRINKS */
-
-  {
-    title: "Drinks",
-
-    categories: [
-
-      {
-        type: "Cold",
-        available: true,
-
-        items: [
-
-          {
-            name:
-              "Cold Coffee",
-
-            price: 250,
-
-            image:
-              "https://images.unsplash.com/photo-1517701604599-bb29b565090c?q=80&w=1200&auto=format&fit=crop",
-          },
-
-          {
-            name:
-              "Coke",
-
-            price: 120,
-
-            image:
-              "https://images.unsplash.com/photo-1581636625402-29b2a704ef13?q=80&w=1200&auto=format&fit=crop",
-          },
-
-        ],
-      },
-
-      {
-        type: "Hot",
-        available: true,
-
-        items: [
-
-          {
-            name:
-              "Hot Coffee",
-
-            price: 180,
-
-            image:
-              "https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=1200&auto=format&fit=crop",
-          },
-
-          {
-            name:
-              "Black Tea",
-
-            price: 90,
-
-            image:
-              "https://images.unsplash.com/photo-1544787219-7f47ccb76574?q=80&w=1200&auto=format&fit=crop",
-          },
-
-        ],
-      },
-
-    ],
-  },
-
-];
+import { useState, useEffect } from"react";
+import { useParams } from"react-router-dom";
+import apiClient from"../../api/apiClient";
+import Skeleton from"../../components/ui/Skeleton";
+import"../../styles/menuview.css";
 
 const MenuView = () => {
+ const { tableId } = useParams();
+ const [menuItems, setMenuItems] = useState([]);
+ const [loading, setLoading] = useState(true);
+ const [activeCategory, setActiveCategory] = useState("All");
 
-  const { tableId } =
-    useParams();
+ useEffect(() => {
+ const fetchMenu = async () => {
+ try {
+ const { data } = await apiClient.get("/api/menu");
+ // Filter out unavailable items if needed, but usually we just show them as greyed out
+ setMenuItems(data);
+ } catch (error) {
+ console.error("Failed to fetch menu:", error);
+ } finally {
+ setLoading(false);
+ }
+ };
+ fetchMenu();
+ }, []);
 
-  const [
-    selectedCategories,
-    setSelectedCategories,
-  ] = useState({
+ const categories = ["All", ...new Set(menuItems.map(item => item.category))];
 
-    Momo: "Chicken",
+ const filteredMenu = activeCategory ==="All" 
+ ? menuItems 
+ : menuItems.filter(item => item.category === activeCategory);
 
-    Pizza: "Chicken",
+ return (
+ <div className="menu-view-page min-h-screen bg-slate-50 pb-12 transition-colors duration-300">
+ <div className="menu-header bg-slate-900 backdrop-blur-md text-white p-6 rounded-b-[40px] mb-8 shadow-md border-b border-white/10">
+ <h1 className="text-3xl font-black text-center tracking-tighter">ASLENIX</h1>
+ <p className="text-center text-slate-400 font-bold mt-1 text-sm uppercase tracking-widest">Table {tableId ||"Walk-in"}</p>
+ </div>
 
-    Burger: "Chicken",
+ <div className="category-scroll-container px-4 mb-8 flex gap-3 overflow-x-auto scrollbar-hide py-1">
+ {categories.map(cat => (
+ <button 
+ key={cat}
+ onClick={() => setActiveCategory(cat)}
+ className={`px-5 py-2.5 rounded-full font-bold whitespace-nowrap transition-all ${
+ activeCategory === cat 
+ ?"bg-purple-600 text-white shadow-md ring-2 ring-purple-600 ring-offset-2" 
+ :"bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 :bg-slate-800"
+ }`}
+ >
+ {cat}
+ </button>
+ ))}
+ </div>
 
-    Drinks: "Cold",
-  });
-
-  // CATEGORY CHANGE
-
-  const handleCategoryChange =
-    (
-      sectionTitle,
-      category
-    ) => {
-
-      setSelectedCategories(
-        (prev) => ({
-
-          ...prev,
-
-          [sectionTitle]:
-            category,
-        })
-      );
-    };
-
-  return (
-
-    <div className="menu-view-page">
-
-      {/* HEADER */}
-
-      <div className="menu-header">
-
-        <h1>
-          ASLENIX Restaurant
-        </h1>
-
-        <p>
-          Table {tableId}
-        </p>
-
-      </div>
-
-      {/* MENU */}
-
-      {menuSections.map(
-        (
-          section,
-          sectionIndex
-        ) => {
-
-          const selectedCategory =
-            section.categories.find(
-              (cat) =>
-                cat.type ===
-                selectedCategories[
-                  section.title
-                ]
-            );
-
-          return (
-
-            <div
-              key={sectionIndex}
-              className="menu-section"
-            >
-
-              {/* TITLE */}
-
-              <h2 className="menu-title">
-
-                {section.title}
-
-              </h2>
-
-              {/* CATEGORY BUTTONS */}
-
-              <div className="category-buttons">
-
-                {section.categories.map(
-                  (
-                    category,
-                    catIndex
-                  ) => (
-
-                    <button
-                      key={catIndex}
-
-                      disabled={
-                        !category.available
-                      }
-
-                      onClick={() =>
-                        handleCategoryChange(
-                          section.title,
-                          category.type
-                        )
-                      }
-
-                      className={`category-btn ${
-                        selectedCategories[
-                          section.title
-                        ] ===
-                        category.type
-                          ? "active-category"
-                          : ""
-                      } ${
-                        category.available
-                          ? "available-category"
-                          : "unavailable-category"
-                      }`}
-                    >
-
-                      {category.type}
-
-                    </button>
-
-                  )
-                )}
-
-              </div>
-
-              {/* FOOD GRID */}
-
-              <div className="food-grid">
-
-                {selectedCategory?.items.map(
-                  (
-                    item,
-                    itemIndex
-                  ) => (
-
-                    <div
-                      key={itemIndex}
-                      className="food-card"
-                    >
-
-                      {/* IMAGE */}
-
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="food-image"
-                      />
-
-                      {/* CONTENT */}
-
-                      <div className="food-content">
-
-                        <h3>
-                          {item.name}
-                        </h3>
-
-                        <p>
-                          Fresh delicious
-                          restaurant food
-                        </p>
-
-                        <h2>
-                          Rs.
-                          {" "}
-                          {item.price}
-                        </h2>
-
-                      </div>
-
-                    </div>
-
-                  )
-                )}
-
-              </div>
-
-            </div>
-
-          );
-        }
-      )}
-
-    </div>
-  );
+ <div className="menu-section px-4">
+ <h2 className="text-xl font-black text-slate-900 mb-6 capitalize px-2">{activeCategory} Menu</h2>
+ 
+ {loading ? (
+ <div className="food-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+ {[1, 2, 3, 4, 5, 6].map(i => (
+ <div key={i} className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-slate-100">
+ <Skeleton className="h-52 w-full rounded-none" />
+ <div className="p-5 pt-4">
+ <Skeleton className="h-6 w-3/4 mb-2" />
+ <Skeleton className="h-4 w-full" />
+ </div>
+ </div>
+ ))}
+ </div>
+ ) : filteredMenu.length === 0 ? (
+ <div className="text-center py-12 text-slate-500 font-medium">No items available in this category.</div>
+ ) : (
+ <div className="food-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+ {filteredMenu.map(item => (
+ <div key={item._id} className={`bg-white rounded-[24px] overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition-shadow ${!item.available ?"opacity-60 grayscale-[50%]" :""}`}>
+ <div className="h-52 w-full bg-slate-100 relative p-2">
+ <img loading="lazy" src={item.image} alt={item.name} className="w-full h-full object-cover rounded-[18px]" />
+ {!item.available && (
+ <div className="absolute inset-0 bg-slate-900/30 flex items-center justify-center rounded-[18px] m-2 backdrop-blur-[2px]">
+ <span className="bg-rose-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">Sold Out</span>
+ </div>
+ )}
+ {item.available && (
+ <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black text-slate-900 shadow-sm border border-white/50">
+ Rs. {item.price}
+ </div>
+ )}
+ </div>
+ <div className="p-5 pt-4">
+ <div className="flex justify-between items-start mb-1.5">
+ <h3 className="text-[17px] font-black text-slate-900 leading-tight pr-4">{item.name}</h3>
+ </div>
+ <p className="text-[13px] text-slate-500 font-medium leading-relaxed line-clamp-2">{item.description}</p>
+ </div>
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
+ </div>
+ );
 };
 
 export default MenuView;

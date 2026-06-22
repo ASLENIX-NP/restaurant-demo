@@ -7,7 +7,6 @@
     min-height: 100vh;
 }
 
-
 /* Header Flex Styling */
 
 .staff-header {
@@ -50,7 +49,6 @@
     background-color: #1e293b;
     transform: translateY(-1px);
 }
-
 
 /* Statistics Dynamic Counters Overview Grid */
 
@@ -116,7 +114,6 @@
     color: #dc2626;
 }
 
-
 /* Dashboard Columns Modular System Layout Splitter */
 
 .dashboard-workspace-grid {
@@ -131,7 +128,6 @@
         grid-template-columns: 1fr;
     }
 }
-
 
 /* Headers System Layout */
 
@@ -148,7 +144,6 @@
     color: #1e293b;
     margin: 0;
 }
-
 
 /* Filter Search Input Field Box */
 
@@ -182,7 +177,6 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
 }
 
-
 /* Inner Restaurant Interactive Layout Cards Section */
 
 .tables-grid {
@@ -206,7 +200,6 @@
     transform: translateY(-2px);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
 }
-
 
 /* Header color dynamic bars matching system top */
 
@@ -235,7 +228,6 @@
     color: #0f172a;
     margin: 0;
 }
-
 
 /* Pill statuses tags */
 
@@ -282,7 +274,6 @@
 .badge-reserved .badge-bullet {
     background-color: #d97706;
 }
-
 
 /* Table Graphics Content Body Layer */
 
@@ -333,7 +324,6 @@
     color: #64748b;
 }
 
-
 /* Card Bottom Dual View Actions Button Links Control Styles */
 
 .table-card-actions {
@@ -374,7 +364,6 @@
     border-color: #94a3b8;
     color: #0f172a;
 }
-
 
 /* ================= RIGHT COLUMN LIVE QUEUE STYLES ================= */
 
@@ -472,7 +461,6 @@
     transform: translateX(2px);
 }
 
-
 /* Dynamic Order Lifecycle Pills Styling */
 
 .order-pill {
@@ -497,7 +485,6 @@
     background-color: #fef3c7;
     color: #b45309;
 }
-
 
 /* ================= OVERLAY VIEW POPUP INTERFACES ================= */
 
@@ -560,7 +547,6 @@
     margin: 16px 0;
 }
 
-
 /* Metadata Configuration Field Items Matrix */
 
 .modal-details-grid {
@@ -598,7 +584,6 @@
 .warning-text {
     color: #b45309;
 }
-
 
 /* Running Order Subview Items Container List */
 
@@ -660,7 +645,6 @@
     text-align: center;
 }
 
-
 /* Footer Dynamic Alignment Buttons Row */
 
 .modal-action-footer {
@@ -707,7 +691,6 @@
     background-color: #1e293b;
 }
 
-
 /* Keyframe Transform Transitions Animations */
 
 @keyframes fadeInEffect {
@@ -729,7 +712,6 @@
         opacity: 1;
     }
 }
-
 
 /* ================= DYNAMIC FORMS AND MODAL CONTROL INPUTS ================= */
 
@@ -799,7 +781,6 @@
     padding-top: 16px;
 }
 
-
 /* Entry Animation Sequence */
 
 .animation-fade-slide {
@@ -814,5 +795,75 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* ================= MOBILE RESPONSIVENESS (AAYUSH'S ADDITIONS) ================= */
+
+/* Tablets and Mobile Landscape */
+@media (max-width: 768px) {
+    .staff-page {
+        padding: 16px; /* Reduced outer padding for more screen space */
+    }
+
+    .staff-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .take-order-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .section-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .search-wrapper {
+        width: 100%; /* Search bar takes full width on smaller screens */
+    }
+
+    .tables-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); /* Force tables to stack if they can't fit the 240px min */
+    }
+}
+
+/* Small Mobile Phones */
+@media (max-width: 480px) {
+    .staff-page {
+        padding: 12px;
+    }
+    
+    .staff-stats {
+        grid-template-columns: 1fr; /* Stack the statistic cards */
+    }
+
+    .modal-details-grid {
+        grid-template-columns: 1fr; /* Make modal details stack cleanly */
+    }
+
+    .full-width-item {
+        grid-column: span 1;
+    }
+
+    .table-card-actions {
+        grid-template-columns: 1fr; /* Stack view and edit buttons inside cards */
+    }
+
+    .modal-action-footer {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .modal-action-footer button {
+        width: 100%; /* Full width buttons for easy thumb tapping */
+    }
+
+    .live-orders {
+        padding: 16px 12px;
     }
 }
