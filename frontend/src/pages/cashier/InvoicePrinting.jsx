@@ -2,6 +2,7 @@ import React, { useEffect, useState } from"react";
 import { useParams, useNavigate } from"react-router-dom";
 import { useOrders } from"../../context/OrderContext";
 import { Printer, ArrowLeft } from"lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 const InvoicePrinting = () => {
  const { orderId } = useParams();
@@ -15,7 +16,7 @@ const InvoicePrinting = () => {
 
  useEffect(() => {
  if (orders.length > 0) {
- const found = orders.find(o => o.id === orderId || o._id === orderId);
+ const found = orders.find(o => String(o.id) === String(orderId) || String(o._id) === String(orderId));
  setOrder(found);
  }
  }, [orders, orderId]);
@@ -23,7 +24,7 @@ const InvoicePrinting = () => {
  if (!order) {
  return (
  <div className="min-h-screen bg-slate-50 flex items-center justify-center p-8 font-sans">
- <div className="p-8 text-center text-slate-500 font-bold bg-white rounded-2xl shadow-sm animate-pulse border border-slate-100">
+ <div className="p-8 text-center text-slate-500 font-bold bg-white rounded-xl shadow-sm animate-pulse border border-slate-100">
  Loading invoice details...
  </div>
  </div>
@@ -37,6 +38,34 @@ const InvoicePrinting = () => {
 
  return (
  <div className="min-h-screen bg-slate-50 flex items-start justify-center p-8 font-sans">
+ <style>{`
+    @media print {
+      @page {
+        margin: 0;
+        size: 80mm auto;
+      }
+      body, html {
+        margin: 0;
+        padding: 0;
+        width: 80mm;
+        background: #fff !important;
+      }
+      * {
+        font-family: "Courier New", monospace !important;
+        color: #000 !important;
+      }
+      .print\\:hidden { display: none !important; }
+      #invoice-container {
+        width: 80mm !important;
+        padding: 5mm !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+      /* Hide the outer wrapper padding/bg when printing */
+      .bg-slate-50 { background: #fff !important; }
+    }
+  `}</style>
  <div className="max-w-md w-full">
  {/* Actions (Hidden on print) */}
  <div className="flex justify-between items-center mb-6 print:hidden">
@@ -55,7 +84,7 @@ const InvoicePrinting = () => {
  </div>
 
  {/* Printable Receipt Area */}
- <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-slate-800 print:shadow-none print:border-none print:p-0 mx-auto" style={{ maxWidth:'400px' }}>
+ <div id="invoice-container" className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 text-slate-800 print:shadow-none print:border-none print:p-0 mx-auto" style={{ maxWidth:'400px' }}>
  <div className="text-center border-b border-slate-200 border-dashed pb-6 mb-6">
  <h1 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">ASLENIX</h1>
  <p className="text-slate-500 text-sm mt-1 font-medium">123 Culinary Avenue, Food City</p>
@@ -125,10 +154,18 @@ const InvoicePrinting = () => {
  <span>Rs. {finalTotal.toFixed(2)}</span>
  </div>
 
- <div className="text-center text-sm font-semibold text-slate-500">
+ <div className="text-center text-sm font-semibold text-slate-500 mb-6">
  <p>Thank you for dining with us!</p>
  <p className="text-[10px] mt-1 text-slate-400 uppercase tracking-widest font-bold">Please visit again</p>
  </div>
+
+ <div className="flex justify-center mt-6">
+    <QRCodeSVG 
+      value={JSON.stringify({ id: order.id, total: finalTotal, table: order.table })} 
+      size={100}
+      level="L"
+    />
+  </div>
  </div>
  </div>
  </div>

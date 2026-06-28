@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from"react";
-import { Search, Plus, UserPlus, X } from"lucide-react";
-import apiClient from"../../api/apiClient";
+import React, { useState, useEffect } from "react";
+import { Search, Plus, UserPlus, X } from "lucide-react";
+import apiClient from "../../api/apiClient";
+import { useToast } from "../../context/ToastContext";
 
 const Customers = () => {
  const [customers, setCustomers] = useState([]);
@@ -9,6 +10,7 @@ const Customers = () => {
  const [isModalOpen, setIsModalOpen] = useState(false);
  const [newCustomer, setNewCustomer] = useState({ name:"", phone:"", email:"" });
  const [saving, setSaving] = useState(false);
+ const { showToast } = useToast();
 
  useEffect(() => {
  fetchCustomers();
@@ -33,9 +35,10 @@ const Customers = () => {
  setIsModalOpen(false);
  setNewCustomer({ name:"", phone:"", email:"" });
  fetchCustomers();
+ showToast("Customer added successfully!", "success");
  } catch (error) {
  console.error("Failed to add customer", error);
- alert(error.response?.data?.message ||"Error adding customer");
+ showToast(error.response?.data?.message || "Error adding customer", "error");
  } finally {
  setSaving(false);
  }
@@ -61,7 +64,7 @@ const Customers = () => {
  </button>
  </div>
 
- <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+ <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
  <div className="relative w-full md:w-1/2 mb-6">
  <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
  <input 
@@ -108,7 +111,7 @@ const Customers = () => {
  {/* Add Customer Modal */}
  {isModalOpen && (
  <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
- <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+ <div className="bg-white rounded-xl w-full max-w-md overflow-hidden shadow-md">
  <div className="flex justify-between items-center p-6 border-b border-slate-100">
  <h2 className="text-xl font-bold text-slate-800">Add New Customer</h2>
  <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">

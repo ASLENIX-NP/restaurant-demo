@@ -211,8 +211,8 @@ const Tables = () => {
 
  {/* STATS */}
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 mb-6 md:mb-8">
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
- <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-inner border border-slate-100 group-hover:scale-110 transition-transform duration-300">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+ <div className="w-14 h-14 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-inner border border-slate-100 group-hover:scale-110 transition-transform duration-300">
  <Utensils size={26} strokeWidth={2.5} />
  </div>
  <div>
@@ -224,8 +224,8 @@ const Tables = () => {
  </h2>
  </div>
  </div>
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
- <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-inner border border-emerald-100 group-hover:scale-110 transition-transform duration-300">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+ <div className="w-14 h-14 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-inner border border-emerald-100 group-hover:scale-110 transition-transform duration-300">
  <CheckCircle2 size={26} strokeWidth={2.5} />
  </div>
  <div>
@@ -237,8 +237,8 @@ const Tables = () => {
  </h2>
  </div>
  </div>
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
- <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner border border-rose-100 group-hover:scale-110 transition-transform duration-300">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+ <div className="w-14 h-14 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner border border-rose-100 group-hover:scale-110 transition-transform duration-300">
  <Users size={26} strokeWidth={2.5} />
  </div>
  <div>
@@ -250,8 +250,8 @@ const Tables = () => {
  </h2>
  </div>
  </div>
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
- <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100 group-hover:scale-110 transition-transform duration-300">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+ <div className="w-14 h-14 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100 group-hover:scale-110 transition-transform duration-300">
  <AlertTriangle size={26} strokeWidth={2.5} />
  </div>
  <div>
@@ -271,12 +271,12 @@ const Tables = () => {
  const config = getStatusConfig(table.status);
  return (
  <div
- className={`group relative bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 border-slate-100 hover:border-slate-200`}
+ className={`group relative bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:shadow-md hover:-translate-y-1 border-slate-100 hover:border-slate-200`}
  key={table.id}
  onClick={() => handleOpenView(table)}
  >
  {/* Background Subtle Gradient */}
- <div className={`absolute inset-0 bg-gradient-to-b ${config.gradient} opacity-50 pointer-events-none`} />
+ <div className={`absolute inset-0 bg-${config.gradient} opacity-50 pointer-events-none`} />
  
  {/* Status Top Accent Line */}
  <div className={`h-1.5 w-full ${config.dot} transition-all duration-300 group-hover:h-2`} />
@@ -284,7 +284,7 @@ const Tables = () => {
  <div className="p-6 relative z-10 flex-1 flex flex-col justify-between">
  <div className="flex justify-between items-start mb-5">
  <div className="flex items-center gap-3">
- <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${config.bg} ${config.text} group-hover:scale-110 transition-transform duration-300`}>
+ <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${config.bg} ${config.text} group-hover:scale-110 transition-transform duration-300`}>
  <Utensils size={24} />
  </div>
  <div>
@@ -320,7 +320,7 @@ const Tables = () => {
 
  <div className="grid grid-cols-2 border-t border-slate-100 divide-x divide-slate-100 bg-white/5 relative z-10">
  <button
- className="py-3.5 text-xs font-bold text-slate-600 hover:bg-white hover:text-purple-600 transition-colors flex items-center justify-center gap-2"
+ className="py-3.5 text-xs font-bold text-slate-600 hover:bg-white hover:text-indigo-600 transition-colors flex items-center justify-center gap-2"
  onClick={(e) => {
  e.stopPropagation();
  handleOpenView(table);
@@ -350,7 +350,7 @@ const Tables = () => {
  onClick={closeModal}
  >
  <div
- className="modal-content bg-white rounded-2xl shadow-xl w-full max-w-sm sm:max-w-md overflow-hidden flex flex-col max-h-[90vh] animate-slide-in"
+ className="modal-content bg-white rounded-xl shadow-md w-full max-w-sm sm:max-w-md overflow-hidden flex flex-col max-h-[90vh] animate-slide-in"
  onClick={(e) => e.stopPropagation()}
  >
  {/* VIEW DETAILS MODAL */}
@@ -365,7 +365,7 @@ const Tables = () => {
  <>
  <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-white/5">
  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
- <Eye size={18} className="text-purple-500" />
+ <Eye size={18} className="text-indigo-500" />
  {currentViewingTable.name} Details
  </h2>
  <button
@@ -382,7 +382,7 @@ const Tables = () => {
  Status
  </span>
  <span
- className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${config.bg} ${config.text}`}
+ className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${config.bg} ${config.text}`}
  >
  {currentViewingTable.status ||"Available"}
  </span>
@@ -437,7 +437,7 @@ const Tables = () => {
  {/* Interactive Toggle Button status layout */}
  <button
  type="button"
- className={`px-2.5 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider shadow-sm transition-colors ${
+ className={`px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm transition-colors ${
  item.delivered
  ?"bg-emerald-100 text-emerald-600"
  :"bg-white border border-slate-200 text-slate-500"

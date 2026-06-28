@@ -8,10 +8,11 @@ import {
  Sparkles,
  ChefHat,
 } from"lucide-react";
+import Skeleton from "../../components/ui/Skeleton";
 import { useOrders } from"../../context/OrderContext";
 
 const ReadyOrders = () => {
- const { orders, serveOrder } = useOrders();
+ const { orders, serveOrder, isLoading } = useOrders();
 
  // Filter orders to only show those marked as"Ready" by the kitchen
  const readyOrders = orders.filter((order) => order.status ==="Ready");
@@ -39,7 +40,7 @@ const ReadyOrders = () => {
  finished these orders. Awaiting waitstaff pickup.
  </p>
  </div>
- <div className="bg-white/80 w-full sm:w-auto justify-center backdrop-blur-md text-emerald-700 px-5 py-3 rounded-2xl font-bold flex items-center gap-3 border border-emerald-100 shadow-sm">
+ <div className="bg-white/80 w-full sm:w-auto justify-center backdrop-blur-md text-emerald-700 px-5 py-3 rounded-xl font-bold flex items-center gap-3 border border-emerald-100 shadow-sm">
  <div className="relative flex h-3 w-3">
  {readyOrders.length > 0 && (
  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -53,7 +54,7 @@ const ReadyOrders = () => {
 
  {/* ORDERS GRID WORKSPACE */}
  {readyOrders.length === 0 ? (
- <div className="bg-white/60 backdrop-blur-sm rounded-3xl border-2 border-dashed border-slate-200 p-20 flex flex-col items-center justify-center text-slate-400 shadow-sm mt-8">
+ <div className="bg-white/60 backdrop-blur-sm rounded-xl border-2 border-dashed border-slate-200 p-20 flex flex-col items-center justify-center text-slate-400 shadow-sm mt-8">
  <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
  <UtensilsCrossed size={40} className="text-slate-300" />
  </div>
@@ -65,15 +66,39 @@ const ReadyOrders = () => {
  new tickets as ready.
  </p>
  </div>
+ ) : isLoading ? (
+ <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 xl:gap-8">
+ {Array.from({ length: 4 }).map((_, i) => (
+ <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col h-[380px]">
+ <div className="flex justify-between items-start mb-6">
+ <div>
+ <Skeleton className="w-24 h-8 mb-2 rounded-lg" />
+ <div className="flex gap-2">
+ <Skeleton className="w-16 h-5 rounded-lg" />
+ <Skeleton className="w-16 h-5 rounded-lg" />
+ </div>
+ </div>
+ <Skeleton className="w-20 h-6 rounded-lg" />
+ </div>
+ <hr className="border-slate-100 border-dashed mb-5" />
+ <div className="flex-1 space-y-3">
+ <Skeleton className="w-full h-12 rounded-xl" />
+ <Skeleton className="w-full h-12 rounded-xl" />
+ <Skeleton className="w-full h-12 rounded-xl" />
+ </div>
+ <Skeleton className="w-full h-14 rounded-xl mt-4" />
+ </div>
+ ))}
+ </div>
  ) : (
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 xl:gap-8">
  {readyOrders.map((order) => (
  <div
  key={order.id}
- className="bg-white rounded-[24px] shadow-sm hover:shadow-2xl hover:shadow-emerald-500/10 border border-slate-100 p-6 flex flex-col h-full transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group"
+ className="bg-white rounded-xl shadow-sm hover:shadow-md hover:shadow-emerald-500/10 border border-slate-100 p-6 flex flex-col h-full transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group"
  >
  {/* Top Green Accent Line */}
- <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-400 to-teal-500" />
+ <div className="absolute top-0 left-0 w-full h-1.5 bg-emerald-500" />
 
  {/* Order Meta Data */}
  <div className="flex justify-between items-start mb-6 pt-2">
@@ -82,10 +107,10 @@ const ReadyOrders = () => {
  {order.id}
  </h2>
  <div className="flex items-center gap-2 mt-2">
- <span className="inline-flex bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 rounded-md shadow-sm">
+ <span className="inline-flex bg-slate-800 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-sm">
  {order.channel ||"System"}
  </span>
- <span className="inline-flex bg-emerald-50 text-emerald-700 text-[11px] font-bold px-2.5 py-1 rounded-md border border-emerald-100">
+ <span className="inline-flex bg-emerald-50 text-emerald-700 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-emerald-100">
  {order.table ||"Queue"}
  </span>
  </div>
@@ -110,7 +135,7 @@ const ReadyOrders = () => {
  className="flex justify-between items-start p-3 bg-slate-50/80 rounded-xl border border-slate-100/50 group-hover:bg-emerald-50/30 transition-colors"
  >
  <span className="flex items-start gap-3">
- <span className="bg-white border border-slate-200 text-slate-700 w-6 h-6 rounded-md flex items-center justify-center text-xs font-black shadow-sm flex-shrink-0 mt-0.5">
+ <span className="bg-white border border-slate-200 text-slate-700 w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black shadow-sm flex-shrink-0 mt-0.5">
  {item.qty}
  </span>
  <div className="flex flex-col">
@@ -132,7 +157,7 @@ const ReadyOrders = () => {
  {/* Action Button */}
  <button
  onClick={() => serveOrder(order.id)}
- className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-auto group/btn"
+ className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-sm shadow-emerald-500/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-auto group/btn"
  >
  <Sparkles
  size={18}

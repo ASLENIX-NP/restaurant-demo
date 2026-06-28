@@ -33,7 +33,7 @@ const Dashboard = () => {
  const { orders = [], fetchOrders } = useOrders() || {};
  const navigate = useNavigate();
  const [selectedOrder, setSelectedOrder] = useState(null);
- const [dateRange, setDateRange] = useState([null, null]); // Defaults to all time
+ const [dateRange, setDateRange] = useState([null, null]);
  const [startDate, endDate] = dateRange;
 
  useEffect(() => {
@@ -64,7 +64,7 @@ const Dashboard = () => {
  (order) => order.status ==="Completed"
  );
  const pendingBills = filteredOrders.filter(
- (order) => order.status !=="Completed"
+   (order) => order.status !== "Completed" && order.status !== "Cancelled"
  );
 
  const totalSalesAmount = completedSales.reduce((acc, order) => {
@@ -115,25 +115,47 @@ const Dashboard = () => {
  ].filter((item) => item.value > 0); // Only show methods that have sales
  }, [completedSales]);
 
- // Prepare mock/dynamic data for the Area Chart trend
- const salesTrendData = React.useMemo(() => {
- // In a real app, you'd group completedSales by hour.
- // Here we generate a smooth curve that ends at today's actual total.
- const base = totalSalesAmount > 0 ? totalSalesAmount / 6 : 0;
- return [
- { time:"8 AM", sales: base * 0.2 },
- { time:"11 AM", sales: base * 0.8 },
- { time:"2 PM", sales: base * 1.5 },
- { time:"5 PM", sales: base * 1.1 },
- { time:"8 PM", sales: base * 2.1 },
- { time:"11 PM", sales: base * 0.4 },
- ];
- }, [totalSalesAmount]);
+  const salesTrendData = React.useMemo(() => {
+    const hoursMap = {};
+    // Pre-fill typical restaurant hours (8 AM to 11 PM) to ensure a continuous line
+    for (let i = 8; i <= 23; i++) {
+      const label = i === 12 ? "12 PM" : i > 12 ? `${i - 12} PM` : `${i} AM`;
+      hoursMap[label] = 0;
+    }
+
+    completedSales.forEach(order => {
+      const orderDate = order.timestamp ? new Date(order.timestamp) : order.date ? new Date(order.date) : null;
+      if (orderDate) {
+        const hour = orderDate.getHours();
+        const label = hour === 0 ? "12 AM" : hour === 12 ? "12 PM" : hour > 12 ? `${hour - 12} PM` : `${hour} AM`;
+        
+        if (hoursMap[label] === undefined) {
+          hoursMap[label] = 0;
+        }
+
+        const subtotal = (order.items || []).reduce((sum, item) => sum + item.qty * (parseFloat(item.price) || 0), 0);
+        const amt = order.amount || subtotal + (subtotal > 0 ? 50 : 0);
+        hoursMap[label] += amt;
+      }
+    });
+
+    // Sort by chronological hour
+    return Object.keys(hoursMap).sort((a, b) => {
+      const parseHour = (str) => {
+        const [h, ampm] = str.split(' ');
+        let hr = parseInt(h);
+        if (ampm === 'PM' && hr !== 12) hr += 12;
+        if (ampm === 'AM' && hr === 12) hr = 0;
+        return hr;
+      };
+      return parseHour(a) - parseHour(b);
+    }).map(time => ({ time, sales: hoursMap[time] }));
+  }, [completedSales]);
 
  const CustomTooltip = ({ active, payload, label }) => {
  if (active && payload && payload.length) {
  return (
- <div className="bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-700">
+ <div className="bg-slate-900 text-white p-3 rounded-lg shadow-md border border-slate-700">
  <p className="font-bold text-slate-300 text-xs mb-1">{label}</p>
  <p className="font-black text-lg">
  Rs.{""}
@@ -222,7 +244,7 @@ const Dashboard = () => {
  </div>
 
  <div className="stat-card">
- <div className="stat-icon-wrapper purple-light">💳</div>
+ <div className="stat-icon-wrapper indigo-light">💳</div>
  <div className="stat-info">
  <h4>Average Order Value</h4>
  <h2>
@@ -513,13 +535,13 @@ const Dashboard = () => {
  })}
  </td>
  <td className="p-4 text-center">
- <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
+ <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
  {order.paymentMethod ||"Cash"}
  </span>
  </td>
  <td className="p-4 text-center">
  <span
- className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
+ className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
  order.status ==="Completed"
  ?"bg-emerald-50 text-emerald-600"
  : order.status ==="Cancelled"
@@ -616,12 +638,12 @@ const Dashboard = () => {
  onClick={() => setSelectedOrder(null)}
  >
  <div
- className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in flex flex-col max-h-[90vh]"
+ className="bg-white rounded-xl shadow-md w-full max-w-md overflow-hidden animate-slide-in flex flex-col max-h-[90vh]"
  onClick={(event) => event.stopPropagation()}
  >
  <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
  <div>
- <span className="text-[10px] font-black uppercase tracking-widest text-purple-500 mb-1 block">
+ <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-1 block">
  Receipt Preview
  </span>
  <h2 className="text-lg font-black text-slate-900">

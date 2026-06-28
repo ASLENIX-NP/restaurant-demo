@@ -90,7 +90,7 @@ const Orders = () => {
  {/* Stat Card 1 */}
  <div 
  onClick={() => setActiveFilter("All Orders")}
- className={`group bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer ${activeFilter ==="All Orders" ?"ring-2 ring-slate-400 border-slate-400" :"border-slate-100"}`}
+ className={`group bg-white rounded-xl p-6 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer ${activeFilter ==="All Orders" ?"ring-2 ring-slate-400 border-slate-400" :"border-slate-100"}`}
  >
  <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 ${activeFilter ==="All Orders" ?"bg-slate-800 text-white" :"bg-slate-50 text-slate-600"}`}>
  <Package size={22} />
@@ -113,7 +113,7 @@ const Orders = () => {
  {/* Stat Card 2 */}
  <div 
  onClick={() => setActiveFilter("Completed")}
- className={`group bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer ${activeFilter ==="Completed" ?"ring-2 ring-emerald-400 border-emerald-400" :"border-slate-100"}`}
+ className={`group bg-white rounded-xl p-6 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer ${activeFilter ==="Completed" ?"ring-2 ring-emerald-400 border-emerald-400" :"border-slate-100"}`}
  >
  <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 ${activeFilter ==="Completed" ?"bg-emerald-500 text-white" :"bg-emerald-50 text-emerald-600"}`}>
  <CheckCircle2 size={22} />
@@ -139,7 +139,7 @@ const Orders = () => {
  {/* Stat Card 3 */}
  <div 
  onClick={() => setActiveFilter("Pending")}
- className={`group bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer ${activeFilter ==="Pending" ?"ring-2 ring-orange-400 border-orange-400" :"border-slate-100"}`}
+ className={`group bg-white rounded-xl p-6 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer ${activeFilter ==="Pending" ?"ring-2 ring-orange-400 border-orange-400" :"border-slate-100"}`}
  >
  <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 ${activeFilter ==="Pending" ?"bg-orange-500 text-white" :"bg-orange-50 text-orange-500"}`}>
  <Hourglass size={22} />
@@ -162,7 +162,7 @@ const Orders = () => {
  {/* Stat Card 4 */}
  <div 
  onClick={() => setActiveFilter("Delivery")}
- className={`group bg-white rounded-2xl p-6 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer ${activeFilter ==="Delivery" ?"ring-2 ring-blue-400 border-blue-400" :"border-slate-100"}`}
+ className={`group bg-white rounded-xl p-6 border shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 cursor-pointer ${activeFilter ==="Delivery" ?"ring-2 ring-blue-400 border-blue-400" :"border-slate-100"}`}
  >
  <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 ${activeFilter ==="Delivery" ?"bg-blue-500 text-white" :"bg-blue-50 text-blue-600"}`}>
  <Truck size={22} />
@@ -184,7 +184,7 @@ const Orders = () => {
  </div>
 
  {/* TABLE WORKSPACE COMPONENT */}
- <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
  {/* Top Controls Bar */}
  <div className="p-5 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
  {/* Nav Tabs */}
@@ -219,7 +219,7 @@ const Orders = () => {
  <Icon size={16} className={`transition-colors duration-300 ${isActive ? tab.activeColor :"text-slate-400 group-hover:text-slate-500"}`} />
  {tab.name}
  <span
- className={`px-2 py-0.5 rounded-md text-[10px] font-black transition-colors duration-300 ${
+ className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition-colors duration-300 ${
  isActive
  ? `${tab.bgActive} ${tab.activeColor} ring-1 ${tab.ringActive}`
  :"bg-slate-200/50 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-500"
@@ -241,7 +241,7 @@ const Orders = () => {
  <input
  type="text"
  placeholder="Search order..."
- className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-50 transition-all placeholder:text-slate-400 shadow-sm"
+ className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-400 shadow-sm"
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
  />
@@ -294,7 +294,7 @@ const Orders = () => {
  <td className="p-5">
  <button
  onClick={() => setSelectedOrder(order)}
- className="flex items-center gap-1.5 text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors"
+ className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors"
  >
  <Eye size={14} />
  View Items
@@ -342,7 +342,7 @@ const Orders = () => {
  {/* ITEMS MODAL */}
  {selectedOrder && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in p-6 relative">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-md overflow-hidden animate-slide-in p-6 relative">
  <div className="flex justify-between items-start mb-6">
  <div>
  <h2 className="text-xl font-black text-slate-900">

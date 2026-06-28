@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from"react";
-import { useLocation } from"react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
  Banknote,
  CalendarDays,
@@ -35,6 +35,7 @@ const filters = ["All","Pending","Cooking","Ready","Served"];
 
 export default function PendingBillsPage() {
  const location = useLocation();
+ const navigate = useNavigate();
  const autoOpened = useRef(false);
 
  const {
@@ -260,85 +261,84 @@ export default function PendingBillsPage() {
  };
 
  const handleFinalizePayment = (shouldPrint) => {
- if (shouldPrint) {
- window.print();
- }
+  setTimeout(() => {
+  const tableObj = tables.find((t) => t.name === selectedInvoice.table);
+  if (tableObj) {
+  if (editTable) {
+  editTable(tableObj._id || tableObj.id, {
+  status:"Available",
+  currentCustomer:"No Customer",
+  reservationTime: null,
+  });
+  } else if (updateTableStatus) {
+  updateTableStatus(
+  tableObj._id || tableObj.id,
+  "Available",
+  "No Customer"
+  );
+  }
+  } else {
+  const match = selectedInvoice.table.match(/\d+/);
+  if (match) {
+  updateTableStatus(parseInt(match[0], 10),"Available","No Customer");
+  }
+  }
 
- setTimeout(() => {
- const tableObj = tables.find((t) => t.name === selectedInvoice.table);
- if (tableObj) {
- if (editTable) {
- editTable(tableObj._id || tableObj.id, {
- status:"Available",
- currentCustomer:"No Customer",
- reservationTime: null,
- });
- } else if (updateTableStatus) {
- updateTableStatus(
- tableObj._id || tableObj.id,
-"Available",
-"No Customer"
- );
- }
- } else {
- const match = selectedInvoice.table.match(/\d+/);
- if (match) {
- updateTableStatus(parseInt(match[0], 10),"Available","No Customer");
- }
- }
+  try {
+  const savedRes = localStorage.getItem("restaurant_reservations");
+  if (savedRes) {
+  let parsedRes = JSON.parse(savedRes);
+  const filteredRes = parsedRes.filter(
+  (r) => r.table !== selectedInvoice.table
+  );
+  if (filteredRes.length !== parsedRes.length) {
+  localStorage.setItem(
+  "restaurant_reservations",
+  JSON.stringify(filteredRes)
+  );
+  window.dispatchEvent(new Event("storage"));
+  }
+  }
+  } catch (e) {
+  console.error("Failed to clear reservation:", e);
+  }
 
- try {
- const savedRes = localStorage.getItem("restaurant_reservations");
- if (savedRes) {
- let parsedRes = JSON.parse(savedRes);
- const filteredRes = parsedRes.filter(
- (r) => r.table !== selectedInvoice.table
- );
- if (filteredRes.length !== parsedRes.length) {
- localStorage.setItem(
-"restaurant_reservations",
- JSON.stringify(filteredRes)
- );
- window.dispatchEvent(new Event("storage"));
- }
- }
- } catch (e) {
- console.error("Failed to clear reservation:", e);
- }
+  const finalDetails = {
+  paymentMethod,
+  discountAmount,
+  serviceCharge: safeServiceCharge,
+  amount: total,
+  };
 
- const finalDetails = {
- paymentMethod,
- discountAmount,
- serviceCharge: safeServiceCharge,
- amount: total,
- };
+  if (selectedInvoice.orderIds) {
+  const splitDetails = {
+  ...finalDetails,
+  amount: total / selectedInvoice.orderIds.length,
+  discountAmount: discountAmount / selectedInvoice.orderIds.length,
+  serviceCharge: safeServiceCharge / selectedInvoice.orderIds.length,
+  };
+  selectedInvoice.orderIds.forEach((id) =>
+  completeOrder(id, splitDetails)
+  );
+  if (shouldPrint) {
+  navigate(`/cashier/invoice/${encodeURIComponent(selectedInvoice.orderIds[0])}`);
+  }
+  } else {
+  completeOrder(selectedInvoice.id, finalDetails);
+  if (shouldPrint) {
+  navigate(`/cashier/invoice/${encodeURIComponent(selectedInvoice.id)}`);
+  }
+  }
 
- if (selectedInvoice.orderIds) {
- const splitDetails = {
- ...finalDetails,
- amount: total / selectedInvoice.orderIds.length,
- discountAmount: discountAmount / selectedInvoice.orderIds.length,
- serviceCharge: safeServiceCharge / selectedInvoice.orderIds.length,
- };
- selectedInvoice.orderIds.forEach((id) =>
- completeOrder(id, splitDetails)
- );
- // Open invoice for the first order in the split (or you could open a combined one if supported)
- window.open(`/cashier/invoice/${selectedInvoice.orderIds[0]}`,"_blank");
- } else {
- completeOrder(selectedInvoice.id, finalDetails);
- window.open(`/cashier/invoice/${selectedInvoice.id}`,"_blank");
- }
+  setIsPaymentSuccess(false);
+  setSelectedInvoiceId(null);
 
- setIsPaymentSuccess(false);
- setSelectedInvoiceId(null);
-
- setTimeout(() => {
- if (fetchOrders) fetchOrders();
- if (fetchTables) fetchTables();
- }, 500);
- }, 100);
- };
+  setTimeout(() => {
+  if (fetchOrders) fetchOrders();
+  if (fetchTables) fetchTables();
+  }, 500);
+  }, 100);
+  };
 
  const handleCancelBillClick = () => {
  setIsCancelConfirmOpen(true);

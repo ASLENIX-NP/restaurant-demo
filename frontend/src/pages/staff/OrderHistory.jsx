@@ -13,25 +13,29 @@ import {
  X,
  XCircle,
  Printer,
-} from"lucide-react";
-import"../../styles/history.css";
-import { useOrders } from"../../context/OrderContext";
+} from "lucide-react";
+import Skeleton from "../../components/ui/Skeleton";
+import Modal from "../../components/ui/Modal";
+import { useToast } from "../../context/ToastContext";
+import "../../styles/history.css";
+import { useOrders } from "../../context/OrderContext";
 
-const filters = ["All","Completed","Cancelled"];
+const filters = ["All", "Completed", "Cancelled"];
 
 const getAvatarGradient = (index) => {
  const gradients = [
-"from-blue-500 to-indigo-600",
-"from-violet-500 to-purple-600",
-"from-emerald-400 to-teal-500",
-"from-pink-500 to-rose-600",
-"from-orange-400 to-amber-500",
+  "from-blue-500 to-indigo-600",
+  "from-violet-500 to-indigo-600",
+  "from-emerald-400 to-teal-500",
+  "from-pink-500 to-rose-600",
+  "from-orange-400 to-amber-500",
  ];
  return gradients[index % gradients.length];
 };
 
 const History = () => {
- const { orders = [] } = useOrders();
+ const { orders = [], isLoading } = useOrders();
+ const { showToast } = useToast();
  const [searchTerm, setSearchTerm] = useState("");
  const [activeTab, setActiveTab] = useState("All");
  const [selectedOrder, setSelectedOrder] = useState(null);
@@ -40,142 +44,142 @@ const History = () => {
  const exportMenuRef = useRef(null);
 
  useEffect(() => {
- const handleOutsideClick = (event) => {
- if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
- setIsExportMenuOpen(false);
- }
- };
- document.addEventListener("mousedown", handleOutsideClick);
- return () => document.removeEventListener("mousedown", handleOutsideClick);
+  const handleOutsideClick = (event) => {
+   if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
+    setIsExportMenuOpen(false);
+   }
+  };
+  document.addEventListener("mousedown", handleOutsideClick);
+  return () => document.removeEventListener("mousedown", handleOutsideClick);
  }, []);
 
  const ordersList = useMemo(() => {
- return orders
- .filter((o) => o.status ==="Completed" || o.status ==="Cancelled")
- .map((o) => {
- const subtotal = (o.items || []).reduce(
- (sum, i) => sum + i.qty * (parseFloat(i.price) || 0),
- 0
- );
- const amount =
- o.amount !== undefined
- ? o.amount
- : subtotal + (subtotal > 0 ? 50 : 0);
- return {
- id: o.id,
- table: o.table ||"Walk-in",
- amount: amount,
- status: o.status,
- customer: o.customer ||"Guest",
- customerType:"Customer",
- itemsCount: (o.items || []).reduce((sum, i) => sum + i.qty, 0),
- time: o.time ||"N/A",
- date: o.date || new Date().toLocaleDateString(),
- paymentMethod: o.paymentMethod ||"Cash",
- server: o.server ||"System",
- breakdown: o.items || [],
- };
- })
- .reverse();
+  return orders
+   .filter((o) => o.status === "Completed" || o.status === "Cancelled")
+   .map((o) => {
+    const subtotal = (o.items || []).reduce(
+     (sum, i) => sum + i.qty * (parseFloat(i.price) || 0),
+     0
+    );
+    const amount =
+     o.amount !== undefined
+      ? o.amount
+      : subtotal + (subtotal > 0 ? 50 : 0);
+    return {
+     id: o.id,
+     table: o.table || "Walk-in",
+     amount: amount,
+     status: o.status,
+     customer: o.customer || "Guest",
+     customerType: "Customer",
+     itemsCount: (o.items || []).reduce((sum, i) => sum + i.qty, 0),
+     time: o.time || "N/A",
+     date: o.date || new Date().toLocaleDateString(),
+     paymentMethod: o.paymentMethod || "Cash",
+     server: o.server || "System",
+     breakdown: o.items || [],
+    };
+   })
+   .reverse();
  }, [orders]);
 
  const filteredOrders = useMemo(() => {
- const term = searchTerm.trim().toLowerCase();
+  const term = searchTerm.trim().toLowerCase();
 
- return ordersList.filter((order) => {
- const matchesSearch =
- !term ||
- order.customer.toLowerCase().includes(term) ||
- order.id.toLowerCase().includes(term) ||
- order.table.toLowerCase().includes(term) ||
- order.paymentMethod.toLowerCase().includes(term);
- const matchesTab = activeTab ==="All" || order.status === activeTab;
+  return ordersList.filter((order) => {
+   const matchesSearch =
+    !term ||
+    order.customer.toLowerCase().includes(term) ||
+    order.id.toLowerCase().includes(term) ||
+    order.table.toLowerCase().includes(term) ||
+    order.paymentMethod.toLowerCase().includes(term);
+   const matchesTab = activeTab === "All" || order.status === activeTab;
 
- return matchesSearch && matchesTab;
- });
+   return matchesSearch && matchesTab;
+  });
  }, [activeTab, ordersList, searchTerm]);
 
  const stats = useMemo(() => {
- const completedOrders = ordersList.filter(
- (order) => order.status ==="Completed"
- );
- const cancelledOrders = ordersList.filter(
- (order) => order.status ==="Cancelled"
- );
- const totalItems = completedOrders.reduce(
- (sum, order) => sum + order.itemsCount,
- 0
- );
+  const completedOrders = ordersList.filter(
+   (order) => order.status === "Completed"
+  );
+  const cancelledOrders = ordersList.filter(
+   (order) => order.status === "Cancelled"
+  );
+  const totalItems = completedOrders.reduce(
+   (sum, order) => sum + order.itemsCount,
+   0
+  );
 
- return {
- totalItems,
- completedCount: completedOrders.length,
- cancelledCount: cancelledOrders.length,
- };
+  return {
+   totalItems,
+   completedCount: completedOrders.length,
+   cancelledCount: cancelledOrders.length,
+  };
  }, [ordersList]);
 
  const handleExportCSV = () => {
- setIsExporting(true);
+  setIsExporting(true);
 
- if (filteredOrders.length === 0) {
- alert("No data to export based on current filters.");
- setIsExporting(false);
- return;
- }
+  if (filteredOrders.length === 0) {
+   showToast("No data to export based on current filters.", "warning");
+   setIsExporting(false);
+   return;
+  }
 
- const headers = [
-"Order ID",
-"Date",
-"Time",
-"Customer",
-"Table",
-"Items Count",
-"Items Breakdown",
-"Amount",
-"Status",
-"Payment Method",
-"Server"
- ];
+  const headers = [
+   "Order ID",
+   "Date",
+   "Time",
+   "Customer",
+   "Table",
+   "Items Count",
+   "Items Breakdown",
+   "Amount",
+   "Status",
+   "Payment Method",
+   "Server"
+  ];
 
- const csvRows = filteredOrders.map((order) => {
- const itemsBreakdown = order.breakdown.map(i => `${i.qty}x ${i.name}`).join(";");
- return [
- order.id,
- order.date ||"N/A",
- order.time ||"N/A",
- `"${order.customer ||"Guest"}"`,
- `"${order.table ||"Walk-in"}"`,
- order.itemsCount,
- `"${itemsBreakdown}"`,
- order.amount,
- order.status,
- order.paymentMethod ||"Cash",
- `"${order.server ||"System"}"`
- ].join(",");
- });
+  const csvRows = filteredOrders.map((order) => {
+   const itemsBreakdown = order.breakdown.map(i => `${i.qty}x ${i.name}`).join(";");
+   return [
+    order.id,
+    order.date || "N/A",
+    order.time || "N/A",
+    `"${order.customer || "Guest"}"`,
+    `"${order.table || "Walk-in"}"`,
+    order.itemsCount,
+    `"${itemsBreakdown}"`,
+    order.amount,
+    order.status,
+    order.paymentMethod || "Cash",
+    `"${order.server || "System"}"`
+   ].join(",");
+  });
 
- const csvContent = [headers.join(","), ...csvRows].join("\n");
- const blob = new Blob([csvContent], { type:"text/csv;charset=utf-8;" });
- const url = URL.createObjectURL(blob);
- const link = document.createElement("a");
- link.setAttribute("href", url);
- link.setAttribute("download", `Order_History_${activeTab.replace(/\s+/g,"_")}_${new Date().toISOString().split('T')[0]}.csv`);
- document.body.appendChild(link);
- link.click();
- document.body.removeChild(link);
+  const csvContent = [headers.join(","), ...csvRows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `Order_History_${activeTab.replace(/\s+/g, "_")}_${new Date().toISOString().split('T')[0]}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 
- window.setTimeout(() => setIsExporting(false), 900);
+  window.setTimeout(() => setIsExporting(false), 900);
  };
 
  const handleExportPDF = () => {
- if (filteredOrders.length === 0) {
- alert("No data to export based on current filters.");
- return;
- }
+  if (filteredOrders.length === 0) {
+   showToast("No data to export based on current filters.", "warning");
+   return;
+  }
  
- setTimeout(() => {
- window.print();
- }, 100);
+  setTimeout(() => {
+   window.print();
+  }, 100);
  };
 
  return (
@@ -225,7 +229,7 @@ const History = () => {
  {isExporting ?"Preparing..." :"Export History"}
  </button>
  {isExportMenuOpen && (
- <div className="absolute top-full right-0 mt-2 bg-white border border-slate-100 shadow-xl rounded-xl w-48 z-50 overflow-hidden text-left animate-slide-in">
+ <div className="absolute top-full right-0 mt-2 bg-white border border-slate-100 shadow-md rounded-xl w-48 z-50 overflow-hidden text-left animate-slide-in">
  <button onClick={() => { handleExportPDF(); setIsExportMenuOpen(false); }} className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50">
  <Printer size={16} className="text-slate-400" /> Print / Save PDF
  </button>
@@ -240,13 +244,13 @@ const History = () => {
  <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5 mb-6 md:mb-8">
  <div
  onClick={() => setActiveTab("All")}
- className={`bg-white rounded-2xl p-6 border shadow-sm flex items-center gap-5 transition-all duration-300 cursor-pointer ${
+ className={`bg-white rounded-xl p-6 border shadow-sm flex items-center gap-5 transition-all duration-300 cursor-pointer ${
  activeTab ==="All"
  ?"border-slate-400 shadow-md ring-1 ring-slate-400 -translate-y-1"
  :"border-slate-100 hover:shadow-md hover:-translate-y-1 opacity-80 hover:opacity-100"
  }`}
  >
- <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-inner border border-slate-100">
+ <div className="w-14 h-14 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-inner border border-slate-100">
  <FileText size={26} strokeWidth={2.5} />
  </div>
  <div>
@@ -257,13 +261,13 @@ const History = () => {
 
  <div
  onClick={() => setActiveTab("Completed")}
- className={`bg-white rounded-2xl p-6 border shadow-sm flex items-center gap-5 transition-all duration-300 cursor-pointer ${
+ className={`bg-white rounded-xl p-6 border shadow-sm flex items-center gap-5 transition-all duration-300 cursor-pointer ${
  activeTab ==="Completed"
  ?"border-emerald-400 shadow-md ring-1 ring-emerald-400 -translate-y-1"
  :"border-slate-100 hover:shadow-md hover:-translate-y-1 opacity-80 hover:opacity-100"
  }`}
  >
- <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-inner border border-emerald-100">
+ <div className="w-14 h-14 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-inner border border-emerald-100">
  <CheckCircle2 size={26} strokeWidth={2.5} />
  </div>
  <div>
@@ -274,13 +278,13 @@ const History = () => {
 
  <div
  onClick={() => setActiveTab("Cancelled")}
- className={`bg-white rounded-2xl p-6 border shadow-sm flex items-center gap-5 transition-all duration-300 cursor-pointer ${
+ className={`bg-white rounded-xl p-6 border shadow-sm flex items-center gap-5 transition-all duration-300 cursor-pointer ${
  activeTab ==="Cancelled"
  ?"border-rose-400 shadow-md ring-1 ring-rose-400 -translate-y-1"
  :"border-slate-100 hover:shadow-md hover:-translate-y-1 opacity-80 hover:opacity-100"
  }`}
  >
- <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner border border-rose-100">
+ <div className="w-14 h-14 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner border border-rose-100">
  <XCircle size={26} strokeWidth={2.5} />
  </div>
  <div>
@@ -290,7 +294,7 @@ const History = () => {
  </div>
  </section>
 
- <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
  <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/50">
  <div className="relative w-full md:max-w-md">
  <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -299,7 +303,7 @@ const History = () => {
  placeholder="Search ID, customer, table, payment..."
  value={searchTerm}
  onChange={(event) => setSearchTerm(event.target.value)}
- className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-base sm:text-sm outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-50 transition-all placeholder:text-slate-400 shadow-sm"
+ className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-base sm:text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-400 shadow-sm"
  />
  </div>
 
@@ -322,7 +326,7 @@ const History = () => {
  </div>
 
  <div className="overflow-x-auto min-h-[400px]">
- {filteredOrders.length === 0 ? (
+ {!isLoading && filteredOrders.length === 0 ? (
  <div className="flex flex-col items-center justify-center py-20 text-slate-400">
  <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100 shadow-inner">
  <FileText size={32} className="text-slate-300" />
@@ -345,13 +349,41 @@ const History = () => {
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-100 text-sm">
- {filteredOrders.map((order, index) => (
+ {isLoading ? (
+ Array.from({ length: 6 }).map((_, i) => (
+ <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+ <td className="p-4 pl-6"><Skeleton className="w-24 h-5 rounded" /></td>
+ <td className="p-4">
+ <div className="flex items-center gap-3">
+ <Skeleton className="w-10 h-10 rounded-xl" />
+ <div>
+ <Skeleton className="w-24 h-4 mb-1" />
+ <Skeleton className="w-16 h-3" />
+ </div>
+ </div>
+ </td>
+ <td className="p-4"><Skeleton className="w-20 h-6 rounded-lg" /></td>
+ <td className="p-4"><Skeleton className="w-16 h-5 rounded mx-auto" /></td>
+ <td className="p-4">
+ <Skeleton className="w-24 h-4 mb-1" />
+ <Skeleton className="w-16 h-3 pl-5" />
+ </td>
+ <td className="p-4">
+ <Skeleton className="w-32 h-4 mb-1" />
+ <Skeleton className="w-24 h-4" />
+ </td>
+ <td className="p-4"><Skeleton className="w-20 h-6 rounded-lg mx-auto" /></td>
+ <td className="p-4 pr-6 text-right"><Skeleton className="w-24 h-8 rounded-lg ml-auto" /></td>
+ </tr>
+ ))
+ ) : (
+ filteredOrders.map((order, index) => (
  <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
  <td className="p-4 pl-6 font-black text-slate-900">{order.id}</td>
  <td className="p-4">
  <div className="flex items-center gap-3">
  <div
- className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-md bg-gradient-to-br ${
+ className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-md bg-${
  getAvatarGradient(index)
  }`}
  >
@@ -364,7 +396,7 @@ const History = () => {
  </div>
  </td>
  <td className="p-4">
- <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
+ <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
  <Table2 size={14} className="text-slate-400" />
  {order.table}
  </span>
@@ -390,7 +422,7 @@ const History = () => {
  </td>
  <td className="p-4 text-center">
  <span
- className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider w-max mx-auto border ${
+ className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider w-max mx-auto border ${
  order.status ==="Completed"
  ?"bg-emerald-50 text-emerald-600 border-emerald-100"
  :"bg-rose-50 text-rose-600 border-rose-100"
@@ -406,7 +438,7 @@ const History = () => {
  </td>
  <td className="p-4 pr-6 text-right">
  <button
- className="inline-flex items-center justify-center gap-1.5 bg-white border border-slate-200 text-slate-600 hover:text-purple-600 hover:border-purple-200 hover:bg-purple-50 font-bold py-1.5 px-3 rounded-lg transition-all shadow-sm text-xs"
+ className="inline-flex items-center justify-center gap-1.5 bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 font-bold py-1.5 px-3 rounded-lg transition-all shadow-sm text-xs"
  onClick={() => setSelectedOrder(order)}
  type="button"
  >
@@ -415,7 +447,8 @@ const History = () => {
  </button>
  </td>
  </tr>
- ))}
+ ))
+ )}
  </tbody>
  </table>
  )}
@@ -423,92 +456,82 @@ const History = () => {
  </div>
  </main>
 
- {selectedOrder && (
- <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity" onClick={() => setSelectedOrder(null)}>
- <div
- className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in flex flex-col max-h-[90vh]"
- onClick={(event) => event.stopPropagation()}
- >
- <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
- <div>
- <span className="text-[10px] font-black uppercase tracking-widest text-purple-500 mb-1 block">Receipt Preview</span>
- <h2 className="text-lg font-black text-slate-900">Invoice Manifest</h2>
- <p className="text-xs font-semibold text-slate-500">
- {selectedOrder.id} - {selectedOrder.date}
- </p>
- </div>
- <button
- className="text-slate-400 hover:text-slate-600 bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm transition"
- onClick={() => setSelectedOrder(null)}
- type="button"
- >
- <X size={18} />
- </button>
- </div>
+      {/* RECEIPT PREVIEW MODAL */}
+      <Modal
+        isOpen={!!selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        title="Invoice Manifest"
+        subtitle="Receipt Preview"
+        maxWidth="max-w-md"
+      >
+        {selectedOrder && (
+          <>
+            <div className="p-6 overflow-y-auto space-y-4">
+              <p className="text-xs font-semibold text-slate-500 mb-2">
+                {selectedOrder.id} - {selectedOrder.date}
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><User size={12}/> Customer</span>
+                  <span className="font-bold text-slate-900 text-sm truncate block">{selectedOrder.customer}</span>
+                </div>
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Table2 size={12}/> Table</span>
+                  <span className="font-bold text-slate-900 text-sm truncate block">{selectedOrder.table}</span>
+                </div>
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><CalendarDays size={12}/> Time</span>
+                  <span className="font-bold text-slate-900 text-sm truncate block">{selectedOrder.time}</span>
+                </div>
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Wallet size={12}/> Payment</span>
+                  <span className="font-bold text-slate-900 text-sm truncate block">{selectedOrder.paymentMethod}</span>
+                </div>
+              </div>
 
- <div className="p-6 overflow-y-auto space-y-4">
- <div className="grid grid-cols-2 gap-4">
- <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
- <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><User size={12}/> Customer</span>
- <span className="font-bold text-slate-900 text-sm truncate block">{selectedOrder.customer}</span>
- </div>
- <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
- <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Table2 size={12}/> Table</span>
- <span className="font-bold text-slate-900 text-sm truncate block">{selectedOrder.table}</span>
- </div>
- <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
- <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><CalendarDays size={12}/> Time</span>
- <span className="font-bold text-slate-900 text-sm truncate block">{selectedOrder.time}</span>
- </div>
- <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
- <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Wallet size={12}/> Payment</span>
- <span className="font-bold text-slate-900 text-sm truncate block">{selectedOrder.paymentMethod}</span>
- </div>
- </div>
+              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-2 border-b border-slate-100 pb-2">Itemized Summary</h4>
+              <div className="flex flex-col gap-2 max-h-[160px] overflow-y-auto pr-2">
+                {selectedOrder.breakdown.map((item, i) => (
+                  <div key={i} className="flex justify-between items-center p-2.5 bg-slate-50 rounded-lg border-l-4 border-slate-300 shadow-sm text-sm text-slate-800">
+                    <span className="font-semibold">{item.name}</span>
+                    <strong className="text-slate-500">x{item.qty}</strong>
+                  </div>
+                ))}
+              </div>
 
- <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-2 border-b border-slate-100 pb-2">Itemized Summary</h4>
- <div className="flex flex-col gap-2 max-h-[160px] overflow-y-auto pr-2">
- {selectedOrder.breakdown.map((item, i) => (
- <div key={i} className="flex justify-between items-center p-2.5 bg-slate-50 rounded-lg border-l-4 border-slate-300 shadow-sm text-sm text-slate-800">
- <span className="font-semibold">{item.name}</span>
- <strong className="text-slate-500">x{item.qty}</strong>
- </div>
- ))}
- </div>
+              <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100 mt-4">
+                <h3 className="font-bold text-slate-600 uppercase tracking-wider text-xs">Total Items</h3>
+                <h2 className="text-xl font-black text-slate-900">{selectedOrder.itemsCount}</h2>
+              </div>
+            </div>
 
- <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100 mt-4">
- <h3 className="font-bold text-slate-600 uppercase tracking-wider text-xs">Total Items</h3>
- <h2 className="text-xl font-black text-slate-900">{selectedOrder.itemsCount}</h2>
- </div>
- </div>
-
- <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-4">
- <div className="flex justify-center">
- <span
- className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${
- selectedOrder.status ==="Completed"
- ?"bg-emerald-50 text-emerald-600 border-emerald-200"
- :"bg-rose-50 text-rose-600 border-rose-200"
- }`}
- >
- {selectedOrder.status ==="Completed" ? (
- <CheckCircle2 size={14} />
- ) : (
- <XCircle size={14} />
- )}
- Invoice State: {selectedOrder.status}
- </span>
- </div>
- <button 
- onClick={() => setSelectedOrder(null)}
- className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-md text-sm"
- >
- Close Receipt
- </button>
- </div>
- </div>
- </div>
- )}
+            <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-4">
+              <div className="flex justify-center">
+                <span
+                  className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border ${
+                    selectedOrder.status === "Completed"
+                      ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                      : "bg-rose-50 text-rose-600 border-rose-200"
+                  }`}
+                >
+                  {selectedOrder.status === "Completed" ? (
+                    <CheckCircle2 size={14} />
+                  ) : (
+                    <XCircle size={14} />
+                  )}
+                  Invoice State: {selectedOrder.status}
+                </span>
+              </div>
+              <button 
+                onClick={() => setSelectedOrder(null)}
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-md text-sm"
+              >
+                Close Receipt
+              </button>
+            </div>
+          </>
+        )}
+      </Modal>
 
  {/* DEDICATED PRINTABLE PDF REPORT LAYOUT */}
  <div id="printable-order-history">

@@ -178,28 +178,28 @@ const Dashboard = () => {
  return (
  <div className="min-h-screen w-full overflow-x-hidden bg-slate-50 p-3 sm:p-6 md:p-8 text-slate-800 font-sans">
  <main className="max-w-[1600px] mx-auto pb-28 lg:pb-12">
- {/* HEADER SECTION */}
- <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
- <div>
- <h1 className="text-xl sm:text-2xl md:text-[28px] font-bold text-slate-900 tracking-tight">
- Welcome Back 👋
- </h1>
- <p className="text-slate-400 text-sm mt-0.5 font-medium">
- Manage restaurant tables and live orders beautifully
- </p>
- </div>
- <button
+        {/* HEADER SECTION */}
+        <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
+          <div>
+            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight">
+              Staff Dashboard
+            </h1>
+            <p className="text-slate-400 text-xs sm:text-sm mt-0.5 font-medium">
+              Overview of today's restaurant activity
+            </p>
+          </div>
+          <button
  onClick={() => navigate("/staff/take-order")}
- className="hidden sm:flex w-full sm:w-auto justify-center bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-3 sm:py-2.5 rounded-xl shadow-sm items-center gap-2 transition-all active:scale-95"
- >
+            className="flex w-full sm:w-auto justify-center bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-3 sm:py-2.5 rounded-xl shadow-sm items-center gap-2 transition-all active:scale-95"
+          >
  <Plus size={16} /> Take New Order
  </button>
  </div>
 
  {/* STATS OVERVIEW CARDS */}
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 mb-6 md:mb-8">
- <div className="group bg-white rounded-2xl p-4 sm:p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 hover:shadow-md transition-all duration-300">
- <div className="w-8 h-8 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner border border-blue-100 group-hover:scale-110 transition-transform duration-300">
+ <div className="group bg-white rounded-xl p-4 sm:p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 hover:shadow-md transition-all duration-300">
+ <div className="w-8 h-8 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner border border-blue-100 group-hover:scale-110 transition-transform duration-300">
  <Utensils size={20} className="sm:w-6 sm:h-6" strokeWidth={2.5} />
  </div>
  <div>
@@ -212,8 +212,8 @@ const Dashboard = () => {
  </div>
  </div>
 
- <div className="group bg-white rounded-2xl p-4 sm:p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 hover:shadow-md transition-all duration-300">
- <div className="w-8 h-8 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100 group-hover:scale-110 transition-transform duration-300">
+ <div className="group bg-white rounded-xl p-4 sm:p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 hover:shadow-md transition-all duration-300">
+ <div className="w-8 h-8 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100 group-hover:scale-110 transition-transform duration-300">
  <Package size={20} className="sm:w-6 sm:h-6" strokeWidth={2.5} />
  </div>
  <div>
@@ -226,8 +226,8 @@ const Dashboard = () => {
  </div>
  </div>
 
- <div className="group bg-white rounded-2xl p-4 sm:p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 hover:shadow-md transition-all duration-300">
- <div className="w-8 h-8 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner border border-emerald-100 group-hover:scale-110 transition-transform duration-300">
+ <div className="group bg-white rounded-xl p-4 sm:p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 hover:shadow-md transition-all duration-300">
+ <div className="w-8 h-8 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner border border-emerald-100 group-hover:scale-110 transition-transform duration-300">
  <CheckCircle2 size={20} className="sm:w-6 sm:h-6" strokeWidth={2.5} />
  </div>
  <div>
@@ -240,8 +240,8 @@ const Dashboard = () => {
  </div>
  </div>
 
- <div className="group bg-white rounded-2xl p-4 sm:p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 hover:shadow-md transition-all duration-300">
- <div className="w-8 h-8 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 shadow-inner border border-purple-100 group-hover:scale-110 transition-transform duration-300">
+ <div className="group bg-white rounded-xl p-4 sm:p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 hover:shadow-md transition-all duration-300">
+ <div className="w-8 h-8 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner border border-indigo-100 group-hover:scale-110 transition-transform duration-300">
  <CalendarClock size={20} className="sm:w-6 sm:h-6" strokeWidth={2.5} />
  </div>
  <div>
@@ -262,12 +262,12 @@ const Dashboard = () => {
  <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 relative lg:sticky lg:top-6 order-1 lg:order-2 mb-2 lg:mb-0">
  {/* READY ORDERS ALERT SECTION */}
  {orders.filter((o) => o.status ==="Ready").length > 0 && (
- <div className="bg-gradient-to-br from-emerald-500 to-teal-500 rounded-[24px] shadow-xl shadow-emerald-500/20 p-5 sm:p-6 text-white animate-slide-in border border-emerald-400/30">
+ <div className="bg-emerald-500 rounded-xl shadow-md shadow-emerald-500/20 p-5 sm:p-6 text-white animate-slide-in border border-emerald-400/30">
  <div className="flex justify-between items-center mb-4">
  <h2 className="text-base sm:text-lg font-black flex items-center gap-2">
  <BellRing size={20} className="animate-bounce" /> Ready to Serve
  </h2>
- <span className="bg-white text-emerald-600 text-xs font-black px-2 py-1 rounded-md shadow-sm">
+ <span className="bg-white text-emerald-600 text-xs font-black px-2 py-1 rounded-lg shadow-sm">
  {orders.filter((o) => o.status ==="Ready").length} New
  </span>
  </div>
@@ -278,7 +278,7 @@ const Dashboard = () => {
  .map((order) => (
  <div
  key={order.id}
- className="bg-white/10 hover:bg-white/20 p-3 sm:p-4 rounded-2xl border border-white/20 flex items-center justify-between transition-all group backdrop-blur-md"
+ className="bg-white/10 hover:bg-white/20 p-3 sm:p-4 rounded-xl border border-white/20 flex items-center justify-between transition-all group backdrop-blur-md"
  >
  <div
  className="cursor-pointer flex-1"
@@ -306,14 +306,14 @@ const Dashboard = () => {
  )}
 
  {/* LIVE ORDERS QUEUE CONTAINER */}
- <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm p-5 sm:p-6">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 sm:p-6">
  <div className="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
  <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
  Live Orders
  </h2>
  <button
  onClick={() => navigate("/staff/ready-orders")}
- className="text-[11px] font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-2.5 py-1.5 rounded-md transition-colors"
+ className="text-[11px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-lg transition-colors"
  >
  View All
  </button>
@@ -328,7 +328,7 @@ const Dashboard = () => {
  .map((order) => (
  <div
  key={order.id}
- className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl border transition-all hover:shadow-md ${
+ className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl border transition-all hover:shadow-md ${
  order.status ==="Ready"
  ?"bg-emerald-50/50 border-emerald-100"
  :"border-slate-100 bg-slate-50/50 hover:bg-white"
@@ -355,7 +355,7 @@ const Dashboard = () => {
  </div>
  <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-2">
  <span
- className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border shadow-sm ${getOrderStatusStyles(
+ className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border shadow-sm ${getOrderStatusStyles(
  order.status
  )}`}
  >
@@ -364,7 +364,7 @@ const Dashboard = () => {
  {order.status ==="Pending" && (
  <button
  onClick={() => handleCancelOrder(order)}
- className="bg-rose-500 hover:bg-rose-600 text-white p-1.5 rounded-md shadow-sm transition-colors active:scale-95"
+ className="bg-rose-500 hover:bg-rose-600 text-white p-1.5 rounded-lg shadow-sm transition-colors active:scale-95"
  title="Cancel Mistaken Order"
  >
  <XCircle size={14} />
@@ -373,7 +373,7 @@ const Dashboard = () => {
  {order.status ==="Ready" && (
  <button
  onClick={() => serveOrder(order.id)}
- className="bg-emerald-500 hover:bg-emerald-600 text-white p-1.5 rounded-md shadow-sm transition-colors active:scale-95"
+ className="bg-emerald-500 hover:bg-emerald-600 text-white p-1.5 rounded-lg shadow-sm transition-colors active:scale-95"
  title="Mark as Served"
  >
  <CheckCircle2 size={14} />
@@ -405,7 +405,7 @@ const Dashboard = () => {
  <input
  type="text"
  placeholder="Search table or state..."
- className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-base sm:text-sm outline-none focus:border-purple-400 transition-all shadow-sm placeholder:text-slate-400"
+ className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-base sm:text-sm outline-none focus:border-indigo-400 transition-all shadow-sm placeholder:text-slate-400"
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  />
@@ -420,10 +420,10 @@ const Dashboard = () => {
  <div
  key={index}
  onClick={() => setSelectedTableDetails(table)}
- className="group relative bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:shadow-xl sm:hover:-translate-y-1 border-slate-100 hover:border-slate-200"
+ className="group relative bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:shadow-md sm:hover:-translate-y-1 border-slate-100 hover:border-slate-200"
  >
  {/* Background Subtle Gradient */}
- <div className={`absolute inset-0 bg-gradient-to-b ${styles.gradient} opacity-50 pointer-events-none`} />
+ <div className={`absolute inset-0 bg-${styles.gradient} opacity-50 pointer-events-none`} />
  
  {/* Status Top Accent Line */}
  <div className={`h-1.5 w-full ${styles.dot} transition-all duration-300 group-hover:h-2`} />
@@ -431,7 +431,7 @@ const Dashboard = () => {
  <div className="p-5 sm:p-6 relative z-10 flex-1 flex flex-col justify-between">
  <div className="flex justify-between items-start mb-5">
  <div className="flex items-center gap-3">
- <div className={`w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-sm ${styles.bg} ${styles.text} sm:group-hover:scale-110 transition-transform duration-300`}>
+ <div className={`w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl sm:rounded-xl flex items-center justify-center shadow-sm ${styles.bg} ${styles.text} sm:group-hover:scale-110 transition-transform duration-300`}>
  <Utensils size={20} className="sm:w-6 sm:h-6" />
  </div>
  <div>
@@ -481,7 +481,7 @@ const Dashboard = () => {
  })}
  </div>
  {filteredTables.length === 0 && (
- <div className="text-center py-16 text-slate-400 font-medium bg-white rounded-3xl border border-slate-100 mt-4 shadow-sm">
+ <div className="text-center py-16 text-slate-400 font-medium bg-white rounded-xl border border-slate-100 mt-4 shadow-sm">
  No tables match your search.
  </div>
  )}
@@ -496,7 +496,7 @@ const Dashboard = () => {
  onClick={() => setSelectedTableDetails(null)}
  >
  <div
- className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in max-h-[90vh] flex flex-col"
+ className="bg-white rounded-xl shadow-md w-full max-w-md overflow-hidden animate-slide-in max-h-[90vh] flex flex-col"
  onClick={(e) => e.stopPropagation()}
  >
  {/* Modal Header */}
@@ -506,7 +506,7 @@ const Dashboard = () => {
  Overview: {selectedTableDetails.name || `Table ${selectedTableDetails.number}`}
  </h2>
  <span
- className={`mt-1.5 inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
+ className={`mt-1.5 inline-block px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
  getTableStatusStyles(selectedTableDetails.status).bg
  } ${getTableStatusStyles(selectedTableDetails.status).text}`}
  >
@@ -549,7 +549,7 @@ const Dashboard = () => {
  <div className="border border-slate-200 rounded-xl overflow-hidden">
  <div className="bg-slate-900 text-white p-3 flex justify-between items-center">
  <h4 className="font-bold text-sm text-slate-100">Running Ticket</h4>
- <span className="text-[10px] bg-slate-700 px-2 py-1 rounded-md font-bold">
+ <span className="text-[10px] bg-slate-700 px-2 py-1 rounded-lg font-bold">
  {selectedTableDetails.activeOrder.id}
  </span>
  </div>
@@ -564,7 +564,7 @@ const Dashboard = () => {
  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
  Current Balance
  </span>
- <strong className="text-lg sm:text-xl font-black text-purple-600">
+ <strong className="text-lg sm:text-xl font-black text-indigo-600">
  {selectedTableDetails.activeOrder.total}
  </strong>
  </div>
@@ -644,7 +644,7 @@ const Dashboard = () => {
  onClick={() => setEditingTable(null)}
  >
  <form
- className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in max-h-[90vh] flex flex-col"
+ className="bg-white rounded-xl shadow-md w-full max-w-md overflow-hidden animate-slide-in max-h-[90vh] flex flex-col"
  onClick={(e) => e.stopPropagation()}
  onSubmit={handleSaveTableEdits}
  >

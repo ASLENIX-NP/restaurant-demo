@@ -45,7 +45,7 @@ const TotalOrders = () => {
  </div>
 
  {/* Main Content Workspace */}
- <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
  {/* Controls Bar */}
  <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/50">
  <div className="relative w-full md:max-w-md">
@@ -60,7 +60,7 @@ const TotalOrders = () => {
  placeholder="Search by Order ID, Table, Customer, or Status..."
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
- className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:border-purple-400 transition-all placeholder:text-slate-400 shadow-sm"
+ className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-400 transition-all placeholder:text-slate-400 shadow-sm"
  />
  </div>
  <div className="text-sm font-bold text-slate-500">
@@ -132,13 +132,13 @@ const TotalOrders = () => {
  })}
  </td>
  <td className="p-4 text-center">
- <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
+ <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
  {order.paymentMethod ||"Cash"}
  </span>
  </td>
  <td className="p-4 text-center">
  <span
- className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
+ className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
  order.status ==="Completed"
  ?"bg-emerald-50 text-emerald-600"
  : order.status ==="Cancelled"

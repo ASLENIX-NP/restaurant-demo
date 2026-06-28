@@ -1,209 +1,227 @@
 import {
- createContext,
- useContext,
- useEffect,
- useState,
- useCallback,
-} from"react";
-import { io } from"socket.io-client";
-import apiClient from"../api/apiClient";
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+import { useSocket } from "./SocketContext";
+import apiClient from "../api/apiClient";
 
 const OrderContext = createContext();
 
 export const OrderProvider = ({ children }) => {
- const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const socket = useSocket();
 
- const fetchOrders = useCallback(async () => {
- try {
- const { data } = await apiClient.get("/api/orders");
- setOrders(data);
- } catch (error) {
- console.error("Error fetching orders:", error);
- }
- }, []);
+  const fetchOrders = useCallback(async () => {
+    try {
+      const { data } = await apiClient.get("/api/orders");
+      setOrders(data);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
- useEffect(() => {
- fetchOrders();
+  // Sync offline orders when back online
+  const syncOfflineOrders = useCallback(async () => {
+    const offlineOrders = JSON.parse(localStorage.getItem("offline_orders") || "[]");
+    if (offlineOrders.length === 0) return;
 
- const socket = io(import.meta.env.VITE_API_URL ||"http://localhost:5001");
+    console.log(`Syncing ${offlineOrders.length} offline orders...`);
+    const token = localStorage.getItem("token");
+    
+    for (const order of offlineOrders) {
+      try {
+        // Strip mock offline IDs before sending to server
+        const { id, _id, sync_pending, ...orderPayload } = order;
+        await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/orders`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(orderPayload)
+        });
+      } catch (err) {
+        console.error("Failed to sync an offline order:", err);
+      }
+    }
+    
+    // Clear local storage and refetch actual orders from DB
+    localStorage.setItem("offline_orders", "[]");
+    fetchOrders();
+  }, [fetchOrders]);
 
- socket.on("newOrder", (newOrder) => {
- setOrders((prevOrders) => {
- // Prevent duplicates just in case
- if (
- prevOrders.find((o) => o.id === newOrder.id || o._id === newOrder._id)
- )
- return prevOrders;
- return [newOrder, ...prevOrders];
- });
- });
+  useEffect(() => {
+    window.addEventListener("online", syncOfflineOrders);
+    // Also try to sync on mount if online
+    if (navigator.onLine) syncOfflineOrders();
 
- socket.on("orderUpdated", (updatedOrder) => {
- setOrders((prevOrders) =>
- prevOrders.map((order) =>
- order.id === updatedOrder.id || order._id === updatedOrder._id
- ? updatedOrder
- : order
- )
- );
- });
+    return () => window.removeEventListener("online", syncOfflineOrders);
+  }, [syncOfflineOrders]);
 
- socket.on("orderStatusUpdated", (updatedOrder) => {
- setOrders((prevOrders) =>
- prevOrders.map((order) =>
- order.id === updatedOrder.id || order._id === updatedOrder._id
- ? updatedOrder
- : order
- )
- );
- });
+  useEffect(() => {
+    fetchOrders();
 
- socket.on("orderCompleted", (completedOrder) => {
- setOrders((prevOrders) =>
- prevOrders.map((order) =>
- order.id === completedOrder.id || order._id === completedOrder._id
- ? completedOrder
- : order
- )
- );
- });
+    if (!socket) return;
 
- socket.on("orderCancelled", (cancelledOrder) => {
- setOrders((prevOrders) =>
- prevOrders.map((order) =>
- order.id === cancelledOrder.id || order._id === cancelledOrder._id
- ? cancelledOrder
- : order
- )
- );
- });
+    const handleNewOrder = (newOrder) => {
+      setOrders((prevOrders) => {
+        // Prevent duplicates just in case
+        if (
+          prevOrders.find((o) => o.id === newOrder.id || o._id === newOrder._id)
+        )
+          return prevOrders;
+        return [newOrder, ...prevOrders];
+      });
+    };
 
- return () => socket.disconnect();
- }, [fetchOrders]);
+    const handleOrderUpdate = (updatedOrder) => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === updatedOrder.id || order._id === updatedOrder._id
+            ? updatedOrder
+            : order
+        )
+      );
+    };
 
- // AUTO-INCREMENT ELAPSED TIME
- useEffect(() => {
- const timer = setInterval(() => {
- setOrders((prevOrders) =>
- prevOrders.map((order) => {
- // Only increment timer for active kitchen orders
- if (order.status ==="Pending" || order.status ==="Cooking") {
- return {
- ...order,
- elapsedMinutes: (order.elapsedMinutes || 0) + 1,
- };
- }
- return order;
- })
- );
- }, 60000); // Runs every 60,000ms (1 minute)
- return () => clearInterval(timer);
- }, []);
+    socket.on("newOrder", handleNewOrder);
+    socket.on("orderUpdated", handleOrderUpdate);
+    socket.on("orderStatusUpdated", handleOrderUpdate);
+    socket.on("orderCompleted", handleOrderUpdate);
+    socket.on("orderCancelled", handleOrderUpdate);
 
- // ADD ORDER (Frontend state update, backend handles the actual creation via POST in TakeOrder.jsx)
- const addOrder = (order) => {
- setOrders((prev) => [order, ...prev]);
- };
+    return () => {
+      socket.off("newOrder", handleNewOrder);
+      socket.off("orderUpdated", handleOrderUpdate);
+      socket.off("orderStatusUpdated", handleOrderUpdate);
+      socket.off("orderCompleted", handleOrderUpdate);
+      socket.off("orderCancelled", handleOrderUpdate);
+    };
+  }, [fetchOrders, socket]);
 
- // STATUS UPDATES
- const updateStatus = async (id, status) => {
- try {
- // Optimistic update for snappy UI
- setOrders((prev) =>
- prev.map((o) => (o.id === id || o._id === id ? { ...o, status } : o))
- );
+  // AUTO-INCREMENT ELAPSED TIME
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setOrders((prevOrders) =>
+        prevOrders.map((order) => {
+          // Only increment timer for active kitchen orders
+          if (order.status === "Pending" || order.status === "Cooking") {
+            return {
+              ...order,
+              elapsedMinutes: (order.elapsedMinutes || 0) + 1,
+            };
+          }
+          return order;
+        })
+      );
+    }, 60000); // Runs every 60,000ms (1 minute)
+    return () => clearInterval(timer);
+  }, []);
 
- await apiClient.put(`/api/orders/${encodeURIComponent(id)}/status`, {
- status,
- });
- } catch (err) {
- console.error(err);
- fetchOrders(); // Revert on failure
- }
- };
+  // ADD ORDER (Frontend state update, backend handles the actual creation via POST in TakeOrder.jsx)
+  const addOrder = (order) => {
+    setOrders((prev) => [order, ...prev]);
+  };
 
- const startCooking = (id) => updateStatus(id,"Cooking");
- const markReady = (id) => updateStatus(id,"Ready");
- const serveOrder = (id) => updateStatus(id,"Served");
+  // STATUS UPDATES
+  const updateStatus = async (id, status) => {
+    try {
+      // Optimistic update for snappy UI
+      setOrders((prev) =>
+        prev.map((o) => (o.id === id || o._id === id ? { ...o, status } : o))
+      );
 
- // COMPLETE
- const completeOrder = async (id, finalDetails = {}) => {
- try {
- // Optimistic update
- setOrders((prev) =>
- prev.map((order) => {
- if (order.id === id || order._id === id) {
- let finalAmount = finalDetails.amount;
- if (!finalAmount) {
- const subtotal = (order.items || []).reduce(
- (sum, i) => sum + i.qty * (parseFloat(i.price) || 0),
- 0
- );
- finalAmount = subtotal + (subtotal > 0 ? 50 : 0);
- }
- return {
- ...order,
- ...finalDetails,
- amount: finalAmount,
- status:"Completed",
- };
- }
- return order;
- })
- );
+      await apiClient.put(`/api/orders/${encodeURIComponent(id)}/status`, {
+        status,
+      });
+    } catch (err) {
+      console.error(err);
+      fetchOrders(); // Revert on failure
+    }
+  };
 
- await apiClient.put(
- `/api/orders/${encodeURIComponent(id)}/complete`,
- finalDetails
- );
- } catch (err) {
- console.error(err);
- fetchOrders();
- }
- };
+  const startCooking = (id) => updateStatus(id, "Cooking");
+  const markReady = (id) => updateStatus(id, "Ready");
+  const serveOrder = (id) => updateStatus(id, "Served");
 
- // CANCEL
- const cancelOrder = async (id) => {
- try {
- setOrders((prev) =>
- prev.map((order) =>
- order.id === id || order._id === id
- ? { ...order, status:"Cancelled" }
- : order
- )
- );
+  // COMPLETE
+  const completeOrder = async (id, finalDetails = {}) => {
+    try {
+      // Optimistic update
+      setOrders((prev) =>
+        prev.map((order) => {
+          if (order.id === id || order._id === id) {
+            let finalAmount = finalDetails.amount;
+            if (!finalAmount) {
+              const subtotal = (order.items || []).reduce(
+                (sum, i) => sum + i.qty * (parseFloat(i.price) || 0),
+                0
+              );
+              finalAmount = subtotal + (subtotal > 0 ? 50 : 0);
+            }
+            return {
+              ...order,
+              ...finalDetails,
+              amount: finalAmount,
+              status: "Completed",
+            };
+          }
+          return order;
+        })
+      );
 
- await apiClient.put(`/api/orders/${encodeURIComponent(id)}/cancel`);
- } catch (err) {
- console.error(err);
- fetchOrders();
- }
- };
+      await apiClient.put(
+        `/api/orders/${encodeURIComponent(id)}/complete`,
+        finalDetails
+      );
+    } catch (err) {
+      console.error(err);
+      fetchOrders();
+    }
+  };
 
- return (
- <OrderContext.Provider
- value={{
- orders,
+  // CANCEL
+  const cancelOrder = async (id) => {
+    try {
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === id || order._id === id
+            ? { ...order, status: "Cancelled" }
+            : order
+        )
+      );
 
- setOrders,
+      await apiClient.put(`/api/orders/${encodeURIComponent(id)}/cancel`);
+    } catch (err) {
+      console.error(err);
+      fetchOrders();
+    }
+  };
 
- addOrder,
-
- startCooking,
-
- markReady,
-
- serveOrder,
-
- completeOrder,
-
- cancelOrder,
- fetchOrders,
- }}
- >
- {children}
- </OrderContext.Provider>
- );
+  return (
+    <OrderContext.Provider
+      value={{
+        orders,
+        setOrders,
+        addOrder,
+        startCooking,
+        markReady,
+        serveOrder,
+        completeOrder,
+        cancelOrder,
+        fetchOrders,
+        isLoading,
+      }}
+    >
+      {children}
+    </OrderContext.Provider>
+  );
 };
 
 export const useOrders = () => useContext(OrderContext);

@@ -12,12 +12,15 @@ import {
  User,
  Clock,
  Users,
-} from"lucide-react";
-import { useNavigate } from"react-router-dom";
+} from "lucide-react";
+import Skeleton from "../../components/ui/Skeleton";
+import Modal from "../../components/ui/Modal";
+import { useNavigate } from "react-router-dom";
 
-import"../../styles/adminTables.css"; // Kept for any global custom overrides
-import { useTables } from"../../context/TableContext";
-import { useOrders } from"../../context/OrderContext";
+import "../../styles/adminTables.css"; // Kept for any global custom overrides
+import { useTables } from "../../context/TableContext";
+import { useOrders } from "../../context/OrderContext";
+import { useToast } from "../../context/ToastContext";
 
 const AdminTables = () => {
  const {
@@ -31,6 +34,7 @@ const AdminTables = () => {
  const { orders, completeOrder, cancelOrder, fetchOrders } = useOrders() || {
  orders: [],
  };
+ const { showToast } = useToast();
  const navigate = useNavigate();
 
  useEffect(() => {
@@ -51,9 +55,9 @@ const AdminTables = () => {
  const [showEditModal, setShowEditModal] = useState(false);
  const [editTableData, setEditTableData] = useState({
  id: null,
- name:"",
- status:"Available",
- currentCustomer:"",
+ name: "",
+ status: "Available",
+ currentCustomer: "",
  });
 
  // Delete Table Modal States
@@ -66,13 +70,13 @@ const AdminTables = () => {
  const tableOrders = orders.filter(
  (o) =>
  o.table === tableName &&
- o.status !=="Completed" &&
- o.status !=="Cancelled"
+ o.status !== "Completed" &&
+ o.status !== "Cancelled"
  );
 
  let items = [];
  let amount = 0;
- let time ="--";
+ let time = "--";
 
  if (tableOrders.length > 0) {
  tableOrders.forEach((o) => {
@@ -86,14 +90,14 @@ const AdminTables = () => {
  ? o.amount
  : subtotal + (subtotal > 0 ? 50 : 0);
  });
- time = tableOrders[0].time ||"--";
+ time = tableOrders[0].time || "--";
  }
 
  return {
  ...t,
  name: tableName,
- customer: t.currentCustomer || t.customer ||"No Customer",
- status: t.status ? t.status.toLowerCase() :"available",
+ customer: t.currentCustomer || t.customer || "No Customer",
+ status: t.status ? t.status.toLowerCase() : "available",
  amount,
  time,
  items,
@@ -103,10 +107,10 @@ const AdminTables = () => {
  // Derived filtered data
  const filteredTables = mappedTables.filter((table) => {
  const matchesFilter =
- activeFilter ==="All" || table.status === activeFilter.toLowerCase();
+ activeFilter === "All" || table.status === activeFilter.toLowerCase();
  const matchesSearch =
- (table.name ||"").toLowerCase().includes(searchQuery.toLowerCase()) ||
- (table.customer ||"").toLowerCase().includes(searchQuery.toLowerCase());
+ (table.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+ (table.customer || "").toLowerCase().includes(searchQuery.toLowerCase());
  return matchesFilter && matchesSearch;
  });
 
@@ -116,32 +120,32 @@ const AdminTables = () => {
  // Status visual mappings
  const statusStyles = {
  available: {
- border:"border-t-emerald-400",
- bg:"bg-emerald-50",
- text:"text-emerald-600",
- dot:"bg-emerald-500",
- gradient:"from-emerald-50 to-transparent",
+ border: "border-t-emerald-400",
+ bg: "bg-emerald-50",
+ text: "text-emerald-600",
+ dot: "bg-emerald-500",
+ gradient: "from-emerald-50 to-transparent",
  },
  occupied: {
- border:"border-t-rose-400",
- bg:"bg-rose-50",
- text:"text-rose-600",
- dot:"bg-rose-500",
- gradient:"from-rose-50 to-transparent",
+ border: "border-t-rose-400",
+ bg: "bg-rose-50",
+ text: "text-rose-600",
+ dot: "bg-rose-500",
+ gradient: "from-rose-50 to-transparent",
  },
  reserved: {
- border:"border-t-amber-400",
- bg:"bg-amber-50",
- text:"text-amber-600",
- dot:"bg-amber-500",
- gradient:"from-amber-50 to-transparent",
+ border: "border-t-amber-400",
+ bg: "bg-amber-50",
+ text: "text-amber-600",
+ dot: "bg-amber-500",
+ gradient: "from-amber-50 to-transparent",
  },
  cleaning: {
- border:"border-t-blue-400",
- bg:"bg-blue-50",
- text:"text-blue-600",
- dot:"bg-blue-500",
- gradient:"from-blue-50 to-transparent",
+ border: "border-t-blue-400",
+ bg: "bg-blue-50",
+ text: "text-blue-600",
+ dot: "bg-blue-500",
+ gradient: "from-blue-50 to-transparent",
  },
  };
 
@@ -149,11 +153,11 @@ const AdminTables = () => {
  const handleAddTable = async (e) => {
  e.preventDefault();
  if (!newTableName.trim()) {
- alert("Please enter a table name.");
+ showToast("Please enter a table name.", "warning");
  return;
  }
 
- // Smart format: If the user only enters numbers, automatically prefix it with"Table"
+ // Smart format: If the user only enters numbers, automatically prefix it with "Table"
  let formattedName = newTableName.trim();
  if (/^\d+$/.test(formattedName)) {
  formattedName = `Table ${formattedName}`;
@@ -163,13 +167,14 @@ const AdminTables = () => {
  await addTable({
  name: formattedName,
  seats: 4,
- status:"Available",
- currentCustomer:"No Customer",
+ status: "Available",
+ currentCustomer: "No Customer",
  });
  setNewTableName("");
  setShowAddModal(false);
+ showToast("Table created successfully!", "success");
  } catch (error) {
- alert(error.message);
+ showToast(error.message, "error");
  }
  };
 
@@ -180,23 +185,28 @@ const AdminTables = () => {
 
  const handleConfirmDelete = async () => {
  if (!tableToDelete) return;
+ try {
  await deleteTable(tableToDelete);
  if (selectedTableId === tableToDelete) {
  setSelectedTableId(null);
  }
  setShowDeleteModal(false);
  setTableToDelete(null);
+ showToast("Table deleted successfully!", "success");
+ } catch (error) {
+ showToast("Failed to delete table", "error");
+ }
  };
 
  const handleEditClick = (table) => {
  setEditTableData({
  id: table.id,
- // Hide"Table" from the input box so you only see the number/name when editing
+ // Hide "Table" from the input box so you only see the number/name when editing
  name: table.name.startsWith("Table")
- ? table.name.replace("Table","")
+ ? table.name.replace("Table", "")
  : table.name,
  status: table.status.charAt(0).toUpperCase() + table.status.slice(1),
- currentCustomer: table.customer ==="No Customer" ?"" : table.customer,
+ currentCustomer: table.customer === "No Customer" ? "" : table.customer,
  });
  setShowEditModal(true);
  };
@@ -214,11 +224,12 @@ const AdminTables = () => {
  await editTable(editTableData.id, {
  name: formattedName,
  status: editTableData.status,
- currentCustomer: editTableData.currentCustomer ||"No Customer",
+ currentCustomer: editTableData.currentCustomer || "No Customer",
  });
  setShowEditModal(false);
+ showToast("Table updated successfully!", "success");
  } catch (error) {
- alert(error.message);
+ showToast(error.message, "error");
  }
  };
 
@@ -246,7 +257,7 @@ const AdminTables = () => {
  {/* METRICS & STATS GRID */}
  <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
  {/* Total */}
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
  <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <Utensils size={22} />
  </div>
@@ -261,7 +272,7 @@ const AdminTables = () => {
  </div>
 
  {/* Available */}
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
  <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <CheckCircle2 size={22} />
  </div>
@@ -272,7 +283,7 @@ const AdminTables = () => {
  <h2 className="text-2xl font-black text-slate-900 mt-1">
  {
  tables.filter(
- (t) => (t.status ||"").toLowerCase() ==="available"
+ (t) => (t.status || "").toLowerCase() === "available"
  ).length
  }
  </h2>
@@ -280,7 +291,7 @@ const AdminTables = () => {
  </div>
 
  {/* Occupied */}
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
  <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <Users size={22} />
  </div>
@@ -291,7 +302,7 @@ const AdminTables = () => {
  <h2 className="text-2xl font-black text-slate-900 mt-1">
  {
  tables.filter(
- (t) => (t.status ||"").toLowerCase() ==="occupied"
+ (t) => (t.status || "").toLowerCase() === "occupied"
  ).length
  }
  </h2>
@@ -299,7 +310,7 @@ const AdminTables = () => {
  </div>
 
  {/* Reserved */}
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
  <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <AlertTriangle size={22} />
  </div>
@@ -310,7 +321,7 @@ const AdminTables = () => {
  <h2 className="text-2xl font-black text-slate-900 mt-1">
  {
  tables.filter(
- (t) => (t.status ||"").toLowerCase() ==="reserved"
+ (t) => (t.status || "").toLowerCase() === "reserved"
  ).length
  }
  </h2>
@@ -325,14 +336,14 @@ const AdminTables = () => {
  {/* Filter Bar */}
  <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
  <div className="flex bg-slate-200/50 p-1 rounded-xl">
- {["All","Available","Occupied","Reserved"].map((tab) => (
+ {["All", "Available", "Occupied", "Reserved"].map((tab) => (
  <button
  key={tab}
  onClick={() => setActiveFilter(tab)}
  className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${
  activeFilter === tab
- ?"bg-white text-slate-900 shadow-sm"
- :"text-slate-500 hover:text-slate-700 hover:bg-white/50"
+ ? "bg-white text-slate-900 shadow-sm"
+ : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
  }`}
  >
  {tab}
@@ -350,7 +361,7 @@ const AdminTables = () => {
  placeholder="Search tables or guests..."
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
- className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 transition-all shadow-sm placeholder:text-slate-400"
+ className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-indigo-400 transition-all shadow-sm placeholder:text-slate-400"
  />
  </div>
  </div>
@@ -368,15 +379,15 @@ const AdminTables = () => {
  onClick={() =>
  setSelectedTableId(isSelected ? null : table.id)
  }
- className={`group relative bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 ${
+ className={`group relative bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:shadow-md hover:-translate-y-1 ${
  isSelected
- ?"ring-4 ring-purple-500/20 border-purple-300 scale-[1.02]"
- :"border-slate-100 hover:border-slate-200"
+ ? "ring-4 ring-indigo-500/20 border-indigo-300 scale-[1.02]"
+ : "border-slate-100 hover:border-slate-200"
  }`}
  >
  {/* Background Subtle Gradient */}
  <div
- className={`absolute inset-0 bg-gradient-to-b ${style.gradient} opacity-50 pointer-events-none`}
+ className={`absolute inset-0 bg-${style.gradient} opacity-50 pointer-events-none`}
  />
 
  {/* Status Top Accent Line */}
@@ -388,7 +399,7 @@ const AdminTables = () => {
  <div className="flex justify-between items-start mb-5">
  <div className="flex items-center gap-3">
  <div
- className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${style.bg} ${style.text} group-hover:scale-110 transition-transform duration-300`}
+ className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${style.bg} ${style.text} group-hover:scale-110 transition-transform duration-300`}
  >
  <Utensils size={24} />
  </div>
@@ -407,9 +418,9 @@ const AdminTables = () => {
  <div className="flex items-center gap-3">
  <div
  className={`w-8 h-8 rounded-full flex items-center justify-center ${
- table.customer !=="No Customer"
- ?"bg-blue-50 text-blue-500"
- :"bg-slate-50 text-slate-400"
+ table.customer !== "No Customer"
+ ? "bg-blue-50 text-blue-500"
+ : "bg-slate-50 text-slate-400"
  }`}
  >
  <User size={16} />
@@ -420,9 +431,9 @@ const AdminTables = () => {
  </p>
  <h4
  className={`text-sm font-bold truncate max-w-[140px] ${
- table.customer !=="No Customer"
- ?"text-slate-900"
- :"text-slate-500"
+ table.customer !== "No Customer"
+ ? "text-slate-900"
+ : "text-slate-500"
  }`}
  >
  {table.customer}
@@ -483,183 +494,13 @@ const AdminTables = () => {
  </div>
  </main>
 
- {/* TABLE DETAILS MODAL OVERLAY */}
- {selectedTableId && activeTable && (
- <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in p-6 relative">
- <div className="flex justify-between items-start mb-6">
- <div>
- <h2 className="text-xl font-black text-slate-900">
- {activeTable.name} Details
- </h2>
- <p className="text-purple-600 font-bold text-xs mt-0.5">
- {activeTable.customer}
- </p>
- </div>
- <button
- onClick={() => setSelectedTableId(null)}
- className="bg-white border border-slate-200 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg shadow-sm"
- >
- <X size={16} />
- </button>
- </div>
-
- {activeTable.items.length > 0 ? (
- <>
- {/* Order Time Info */}
- <div className="flex items-center gap-2 mb-4 text-xs font-bold text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
- <Clock size={14} className="text-slate-400" /> Order started
- at: <span className="text-slate-900">{activeTable.time}</span>
- </div>
-
- {/* Items List */}
- <div className="max-h-[300px] overflow-y-auto pr-2 mb-6">
- <table className="w-full text-left text-sm border-collapse">
- <thead className="bg-slate-50/50 text-slate-400 text-[10px] uppercase tracking-wider font-bold border-b border-slate-100">
- <tr>
- <th className="py-2 pl-2">Item</th>
- <th className="py-2 text-center">Qty</th>
- <th className="py-2 pr-2 text-right">Total</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-100">
- {activeTable.items.map((item, idx) => (
- <tr key={idx}>
- <td className="py-3 pl-2 font-semibold text-slate-700">
- {item.name}{""}
- <span className="block text-[10px] text-slate-400 font-medium">
- Rs. {item.price} each
- </span>
- </td>
- <td className="py-3 text-center font-bold text-slate-500">
- {item.qty}
- </td>
- <td className="py-3 pr-2 text-right font-black text-slate-900">
- Rs. {(item.qty * item.price).toLocaleString()}
- </td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
-
- {/* Summary */}
- <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-medium text-slate-600 space-y-2">
- <div className="flex justify-between">
- <span>Subtotal</span>
- <span className="text-slate-900 font-bold">
- Rs. {activeTable.amount.toLocaleString()}
- </span>
- </div>
- <div className="pt-2 flex justify-between items-baseline text-purple-600 border-t border-slate-200/60 mt-2">
- <span className="font-extrabold text-sm">
- Running Total
- </span>
- <span className="text-xl font-black">
- Rs. {activeTable.amount.toLocaleString()}
- </span>
- </div>
- </div>
-
- <div className="flex gap-3 mt-4">
- <button
- onClick={() => {
- if (
- window.confirm(
-"Cancel all active orders for this table?"
- )
- ) {
- const tableOrders = orders.filter(
- (o) =>
- o.table === activeTable.name &&
- o.status !=="Completed" &&
- o.status !=="Cancelled"
- );
- tableOrders.forEach((o) => {
- if (cancelOrder) cancelOrder(o.id);
- });
- if (updateTableStatus)
- updateTableStatus(
- activeTable.id,
-"Available",
-"No Customer"
- );
- setSelectedTableId(null);
- }
- }}
- className="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-3.5 rounded-xl transition-all shadow-sm border border-rose-200"
- >
- Cancel Order
- </button>
- <button
- onClick={() => {
- setSelectedTableId(null);
- navigate("/cashier/pending-bills", { 
- state: { openTable: activeTable.name } 
- });
- }}
- className="flex-[2] bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-md"
- >
- Proceed to Checkout
- </button>
- </div>
- </>
- ) : (
- <div className="text-center py-12 flex flex-col items-center justify-center text-slate-400">
- <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
- <Utensils size={24} className="text-slate-300" />
- </div>
- <p className="font-semibold text-sm">No active orders</p>
- <p className="text-xs mt-1">This table is currently empty.</p>
- </div>
- )}
- </div>
- </div>
- )}
-
- {/* DELETE CONFIRMATION MODAL */}
- {showDeleteModal && (
- <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
- <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-slide-in">
- <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
- <AlertTriangle size={28} className="text-rose-500" />
- </div>
- <h2 className="text-xl font-black text-slate-900 mb-2">
- Delete Table?
- </h2>
- <p className="text-sm text-slate-500 font-medium mb-6">
- Are you sure you want to remove this table? This action cannot be
- undone.
- </p>
- <div className="flex gap-3">
- <button
- onClick={() => {
- setShowDeleteModal(false);
- setTableToDelete(null);
- }}
- className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition"
- >
- Cancel
- </button>
- <button
- onClick={handleConfirmDelete}
- className="flex-1 bg-rose-500 text-white font-bold py-3 rounded-xl hover:bg-rose-600 shadow-md shadow-rose-200 transition"
- >
- Yes, Delete
- </button>
- </div>
- </div>
- </div>
- )}
-
- {/* ADD NEW TABLE MODAL OVERLAY */}
+ {/* ADD TABLE MODAL OVERLAY */}
  {showAddModal && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-slide-in">
- {/* Modal Header */}
+ <div className="bg-white rounded-xl shadow-md w-full max-w-sm overflow-hidden animate-slide-in">
  <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
- <Plus size={18} className="text-purple-500" />
+ <Plus size={18} className="text-emerald-500" />
  Add New Table
  </h2>
  <button
@@ -669,36 +510,22 @@ const AdminTables = () => {
  <X size={16} />
  </button>
  </div>
-
- {/* Modal Form */}
  <form onSubmit={handleAddTable} className="p-6 space-y-4">
  <div>
  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
- Table Number *
+ Table Number/Name *
  </label>
  <input
- id="newTableName"
- name="newTableName"
  type="text"
  inputMode="numeric"
  required
  value={newTableName}
  onChange={(e) => setNewTableName(e.target.value)}
- className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
- placeholder="e.g. 8"
+ className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 transition-all font-medium text-sm"
+ placeholder="e.g. 5"
  />
+ <p className="text-[10px] text-slate-400 mt-1.5 ml-1">If you enter a number, it will be automatically prefixed with "Table"</p>
  </div>
-
- {/* Informational UI element */}
- <div className="bg-emerald-50 text-emerald-700 p-3 rounded-xl border border-emerald-100 text-xs font-semibold flex items-start gap-2 mt-2">
- <CheckCircle2 size={16} className="mt-0.5" />
- <p>
- New tables are automatically marked as{""}
- <strong>Available</strong>.
- </p>
- </div>
-
- {/* Modal Footer */}
  <div className="flex gap-3 pt-4 mt-2 border-t border-slate-100">
  <button
  type="button"
@@ -722,7 +549,7 @@ const AdminTables = () => {
  {/* EDIT TABLE MODAL OVERLAY */}
  {showEditModal && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-slide-in">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-sm overflow-hidden animate-slide-in">
  {/* Modal Header */}
  <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">

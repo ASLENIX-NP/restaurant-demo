@@ -5,8 +5,41 @@ const MenuItem = require("../models/MenuItem");
 // @access  Public
 exports.getMenuItems = async (req, res) => {
   try {
-    const items = await MenuItem.find({}).lean();
-    res.status(200).json(items);
+    const { page = 1, limit = 0, search = "", category = "" } = req.query;
+
+    const query = {};
+    if (search) {
+      query.name = { $regex: search, $options: "i" };
+    }
+    if (category && category !== "All") {
+      query.category = category;
+    }
+
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+
+    let itemsPromise = MenuItem.find(query).lean();
+    
+    if (limitNum > 0) {
+      itemsPromise = itemsPromise
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum);
+    }
+
+    const [items, total] = await Promise.all([
+      itemsPromise,
+      MenuItem.countDocuments(query),
+    ]);
+
+    res.status(200).json({
+      items,
+      metadata: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: limitNum > 0 ? Math.ceil(total / limitNum) : 1,
+      },
+    });
   } catch (error) {
     console.error("Error fetching menu items:", error);
     res.status(500).json({ message: "Server error fetching menu items" });
@@ -19,12 +52,6 @@ exports.getMenuItems = async (req, res) => {
 exports.createMenuItem = async (req, res) => {
   try {
     const { name, description, price, category, isAvailable, image } = req.body;
-
-    if (!name || !price || !category) {
-      return res
-        .status(400)
-        .json({ message: "Name, price, and category are required" });
-    }
 
     const menuItem = new MenuItem({
       name,

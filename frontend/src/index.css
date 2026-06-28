@@ -11,3 +11,17 @@ body {
     font-family: Arial, sans-serif;
     background: #f8fafc;
 }
+
+@layer base {
+    /* Tablet/Mobile Touch Target Optimization */
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    input[type="search"],
+    select,
+    textarea {
+        @apply min-h-[44px];
+    }
+}

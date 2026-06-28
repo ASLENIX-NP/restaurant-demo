@@ -2,16 +2,33 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/authController");
 const { protect, authorize } = require("../middleware/authMiddleware");
+const validate = require("../middleware/validate");
+const { registerSchema, loginSchema } = require("../validators/authValidator");
 
 // @route   POST /api/auth/login
 // @desc    Authenticate user & get token
 // @access  Public
-router.post("/login", authController.login);
+router.post("/login", validate(loginSchema), authController.login);
 
 // @route   POST /api/auth/register
 // @desc    Register a new user (Pending approval)
 // @access  Public
-router.post("/register", authController.register);
+router.post("/register", validate(registerSchema), authController.register);
+
+// @route   POST /api/auth/forgot-password
+// @desc    Generate password reset token
+// @access  Public
+router.post("/forgot-password", authController.forgotPassword);
+
+// @route   POST /api/auth/reset-password
+// @desc    Reset password using token
+// @access  Public
+router.post("/reset-password", authController.resetPassword);
+
+// @route   POST /api/auth/users
+// @desc    Add a new user (Admin)
+// @access  Private (Admin only)
+router.post("/users", protect, authorize("Admin"), validate(registerSchema), authController.addUser);
 
 // @route   GET /api/auth/users
 // @desc    Get all users
@@ -22,6 +39,11 @@ router.get("/users", protect, authorize("Admin"), authController.getUsers);
 // @desc    Update user status (Approve or Deactivate)
 // @access  Private (Admin only)
 router.put("/users/:id/status", protect, authorize("Admin"), authController.updateUserStatus);
+
+// @route   PUT /api/auth/users/:id
+// @desc    Update user details (Admin editing employee)
+// @access  Private (Admin only)
+router.put("/users/:id", protect, authorize("Admin"), authController.updateUser);
 
 // @route   DELETE /api/auth/users/:id
 // @desc    Delete a user permanently

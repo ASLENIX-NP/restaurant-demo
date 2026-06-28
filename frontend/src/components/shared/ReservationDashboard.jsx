@@ -167,7 +167,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
 
  const confirmDelete = async () => {
  try {
- await apiClient.delete(`/api/reservations/${reservationToDelete}`);
+ await apiClient.delete(`/api/reservations/${encodeURIComponent(reservationToDelete)}`);
  setSelectedReservation(null);
  setReservationToDelete(null);
  fetchReservations();
@@ -178,7 +178,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
 
  const handleStatusChange = async (id, newStatus) => {
  try {
- await apiClient.put(`/api/reservations/${id}`, { status: newStatus });
+ await apiClient.put(`/api/reservations/${encodeURIComponent(id)}`, { status: newStatus });
  setSelectedReservation((prev) =>
  prev && (prev.id === id || prev._id === id) ? { ...prev, status: newStatus } : prev
  );
@@ -195,7 +195,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  e.preventDefault();
  try {
  const id = editRes.id || editRes._id;
- await apiClient.put(`/api/reservations/${id}`, editRes);
+ await apiClient.put(`/api/reservations/${encodeURIComponent(id)}`, editRes);
  
  // Update Table Status if needed (similar to create)
  if (editRes.table && tables && editRes.table !== selectedReservation.table && (editTable || updateTableStatus)) {
@@ -249,7 +249,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  {(role ==="cashier" || role ==="admin") && (
  <button
  onClick={() => setShowAddModal(true)}
- className="bg-slate-900 hover:bg-slate-800 text-slate-900 font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
+ className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-all"
  >
  <CalendarPlus size={16} /> New Booking
  </button>
@@ -393,7 +393,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  <div className="p-4 border-t border-slate-100">
  <button
  onClick={() => openReservation(item)}
- className="w-full bg-slate-50 hover:bg-slate-900 text-slate-700 hover:text-slate-900 font-bold py-2.5 rounded-xl transition-colors shadow-sm text-sm"
+ className="w-full bg-slate-50 hover:bg-slate-900 text-slate-700 hover:text-white font-bold py-2.5 rounded-xl transition-colors shadow-sm text-sm"
  >
  Manage Booking
  </button>
@@ -406,14 +406,14 @@ const ReservationDashboard = ({ role ="staff" }) => {
  {/* VIEW & MANAGE MODAL */}
  {selectedReservation && (
  <div
- className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity"
+ className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-[60] flex justify-center items-center p-4 transition-opacity"
  onClick={() => setSelectedReservation(null)}
  >
  <div
- className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in"
+ className="bg-white rounded-[24px] shadow-2xl shadow-indigo-900/20 w-full max-w-lg border border-slate-100 overflow-hidden animate-slide-in"
  onClick={(e) => e.stopPropagation()}
  >
- <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-white/5">
+ <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-gradient-to-r from-indigo-50/50 to-white">
  <div>
  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
  {isEditing ?"Edit Reservation" :"Manage Reservation"}
@@ -448,7 +448,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  {isEditing ? (
  <form onSubmit={handleUpdateReservation} className="p-6 space-y-4">
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Guest Name *
  </label>
  <input
@@ -458,13 +458,13 @@ const ReservationDashboard = ({ role ="staff" }) => {
  onChange={(e) =>
  setEditRes({ ...editRes, name: e.target.value })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 placeholder:text-slate-300"
  />
  </div>
 
  <div className="grid grid-cols-2 gap-4">
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Table
  </label>
  <select
@@ -472,7 +472,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  onChange={(e) =>
  setEditRes({ ...editRes, table: e.target.value })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm cursor-pointer"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 placeholder:text-slate-300 cursor-pointer"
  >
  <option value="" disabled>Select Table</option>
  {tables.map((t) => (
@@ -483,7 +483,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  </select>
  </div>
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Guests *
  </label>
  <input
@@ -494,14 +494,14 @@ const ReservationDashboard = ({ role ="staff" }) => {
  onChange={(e) =>
  setEditRes({ ...editRes, guests: e.target.value })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 placeholder:text-slate-300"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-2 gap-4">
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Time *
  </label>
  <input
@@ -511,11 +511,11 @@ const ReservationDashboard = ({ role ="staff" }) => {
  onChange={(e) =>
  setEditRes({ ...editRes, time: e.target.value })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 placeholder:text-slate-300"
  />
  </div>
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Phone
  </label>
  <input
@@ -529,13 +529,13 @@ const ReservationDashboard = ({ role ="staff" }) => {
  phone: e.target.value.replace(/\D/g,"").slice(0, 10),
  })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 placeholder:text-slate-300"
  />
  </div>
  </div>
 
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Notes
  </label>
  <textarea
@@ -544,7 +544,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  onChange={(e) =>
  setEditRes({ ...editRes, notes: e.target.value })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all font-medium text-sm resize-none"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 resize-none placeholder:text-slate-300"
  ></textarea>
  </div>
 
@@ -552,13 +552,13 @@ const ReservationDashboard = ({ role ="staff" }) => {
  <button
  type="button"
  onClick={() => setIsEditing(false)}
- className="flex-1 bg-white border border-slate-100 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition"
+ className="flex-1 bg-white border-2 border-slate-200 text-slate-600 font-bold py-3.5 rounded-xl hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800 transition-all"
  >
  Cancel
  </button>
  <button
  type="submit"
- className="flex-1 bg-purple-600 text-slate-900 font-bold py-3 rounded-xl hover:bg-purple-700 shadow-md transition"
+ className="flex-1 bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-600/30 transition-all"
  >
  Save Changes
  </button>
@@ -625,66 +625,56 @@ const ReservationDashboard = ({ role ="staff" }) => {
  </div>
 
  <div className="pt-2">
- <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
- Update Status
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-3">
+ Quick Actions
  </label>
  {(role ==="cashier" || role ==="admin") && (
  <div className="flex gap-2">
  <button
- onClick={() =>
- handleStatusChange(selectedReservation.id,"Confirmed")
- }
- className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all border ${
+ onClick={() => handleStatusChange(selectedReservation.id || selectedReservation._id, "Confirmed")}
+ className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-xl text-[11px] font-bold transition-all border shadow-sm ${
  selectedReservation.status ==="Confirmed"
- ?"bg-emerald-50 text-slate-900 border-emerald-600 shadow-md"
- :"bg-white text-slate-600 border-slate-100 hover:bg-emerald-50"
+ ?"bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/30 scale-[1.02]"
+ :"bg-white text-slate-600 border-slate-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600"
  }`}
  >
- Confirm
+ <CheckCircle2 size={16} className="mb-1" /> Confirm
  </button>
  <button
- onClick={() =>
- handleStatusChange(selectedReservation.id,"Pending")
- }
- className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all border ${
+ onClick={() => handleStatusChange(selectedReservation.id || selectedReservation._id, "Pending")}
+ className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-xl text-[11px] font-bold transition-all border shadow-sm ${
  selectedReservation.status ==="Pending"
- ?"bg-amber-50 text-slate-900 border-amber-600 shadow-md"
- :"bg-white text-slate-600 border-slate-100 hover:bg-amber-50"
+ ?"bg-amber-500 text-white border-amber-600 shadow-amber-500/30 scale-[1.02]"
+ :"bg-white text-slate-600 border-slate-200 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600"
  }`}
  >
- Pending
+ <Hourglass size={16} className="mb-1" /> Pending
  </button>
  <button
- onClick={() =>
- handleStatusChange(selectedReservation.id,"VIP")
- }
- className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all border ${
+ onClick={() => handleStatusChange(selectedReservation.id || selectedReservation._id, "VIP")}
+ className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-xl text-[11px] font-bold transition-all border shadow-sm ${
  selectedReservation.status ==="VIP"
- ?"bg-purple-50 text-slate-900 border-purple-600 shadow-md"
- :"bg-white text-slate-600 border-slate-100 hover:bg-purple-50"
+ ?"bg-indigo-500 text-white border-indigo-600 shadow-indigo-500/30 scale-[1.02]"
+ :"bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600"
  }`}
  >
- VIP
+ <Star size={16} className="mb-1" /> VIP
  </button>
  </div>
  )}
  {selectedReservation.status !=="Completed" && selectedReservation.status !=="Cancelled" && (
- <div className="flex gap-2 mt-2">
+ <div className="flex gap-2 mt-3">
  <button
- onClick={() =>
- handleStatusChange(selectedReservation.id,"Completed")
- }
- className="flex-1 py-2 rounded-lg text-xs font-bold transition-all border bg-emerald-50 text-slate-900 border-emerald-600 hover:bg-emerald-600 shadow-md"
+ onClick={() => handleStatusChange(selectedReservation.id || selectedReservation._id, "Completed")}
+ className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all border bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 shadow-sm"
  >
- Complete
+ <CheckCircle2 size={14} /> Mark Complete
  </button>
  <button
- onClick={() =>
- handleStatusChange(selectedReservation.id,"Cancelled")
- }
- className="flex-1 py-2 rounded-lg text-xs font-bold transition-all border bg-rose-50 text-slate-900 border-rose-600 hover:bg-rose-600 shadow-md"
+ onClick={() => handleStatusChange(selectedReservation.id || selectedReservation._id, "Cancelled")}
+ className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all border bg-white text-rose-600 border-rose-200 hover:bg-rose-50 hover:border-rose-300 shadow-sm"
  >
- Cancel
+ <X size={14} /> Cancel Booking
  </button>
  </div>
  )}
@@ -704,7 +694,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  )}
  <button
  onClick={() => setSelectedReservation(null)}
- className="flex-1 bg-slate-900 hover:bg-slate-800 text-slate-900 font-bold py-3 rounded-xl transition-all shadow-md"
+ className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition-all shadow-md"
  >
  Done
  </button>
@@ -717,16 +707,16 @@ const ReservationDashboard = ({ role ="staff" }) => {
  {/* ADD RESERVATION MODAL */}
  {(role ==="cashier" || role ==="admin") && showAddModal && (
  <div
- className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity"
+ className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-[60] flex justify-center items-center p-4 transition-opacity"
  onClick={() => setShowAddModal(false)}
  >
  <div
- className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in"
+ className="bg-white rounded-[24px] shadow-2xl shadow-indigo-900/20 w-full max-w-lg border border-slate-100 overflow-hidden animate-slide-in"
  onClick={(e) => e.stopPropagation()}
  >
- <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-white/5">
+ <div className="flex justify-between items-center p-6 border-b border-slate-100 bg-gradient-to-r from-indigo-50/50 to-white">
  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
- <CalendarPlus size={18} className="text-purple-500" /> New
+ <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600"><CalendarPlus size={16} /></div> New
  Booking
  </h2>
  <button
@@ -739,7 +729,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
 
  <form onSubmit={handleAddReservation} className="p-6 space-y-4">
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Guest Name *
  </label>
  <input
@@ -751,14 +741,14 @@ const ReservationDashboard = ({ role ="staff" }) => {
  onChange={(e) =>
  setNewRes({ ...newRes, name: e.target.value })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 placeholder:text-slate-300"
  placeholder="e.g. Jane Doe"
  />
  </div>
 
  <div className="grid grid-cols-2 gap-4">
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Table
  </label>
  <select
@@ -768,7 +758,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  onChange={(e) =>
  setNewRes({ ...newRes, table: e.target.value })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm cursor-pointer"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 placeholder:text-slate-300 cursor-pointer"
  >
  <option value="" disabled>
  Select Table
@@ -781,7 +771,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  </select>
  </div>
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Guests *
  </label>
  <input
@@ -794,14 +784,14 @@ const ReservationDashboard = ({ role ="staff" }) => {
  onChange={(e) =>
  setNewRes({ ...newRes, guests: e.target.value })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 placeholder:text-slate-300"
  />
  </div>
  </div>
 
  <div className="grid grid-cols-2 gap-4">
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Time *
  </label>
  <input
@@ -813,12 +803,12 @@ const ReservationDashboard = ({ role ="staff" }) => {
  onChange={(e) =>
  setNewRes({ ...newRes, time: e.target.value })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 placeholder:text-slate-300"
  placeholder="7:00 PM"
  />
  </div>
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Phone
  </label>
  <input
@@ -835,14 +825,14 @@ const ReservationDashboard = ({ role ="staff" }) => {
  phone: e.target.value.replace(/\D/g,"").slice(0, 10),
  })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 placeholder:text-slate-300"
  placeholder="e.g. 9812345678"
  />
  </div>
  </div>
 
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Status
  </label>
  <select
@@ -852,7 +842,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  onChange={(e) =>
  setNewRes({ ...newRes, status: e.target.value })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm cursor-pointer"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 placeholder:text-slate-300 cursor-pointer"
  >
  <option value="Pending">Pending</option>
  <option value="Confirmed">Confirmed</option>
@@ -861,7 +851,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  </div>
 
  <div>
- <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+ <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
  Notes
  </label>
  <textarea
@@ -872,7 +862,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  onChange={(e) =>
  setNewRes({ ...newRes, notes: e.target.value })
  }
- className="w-full border border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-all font-medium text-sm resize-none"
+ className="w-full border-2 border-slate-100 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-sm text-slate-800 resize-none placeholder:text-slate-300"
  placeholder="Special requests..."
  ></textarea>
  </div>
@@ -881,13 +871,13 @@ const ReservationDashboard = ({ role ="staff" }) => {
  <button
  type="button"
  onClick={() => setShowAddModal(false)}
- className="flex-1 bg-white border border-slate-100 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition"
+ className="flex-1 bg-white border-2 border-slate-200 text-slate-600 font-bold py-3.5 rounded-xl hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800 transition-all"
  >
  Cancel
  </button>
  <button
  type="submit"
- className="flex-1 bg-slate-900 text-slate-900 font-bold py-3 rounded-xl hover:bg-slate-800 shadow-md transition"
+ className="flex-1 bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 shadow-lg shadow-slate-900/20 transition-all"
  >
  Create Booking
  </button>
@@ -900,7 +890,7 @@ const ReservationDashboard = ({ role ="staff" }) => {
  {/* DELETE CONFIRMATION MODAL */}
  {(role ==="cashier" || role ==="admin") && reservationToDelete && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex justify-center items-center p-4 transition-opacity">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center animate-slide-in">
+ <div className="bg-white rounded-[24px] shadow-2xl shadow-rose-900/20 w-full max-w-sm border border-slate-100 p-6 text-center animate-slide-in">
  <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
  <Trash2 size={28} className="text-rose-500" />
  </div>
@@ -914,13 +904,13 @@ const ReservationDashboard = ({ role ="staff" }) => {
  <div className="flex gap-3">
  <button
  onClick={() => setReservationToDelete(null)}
- className="flex-1 bg-white border border-slate-100 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition"
+ className="flex-1 bg-white border-2 border-slate-200 text-slate-600 font-bold py-3.5 rounded-xl hover:bg-slate-50 hover:border-slate-300 hover:text-slate-800 transition-all"
  >
  Cancel
  </button>
  <button
  onClick={confirmDelete}
- className="flex-1 bg-rose-50 text-slate-900 font-bold py-3 rounded-xl hover:bg-rose-600 shadow-md shadow-rose-200 transition"
+ className="flex-1 bg-rose-500 text-white font-bold py-3.5 rounded-xl hover:bg-rose-600 shadow-lg shadow-rose-500/30 transition-all"
  >
  Yes, Delete
  </button>

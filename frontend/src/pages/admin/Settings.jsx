@@ -28,6 +28,7 @@ import {
 } from"lucide-react";
 import { useNavigate } from"react-router-dom";
 import apiClient from"../../api/apiClient";
+import { useToast } from "../../context/ToastContext";
 
 import"../../styles/settings.css"; // Kept for any global custom overrides
 
@@ -37,6 +38,7 @@ const Settings = () => {
  const [taxSettings, setTaxSettings] = useState({ vat: 13, serviceCharge: 10, defaultDiscount: 0 });
  const [loading, setLoading] = useState(true);
  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+ const { showToast } = useToast();
 
  useEffect(() => {
  const fetchSettings = async () => {
@@ -110,8 +112,78 @@ const Settings = () => {
  setTimeout(() => setShowSuccessPopup(false), 3000); // Auto close after 3 seconds
  } catch (error) {
  console.error("Failed to save settings:", error);
- alert("Failed to save settings. Please try again.");
+ showToast("Failed to save settings. Please try again.", "error");
  }
+ };
+
+ const handleBackupDB = async () => {
+ try {
+ const response = await apiClient.get('/api/settings/backup', { responseType: 'blob' });
+ const url = window.URL.createObjectURL(new Blob([response.data]));
+ const a = document.createElement("a");
+ a.href = url;
+ a.download = "aslenix_backup.json";
+ a.click();
+ window.URL.revokeObjectURL(url);
+ showToast("Database backup downloaded successfully", "success");
+ } catch (error) {
+ showToast("Failed to backup database", "error");
+ }
+ };
+
+ const handleExportCSV = async () => {
+ try {
+ const response = await apiClient.get('/api/settings/export-csv', { responseType: 'blob' });
+ const url = window.URL.createObjectURL(new Blob([response.data]));
+ const a = document.createElement("a");
+ a.href = url;
+ a.download = "menu_items.csv";
+ a.click();
+ window.URL.revokeObjectURL(url);
+ showToast("Menu CSV exported successfully", "success");
+ } catch (error) {
+ showToast("Failed to export CSV", "error");
+ }
+ };
+
+ const restoreFileRef = React.useRef(null);
+ const handleRestoreDB = async (e) => {
+ const file = e.target.files[0];
+ if (!file) return;
+ if (!window.confirm("WARNING: This will overwrite your entire database with the uploaded backup. Are you sure?")) {
+ e.target.value = "";
+ return;
+ }
+ 
+ const formData = new FormData();
+ formData.append("file", file);
+ try {
+ await apiClient.post("/api/settings/restore", formData, {
+ headers: { "Content-Type": "multipart/form-data" }
+ });
+ showToast("Database restored successfully", "success");
+ } catch (error) {
+ showToast("Failed to restore database", "error");
+ }
+ e.target.value = "";
+ };
+
+ const importCsvRef = React.useRef(null);
+ const handleImportCSV = async (e) => {
+ const file = e.target.files[0];
+ if (!file) return;
+ 
+ const formData = new FormData();
+ formData.append("file", file);
+ try {
+ const { data } = await apiClient.post("/api/settings/import-csv", formData, {
+ headers: { "Content-Type": "multipart/form-data" }
+ });
+ showToast(data.message || "Menu imported successfully", "success");
+ } catch (error) {
+ showToast("Failed to import CSV", "error");
+ }
+ e.target.value = "";
  };
 
  if (loading) {
@@ -147,7 +219,7 @@ const Settings = () => {
  <button
  key={tab.id}
  onClick={() => setActiveTab(tab.id)}
- className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all text-left group ${
+ className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left group ${
  isActive 
  ?"bg-white border-transparent shadow-sm ring-1 ring-slate-200" 
  :"bg-transparent border-transparent hover:bg-slate-200/50"
@@ -177,10 +249,10 @@ const Settings = () => {
  {/* PROFILE CARD */}
  <div className="bg-white rounded-[2rem] border border-slate-200/60 shadow-sm overflow-hidden relative">
  {/* Cover Banner */}
- <div className="h-32 md:h-48 w-full bg-gradient-to-br from-slate-800 via-indigo-900 to-slate-900 relative overflow-hidden">
+ <div className="h-32 md:h-48 w-full bg-slate-900 relative overflow-hidden">
  {/* Ambient Decorative Glow Effects */}
  <div className="absolute top-[-50%] left-[-10%] w-96 h-96 bg-indigo-500/30 rounded-full blur-3xl pointer-events-none"></div>
- <div className="absolute bottom-[-50%] right-[-10%] w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none"></div>
+ <div className="absolute bottom-[-50%] right-[-10%] w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
  <div className="absolute inset-0 bg-slate-900/10 mix-blend-multiply"></div>
  </div>
 
@@ -218,7 +290,7 @@ const Settings = () => {
  <h2 className="text-2xl md:text-[28px] font-black text-slate-900 tracking-tight leading-none">
  Admin User
  </h2>
- <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-black uppercase tracking-wider">
+ <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-black uppercase tracking-wider">
  <ShieldCheck size={14} className="text-indigo-500" /> Super Administrator
  </span>
  </div>
@@ -235,9 +307,9 @@ const Settings = () => {
  </div>
 
  {/* RESTAURANT INFO */}
- <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8">
  <div className="flex items-center gap-3 mb-8 pb-5 border-b border-slate-100">
- <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner">
+ <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner">
  <Store size={22} />
  </div>
  <div>
@@ -286,7 +358,7 @@ const Settings = () => {
  
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  {/* TAX SETTINGS */}
- <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 flex flex-col h-full">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 flex flex-col h-full">
  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
  <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner">
  <Receipt size={20} />
@@ -310,7 +382,7 @@ const Settings = () => {
  </div>
 
  {/* PAYMENT METHODS */}
- <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 flex flex-col h-full">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 flex flex-col h-full">
  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner">
  <CreditCard size={20} />
@@ -340,9 +412,9 @@ const Settings = () => {
  {/* ================= HARDWARE TAB ================= */}
  {activeTab ==="Hardware" && (
  <div className="space-y-6 animate-slide-in">
- <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8">
  <div className="flex items-center gap-3 mb-8 pb-5 border-b border-slate-100">
- <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner">
+ <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner">
  <Printer size={22} />
  </div>
  <div>
@@ -377,7 +449,7 @@ const Settings = () => {
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-slide-in">
  
  {/* ROLE MANAGEMENT */}
- <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8">
  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-inner">
  <UserCircle size={20} />
@@ -386,7 +458,7 @@ const Settings = () => {
  </div>
  <div className="space-y-4">
  {[
- { name:"Admin (Full Access)", icon: Crown, iconColor:"text-purple-600", bg:"bg-purple-50", border:"border-purple-100/60" },
+ { name:"Admin (Full Access)", icon: Crown, iconColor:"text-indigo-600", bg:"bg-indigo-50", border:"border-indigo-100/60" },
  { name:"Manager", icon: ClipboardList, iconColor:"text-blue-600", bg:"bg-blue-50", border:"border-blue-100/60" },
  { name:"Cashier", icon: Banknote, iconColor:"text-emerald-600", bg:"bg-emerald-50", border:"border-emerald-100/60" },
  { name:"Chef / Kitchen", icon: ChefHat, iconColor:"text-orange-600", bg:"bg-orange-50", border:"border-orange-100/60" },
@@ -394,7 +466,7 @@ const Settings = () => {
  ].map((role) => {
  const Icon = role.icon;
  return (
- <button key={role.name} className="w-full flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-white hover:bg-slate-50 hover:border-slate-200 hover:shadow-sm transition-all text-left group">
+ <button key={role.name} className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-white hover:bg-slate-50 hover:border-slate-200 hover:shadow-sm transition-all text-left group">
  <div className="flex items-center gap-4">
  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border ${role.bg} ${role.border}`}>
  <Icon size={20} className={role.iconColor} />
@@ -412,7 +484,7 @@ const Settings = () => {
  </div>
 
  {/* SECURITY */}
- <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8">
  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
  <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner">
  <Shield size={20} />
@@ -442,7 +514,7 @@ const Settings = () => {
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-slide-in">
  
  {/* SYSTEM PREFERENCES */}
- <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8">
  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
  <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 shadow-inner">
  <SettingsIcon size={20} />
@@ -470,7 +542,7 @@ const Settings = () => {
  </div>
 
  {/* BACKUP & RESTORE */}
- <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8">
  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shadow-inner">
  <Database size={20} />
@@ -478,17 +550,21 @@ const Settings = () => {
  <h2 className="text-lg font-black text-slate-900">Backup & Restore</h2>
  </div>
  <div className="grid grid-cols-2 gap-3">
- <button className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-600 font-bold text-xs transition-all text-center shadow-sm">
+ <button onClick={handleBackupDB} className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-600 font-bold text-xs transition-all text-center shadow-sm">
  <Download size={20} /> Backup DB
  </button>
- <button className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-600 font-bold text-xs transition-all text-center shadow-sm">
+ <button onClick={handleExportCSV} className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-600 font-bold text-xs transition-all text-center shadow-sm">
  <Upload size={20} /> Export CSV
  </button>
- <button className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-600 font-bold text-xs transition-all text-center shadow-sm">
+ 
+ <input type="file" accept=".csv" className="hidden" ref={importCsvRef} onChange={handleImportCSV} />
+ <button onClick={() => importCsvRef.current?.click()} className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-600 font-bold text-xs transition-all text-center shadow-sm">
  <Download size={20} className="rotate-180" /> Import CSV
  </button>
- <button className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-600 font-bold text-xs transition-all text-center shadow-sm">
- <RefreshCw size={20} /> Restore
+
+ <input type="file" accept=".json" className="hidden" ref={restoreFileRef} onChange={handleRestoreDB} />
+ <button onClick={() => restoreFileRef.current?.click()} className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-rose-100 bg-rose-50 hover:bg-rose-100 hover:text-rose-600 hover:border-rose-200 text-rose-500 font-bold text-xs transition-all text-center shadow-sm">
+ <RefreshCw size={20} /> Restore DB
  </button>
  </div>
  </div>
@@ -502,7 +578,7 @@ const Settings = () => {
  {/* SUCCESS MODAL POPUP */}
  {showSuccessPopup && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex justify-center items-center p-4">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center animate-slide-in">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-sm p-6 text-center animate-slide-in">
  <div className="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
  <CheckCircle size={32} />
  </div>

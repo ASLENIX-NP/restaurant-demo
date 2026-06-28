@@ -22,6 +22,8 @@ const adminSchema = new mongoose.Schema(
     phone: { type: String },
     image: { type: String },
     status: { type: String, default: "Active" },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
   },
   { timestamps: true }
 );

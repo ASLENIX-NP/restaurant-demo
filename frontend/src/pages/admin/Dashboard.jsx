@@ -28,12 +28,14 @@ import DatePicker from"react-datepicker";
 import"react-datepicker/dist/react-datepicker.css";
 import { useOrders } from"../../context/OrderContext";
 import { useTables } from"../../context/TableContext";
+import { useToast } from"../../context/ToastContext";
 import Skeleton from"../../components/ui/Skeleton";
 
 export default function AdminDashboard() {
  const navigate = useNavigate();
  const { orders = [], fetchOrders } = useOrders() || {};
  const { tables = [], fetchTables } = useTables() || {};
+ const { showToast } = useToast();
  const [loading, setLoading] = useState(true);
 
  useEffect(() => {
@@ -197,11 +199,11 @@ export default function AdminDashboard() {
  <Skeleton className="h-10 w-64 rounded-xl" />
  </div>
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
- {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-3xl" />)}
+ {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
  </div>
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
- <Skeleton className="lg:col-span-2 h-[400px] rounded-3xl" />
- <Skeleton className="h-[400px] rounded-3xl" />
+ <Skeleton className="lg:col-span-2 h-[400px] rounded-xl" />
+ <Skeleton className="h-[400px] rounded-xl" />
  </div>
  </div>
  </div>
@@ -230,7 +232,7 @@ export default function AdminDashboard() {
  .react-datepicker__close-icon::after { background-color: #f1f5f9; color: #64748b; font-size: 16px; height: 22px; width: 22px; line-height: 20px; border-radius: 6px; transition: all 0.2s ease; }
  .react-datepicker__close-icon:hover::after { background-color: #fee2e2; color: #ef4444; }
  `}</style>
- <Calendar size={16} className="text-purple-500 shrink-0" />
+ <Calendar size={16} className="text-indigo-500 shrink-0" />
  <DatePicker
  selectsRange={true}
  startDate={startDate}
@@ -253,7 +255,7 @@ export default function AdminDashboard() {
  value: `Rs. ${totalRevenue.toLocaleString()}`,
  change:"0% this month",
  icon: <DollarSign size={22} />,
- color:"bg-purple-50 text-purple-600 border-purple-100/50",
+ color:"bg-indigo-50 text-indigo-600 border-indigo-100/50",
  },
  {
  title:"Total Orders",
@@ -281,7 +283,7 @@ export default function AdminDashboard() {
  ].map((card) => (
  <div
  key={card.title}
- className="bg-white rounded-xl sm:rounded-2xl p-3.5 sm:p-6 border border-slate-100 shadow-sm flex flex-col-reverse sm:flex-row items-start sm:items-center justify-between transition hover:shadow-md gap-2 sm:gap-0"
+ className="bg-white rounded-xl sm:rounded-xl p-3.5 sm:p-6 border border-slate-100 shadow-sm flex flex-col-reverse sm:flex-row items-start sm:items-center justify-between transition hover:shadow-md gap-2 sm:gap-0"
  >
  <div>
  <p className="text-slate-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider line-clamp-1">
@@ -308,7 +310,7 @@ export default function AdminDashboard() {
  {/* HIGH-PERFORMANCE DATA VISUALIZATION GRAPH GRID */}
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 mb-6 sm:mb-8">
  {/* INTERACTIVE AREA CHART: REVENUE TRACKING */}
- <div className="lg:col-span-8 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-100 shadow-sm">
+ <div className="lg:col-span-8 bg-white rounded-xl sm:rounded-xl p-4 sm:p-6 border border-slate-100 shadow-sm">
  <div className="flex justify-between items-start sm:items-center mb-4">
  <div>
  <h2 className="text-base font-bold text-slate-900">
@@ -318,7 +320,7 @@ export default function AdminDashboard() {
  Gross performance trends over this cycle
  </p>
  </div>
- <button className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-md transition-colors">
+ <button className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
  By Day
  </button>
  </div>
@@ -386,7 +388,7 @@ export default function AdminDashboard() {
  </div>
 
  {/* DOUGHNUT PIE CHART: ORDER FULFILLMENT BREAKDOWN */}
- <div className="lg:col-span-4 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-100 shadow-sm">
+ <div className="lg:col-span-4 bg-white rounded-xl sm:rounded-xl p-4 sm:p-6 border border-slate-100 shadow-sm">
  <div>
  <h2 className="text-base font-bold text-slate-900">
  Orders Overview
@@ -450,14 +452,14 @@ export default function AdminDashboard() {
  {/* LOWER DATA MATRIX SECTION GRID CONTAINER */}
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
  {/* LEFT AREA PANEL: TOP SELLING ITEMS GRID SECTION */}
- <div className="lg:col-span-4 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm">
+ <div className="lg:col-span-4 bg-white rounded-xl sm:rounded-xl p-4 sm:p-5 border border-slate-100 shadow-sm">
  <div className="flex items-center justify-between mb-4">
  <h2 className="text-base font-bold text-slate-900">
  Top Selling Items
  </h2>
  <button
  onClick={() => navigate("/admin/reports")}
- className="text-purple-600 hover:text-purple-700 font-bold text-xs transition"
+ className="text-indigo-600 hover:text-indigo-700 font-bold text-xs transition"
  >
  View All
  </button>
@@ -514,14 +516,14 @@ export default function AdminDashboard() {
  </div>
 
  {/* CENTER AREA PANEL: RECENT CUSTOMER LIVE DISPATCH MATRICES */}
- <div className="lg:col-span-5 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm">
+ <div className="lg:col-span-5 bg-white rounded-xl sm:rounded-xl p-4 sm:p-5 border border-slate-100 shadow-sm">
  <div className="flex items-center justify-between mb-4">
  <h2 className="text-base font-bold text-slate-900">
  Recent Orders
  </h2>
  <button
  onClick={() => navigate("/admin/orders")}
- className="text-purple-600 hover:text-purple-700 font-bold text-xs transition"
+ className="text-indigo-600 hover:text-indigo-700 font-bold text-xs transition"
  >
  View All
  </button>
@@ -552,7 +554,7 @@ export default function AdminDashboard() {
  key={order.id}
  className="hover:bg-slate-50/40 transition-colors"
  >
- <td className="p-3.5 pl-4 font-bold text-purple-600">
+ <td className="p-3.5 pl-4 font-bold text-indigo-600">
  {order.id}
  </td>
  <td className="p-3.5 text-slate-600 font-medium">
@@ -580,9 +582,9 @@ export default function AdminDashboard() {
  </div>
 
  {/* RIGHT AREA PANEL: LIVE OPERATIONAL ACTION REMINDERS BLOCK */}
- <div className="lg:col-span-3 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm">
+ <div className="lg:col-span-3 bg-white rounded-xl sm:rounded-xl p-4 sm:p-5 border border-slate-100 shadow-sm">
  <h2 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
- <Layers size={18} className="text-purple-500" /> Reminders
+ <Layers size={18} className="text-indigo-500" /> Reminders
  </h2>
 
  <div className="space-y-2.5">
@@ -590,7 +592,7 @@ export default function AdminDashboard() {
  {
  label:"Upcoming Reservations",
  icon: <Calendar size={15} />,
- color:"bg-purple-50 text-purple-600 border-purple-100",
+ color:"bg-indigo-50 text-indigo-600 border-indigo-100",
  action: () => navigate("/admin/table-management"),
  count: reservedCount > 0 ? reservedCount : null,
  },
@@ -604,7 +606,7 @@ export default function AdminDashboard() {
  label:"New Reviews Pending",
  icon: <Star size={15} />,
  color:"bg-amber-50 text-amber-600 border-amber-100",
- action: () => alert("Reviews management module coming soon!"),
+ action: () => showToast("Reviews management module coming soon!", "info"),
  },
  {
  label:"Payments",
@@ -627,7 +629,7 @@ export default function AdminDashboard() {
  </div>
  <div className="flex items-center gap-2">
  {reminder.count && (
- <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-bold text-[10px]">
+ <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-lg font-bold text-[10px]">
  {reminder.count}
  </span>
  )}

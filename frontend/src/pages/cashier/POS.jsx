@@ -88,7 +88,7 @@ const POS = () => {
 
  {/* Top Metrics Cards */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <Package size={22} />
  </div>
@@ -102,7 +102,7 @@ const POS = () => {
  </div>
  </div>
 
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
  <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <DollarSign size={22} />
  </div>
@@ -119,8 +119,8 @@ const POS = () => {
  </div>
  </div>
 
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
- <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+ <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <TrendingUp size={22} />
  </div>
  <div>
@@ -135,7 +135,7 @@ const POS = () => {
  </div>
 
  {/* Main Workspace */}
- <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
  {/* Controls Bar */}
  <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/50">
  {/* Categories Tab Bar */}
@@ -156,7 +156,7 @@ const POS = () => {
  >
  {category}
  <span
- className={`px-2 py-0.5 rounded-md text-[10px] font-black transition-colors duration-300 ${
+ className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition-colors duration-300 ${
  isActive
  ?"bg-slate-200 text-slate-800 ring-1 ring-slate-300/50"
  :"bg-slate-200/50 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-500"
@@ -181,7 +181,7 @@ const POS = () => {
  placeholder="Search items..."
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
- className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-50 transition-all placeholder:text-slate-400 shadow-sm"
+ className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-400 shadow-sm"
  />
  </div>
  </div>

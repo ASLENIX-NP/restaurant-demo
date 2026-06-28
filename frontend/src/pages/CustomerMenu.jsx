@@ -8,7 +8,7 @@ export default function CustomerMenu() {
  const loadProducts = async () => {
  try {
  const { data } = await apiClient.get("/api/menu");
- setMenuItems(data);
+ setMenuItems(Array.isArray(data) ? data : (data?.items || []));
  } catch (error) {
  console.error("Error fetching menu:", error);
  }

@@ -44,9 +44,7 @@ export default function Reports() {
  const [reportData, setReportData] = useState(null);
 
  // Default to the current month's report
- const today = new Date();
- const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
- const [dateRange, setDateRange] = useState([startOfMonth, today]);
+ const [dateRange, setDateRange] = useState([null, null]);
  const [startDate, endDate] = dateRange;
  const [loading, setLoading] = useState(true);
 
@@ -248,7 +246,7 @@ export default function Reports() {
  if (loading) {
  return (
  <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-400">
- <div className="w-10 h-10 border-4 border-slate-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
+ <div className="w-10 h-10 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
  <p className="font-semibold">Loading Analytics Dashboard...</p>
  </div>
  );
@@ -302,7 +300,7 @@ export default function Reports() {
  {tabs.map((tab) => (
  <button
  key={tab}
- className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-md sm:rounded-lg text-[11px] sm:text-sm font-bold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap flex-shrink-0 ${
+ className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-lg text-[11px] sm:text-sm font-bold transition-all flex items-center gap-1.5 sm:gap-2 whitespace-nowrap flex-shrink-0 ${
  activeTab === tab
  ?"bg-white text-slate-900 shadow-sm"
  :"text-slate-500 hover:text-slate-700 hover:bg-white/50"
@@ -349,8 +347,8 @@ export default function Reports() {
  }
  `}</style>
 
- <div className="flex items-center gap-2 sm:gap-3 bg-white border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 rounded-xl shadow-sm hover:border-purple-300 hover:shadow-md transition-all w-full sm:max-w-sm relative">
- <Calendar size={18} className="text-purple-500 flex-shrink-0" />
+ <div className="flex items-center gap-2 sm:gap-3 bg-white border border-slate-200 px-3 sm:px-4 py-2 sm:py-3 rounded-xl shadow-sm hover:border-indigo-300 hover:shadow-md transition-all w-full sm:max-w-sm relative">
+ <Calendar size={18} className="text-indigo-500 flex-shrink-0" />
  <div className="flex-1 w-full">
  <DatePicker
  selectsRange={true}
@@ -404,7 +402,7 @@ export default function Reports() {
  ].map((stat, i) => (
  <div
  key={i}
- className="report-stat-card bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm flex flex-col xl:flex-row items-start xl:items-center gap-2.5 sm:gap-4 hover:shadow-md transition-shadow"
+ className="report-stat-card bg-white p-3.5 sm:p-5 rounded-xl sm:rounded-xl border border-slate-100 shadow-sm flex flex-col xl:flex-row items-start xl:items-center gap-2.5 sm:gap-4 hover:shadow-md transition-shadow"
  >
  <div className="report-icon-wrapper w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 shrink-0">
  {React.cloneElement(stat.icon, {
@@ -435,7 +433,7 @@ export default function Reports() {
  activeTab ==="Menu Report" ||
  activeTab ==="Orders" ||
  activeTab ==="Customers") && (
- <div className="bg-white rounded-2xl border border-slate-100 p-8 sm:p-16 text-center text-slate-500 font-medium shadow-sm mb-6 sm:mb-8 mx-0">
+ <div className="bg-white rounded-xl border border-slate-100 p-8 sm:p-16 text-center text-slate-500 font-medium shadow-sm mb-6 sm:mb-8 mx-0">
  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
  <Calendar size={32} className="text-slate-400" />
  </div>
@@ -452,15 +450,15 @@ export default function Reports() {
  {/* MENU REPORT SUMMARY CARDS */}
  {activeTab ==="Menu Report" && dateFilteredOrders.length > 0 && (
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8 animate-slide-in">
- <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+ <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
  <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600"><PieIcon size={24}/></div>
  <div><p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Items Sold</p><h3 className="text-2xl font-black text-slate-900 mt-1">{totalItemsSold}</h3></div>
  </div>
- <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+ <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
  <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600"><TrendingUp size={24}/></div>
  <div className="min-w-0 flex-1"><p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Best Seller</p><h3 className="text-xl font-black text-slate-900 mt-1 truncate">{bestSeller}</h3></div>
  </div>
- <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+ <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
  <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600"><ShoppingBag size={24}/></div>
  <div className="min-w-0 flex-1"><p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Top Category</p><h3 className="text-xl font-black text-slate-900 mt-1 truncate">{topCategory}</h3></div>
  </div>
@@ -482,7 +480,7 @@ export default function Reports() {
  {/* SMOOTH AREA-LINE CHART */}
  {(activeTab ==="Overview" || activeTab ==="Sales Report") && (
  <div
- className={`chart-card linear-graph-block bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col min-h-[280px] sm:min-h-[400px] ${
+ className={`chart-card linear-graph-block bg-white p-4 sm:p-6 rounded-xl border border-slate-100 shadow-sm flex flex-col min-h-[280px] sm:min-h-[400px] ${
  activeTab ==="Overview" ?"lg:col-span-2" :"lg:col-span-1"
  }`}
  >
@@ -577,7 +575,7 @@ export default function Reports() {
  {/* DOUGHNUT PIE CHART */}
  {(activeTab ==="Overview" || activeTab ==="Menu Report") && (
  <div
- className={`chart-card distribution-graph-block bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col min-h-[280px] sm:min-h-[400px] ${
+ className={`chart-card distribution-graph-block bg-white p-4 sm:p-6 rounded-xl border border-slate-100 shadow-sm flex flex-col min-h-[280px] sm:min-h-[400px] ${
  activeTab ==="Overview" ?"lg:col-span-1" :"lg:col-span-1"
  }`}
  >
@@ -654,7 +652,7 @@ export default function Reports() {
  {reportData &&
  totalOrders > 0 &&
  (activeTab ==="Overview" || activeTab ==="Menu Report") && (
- <div className="top-items-card bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-6 sm:mb-8">
+ <div className="top-items-card bg-white p-4 sm:p-6 rounded-xl border border-slate-100 shadow-sm overflow-hidden mb-6 sm:mb-8">
  <div className="table-title-node mb-4 sm:mb-6">
  <h2 className="text-lg font-bold text-slate-900">
  Top Selling Items
@@ -733,22 +731,22 @@ export default function Reports() {
  {activeTab ==="Orders" && dateFilteredOrders.length > 0 && (
  <div className="animate-slide-in">
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
- <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+ <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><ShoppingBag size={24}/></div>
  <div><p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Orders</p><h3 className="text-2xl font-black text-slate-900 mt-1">{totalOrders}</h3></div>
  </div>
- <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
- <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-purple-600"><Calendar size={24}/></div>
+ <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+ <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600"><Calendar size={24}/></div>
  <div><p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Peak Hour</p><h3 className="text-xl font-black text-slate-900 mt-1">{peakHour}</h3></div>
  </div>
- <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+ <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
  <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-600"><Users size={24}/></div>
  <div><p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Top Channel</p><h3 className="text-xl font-black text-slate-900 mt-1">{topChannel}</h3></div>
  </div>
  </div>
 
  <div className="report-chart-grid mb-6 sm:mb-8 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
- <div className="chart-card bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col min-h-[280px] sm:min-h-[400px] lg:col-span-2">
+ <div className="chart-card bg-white p-4 sm:p-6 rounded-xl border border-slate-100 shadow-sm flex flex-col min-h-[280px] sm:min-h-[400px] lg:col-span-2">
  <div className="chart-header-node mb-4 sm:mb-6">
  <h2 className="text-lg font-bold text-slate-900">Orders by Hour</h2>
  <p className="text-xs text-slate-400 font-medium mt-1">Order volume distribution across the day</p>
@@ -769,7 +767,7 @@ export default function Reports() {
  </div>
  </div>
  
- <div className="chart-card bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col min-h-[280px] sm:min-h-[400px] lg:col-span-1">
+ <div className="chart-card bg-white p-4 sm:p-6 rounded-xl border border-slate-100 shadow-sm flex flex-col min-h-[280px] sm:min-h-[400px] lg:col-span-1">
  <div className="chart-header-node mb-4 sm:mb-6">
  <h2 className="text-lg font-bold text-slate-900">Order Channels</h2>
  <p className="text-xs text-slate-400 font-medium mt-1">Fulfillment type distribution</p>
@@ -817,7 +815,7 @@ export default function Reports() {
 
  {/* CUSTOMERS TAB */}
  {activeTab ==="Customers" && dateFilteredOrders.length > 0 && (
- <div className="top-items-card bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm overflow-hidden mb-6 sm:mb-8">
+ <div className="top-items-card bg-white p-4 sm:p-6 rounded-xl border border-slate-100 shadow-sm overflow-hidden mb-6 sm:mb-8">
  <div className="table-title-node mb-4 sm:mb-6">
  <h2 className="text-lg font-bold text-slate-900">Top Customers</h2>
  <p className="text-xs text-slate-400 font-medium mt-1">Most valuable returning guests by total spend</p>

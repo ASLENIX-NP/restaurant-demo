@@ -121,6 +121,64 @@
     transform: translateY(-2px);
 }
 
+/* COLLAPSED SIDEBAR STATE */
+.sidebar.collapsed {
+    width: 80px;
+    padding: 24px 12px;
+}
+
+.sidebar.collapsed .brand-subtitle,
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .menu-item span,
+.sidebar.collapsed .logout-btn span {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-header {
+    margin-bottom: 40px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.sidebar.collapsed .brand-logo {
+    justify-content: center;
+    gap: 0;
+}
+
+.sidebar.collapsed .menu-item {
+    justify-content: center;
+    padding: 12px;
+}
+
+.sidebar.collapsed .logout-btn {
+    padding: 14px 0;
+}
+
+.collapse-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 10px;
+    margin-top: auto;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.collapse-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+.sidebar.collapsed .collapse-toggle-btn {
+    padding: 10px 0;
+}
 
 /* MAIN */
 
@@ -136,3 +194,45 @@
 .content {
     padding: 36px;
 }
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        z-index: 1000;
+        height: 100vh;
+    }
+    .sidebar.mobile-open {
+        left: 0;
+    }
+    .main {
+        width: 100%;
+    }
+    .content {
+        padding: 16px;
+    }
+    .mobile-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+    }
+    .mobile-overlay.active {
+        display: block;
+    }
+}
+
+@media print {
+    body, .layout, .main, .content {
+        background-color: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .sidebar, .mobile-overlay, .md\:hidden {
+        display: none !important;
+    }
+    .content {
+        padding: 10px !important;
+    }
+}
+

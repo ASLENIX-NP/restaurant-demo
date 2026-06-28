@@ -5,6 +5,8 @@ import App from"./App";
 
 import"./index.css";
 
+import { SocketProvider } from "./context/SocketContext";
+
 import {
  OrderProvider,
 } from"./context/OrderContext";
@@ -17,25 +19,35 @@ import {
  TableProvider,
 } from"./context/TableContext";
 
+import { ToastProvider } from "./context/ToastContext";
+
 ReactDOM.createRoot(
  document.getElementById("root")
 ).render(
 
  <React.StrictMode>
 
- <AuthProvider>
+  <SocketProvider>
 
- <OrderProvider>
+   <AuthProvider>
 
- <TableProvider>
+    <OrderProvider>
 
- <App />
+     <TableProvider>
 
- </TableProvider>
+      <ToastProvider>
 
- </OrderProvider>
+       <App />
 
- </AuthProvider>
+      </ToastProvider>
+
+     </TableProvider>
+
+    </OrderProvider>
+
+   </AuthProvider>
+
+  </SocketProvider>
 
  </React.StrictMode>
 );

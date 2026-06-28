@@ -71,7 +71,7 @@ const Billing = () => {
  case"Cash":
  return"bg-emerald-50 text-emerald-600 border-emerald-200";
  case"UPI":
- return"bg-purple-50 text-purple-600 border-purple-200";
+ return"bg-indigo-50 text-indigo-600 border-indigo-200";
  case"Card":
  return"bg-blue-50 text-blue-600 border-blue-200";
  default:
@@ -116,7 +116,7 @@ const Billing = () => {
  {/* METRICS & STATS GRID */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
  {/* Revenue Stat Card */}
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
  <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <Wallet size={24} />
  </div>
@@ -140,7 +140,7 @@ const Billing = () => {
  </div>
 
  {/* Total Bills Stat Card */}
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
  <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <FileText size={24} />
  </div>
@@ -160,8 +160,8 @@ const Billing = () => {
  </div>
 
  {/* Average Bill Stat Card */}
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
- <div className="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+ <div className="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <CreditCard size={24} />
  </div>
  <div>
@@ -189,7 +189,7 @@ const Billing = () => {
  {/* MAIN WORKSPACE: SPLIT GRID */}
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
  {/* LEFT: DATA TABLE */}
- <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+ <div className="lg:col-span-8 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
  {/* Table Controls (Tabs & Search) */}
  <div className="p-5 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
  <div className="inline-flex bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/60 overflow-x-auto max-w-full shadow-inner">
@@ -215,7 +215,7 @@ const Billing = () => {
  <Icon size={16} className={`transition-colors duration-300 ${isActive ? tab.activeColor :"text-slate-400 group-hover:text-slate-500"}`} />
  {tab.name}
  <span
- className={`px-2 py-0.5 rounded-md text-[10px] font-black transition-colors duration-300 ${
+ className={`px-2 py-0.5 rounded-lg text-[10px] font-black transition-colors duration-300 ${
  isActive
  ? `${tab.bgActive} ${tab.activeColor} ring-1 ${tab.ringActive}`
  :"bg-slate-200/50 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-500"
@@ -236,7 +236,7 @@ const Billing = () => {
  <input
  type="text"
  placeholder="Search bill number..."
- className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-50 transition-all placeholder:text-slate-400 shadow-sm"
+ className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-400 shadow-sm"
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
  />
@@ -276,7 +276,7 @@ const Billing = () => {
  onClick={() => setSelectedBillId(bill.billNo)}
  className={`transition-colors cursor-pointer ${
  selectedBillId === bill.billNo
- ?"bg-purple-50/40"
+ ?"bg-indigo-50/40"
  :"hover:bg-slate-50/80"
  }`}
  >
@@ -294,7 +294,7 @@ const Billing = () => {
  </td>
  <td className="p-4">
  <span
- className={`px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wider border ${getPaymentBadgeColor(
+ className={`px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider border ${getPaymentBadgeColor(
  bill.payment
  )}`}
  >
@@ -302,7 +302,7 @@ const Billing = () => {
  </span>
  </td>
  <td className="p-4">
- <span className={`flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-md w-fit ${
+ <span className={`flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider px-2.5 py-1 rounded-lg w-fit ${
  bill.status ==="Paid" ?"text-emerald-600 bg-emerald-50" :"text-rose-600 bg-rose-50"
  }`}>
  {bill.status ==="Paid" ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />} {bill.status}
@@ -320,7 +320,7 @@ const Billing = () => {
  </div>
 
  {/* RIGHT: BILL DETAILS (RECEIPT PANE) */}
- <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 relative overflow-hidden sticky top-6">
+ <div className="lg:col-span-4 bg-white rounded-xl border border-slate-100 shadow-sm p-6 relative overflow-hidden sticky top-6">
  {/* Top accent line */}
  <div className="absolute top-0 left-0 right-0 h-1.5 bg-slate-900" />
 
@@ -394,7 +394,7 @@ const Billing = () => {
  <span className="font-bold text-slate-500 text-sm">
  Total Amount
  </span>
- <span className="text-2xl font-black text-purple-600">
+ <span className="text-2xl font-black text-indigo-600">
  Rs. {activeBill.amount.toLocaleString()}
  </span>
  </div>

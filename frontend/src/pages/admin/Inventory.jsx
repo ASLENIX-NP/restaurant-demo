@@ -20,6 +20,7 @@ import { io } from"socket.io-client";
 
 import"../../styles/inventory.css";
 import apiClient from"../../api/apiClient";
+import { useToast } from "../../context/ToastContext";
 
 const Inventory = () => {
  const [items, setItems] = useState([]);
@@ -50,6 +51,7 @@ const Inventory = () => {
 
  const [searchQuery, setSearchQuery] = useState("");
  const [filterCategory, setFilterCategory] = useState("All Categories");
+ const { showToast } = useToast();
 
  const fetchInventory = useCallback(async () => {
  try {
@@ -132,8 +134,9 @@ const Inventory = () => {
  }
 
  setIsModalOpen(false);
+ showToast(isEditing ? "Item updated successfully!" : "Item added successfully!", "success");
  } catch (error) {
- alert(error.response?.data?.message || error.message);
+ showToast(error.response?.data?.message || error.message, "error");
  console.error(error);
  }
  };
@@ -148,7 +151,9 @@ const Inventory = () => {
  await apiClient.delete(`/api/inventory/${itemToDelete}`);
  setIsDeleteModalOpen(false);
  setItemToDelete(null);
+ showToast("Item deleted successfully!", "success");
  } catch (error) {
+ showToast("Failed to delete item", "error");
  console.error(error);
  }
  };
@@ -169,7 +174,9 @@ const Inventory = () => {
  qty: adjustmentQty,
  });
  setIsAdjustmentModalOpen(false);
+ showToast("Stock adjusted successfully!", "success");
  } catch (error) {
+ showToast("Failed to adjust stock", "error");
  console.error(error);
  }
  };
@@ -184,12 +191,12 @@ const Inventory = () => {
  };
 
  const handlePlaceholderAction = (actionName) => {
- alert(`${actionName} feature coming soon!`);
+ showToast(`${actionName} feature coming soon!`, "info");
  };
 
  const handleExportCSV = () => {
  if (items.length === 0) {
- alert("No inventory data to export.");
+ showToast("No inventory data to export.", "warning");
  return;
  }
  
@@ -246,7 +253,7 @@ const Inventory = () => {
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
- <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+ <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
  <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
  <Package size={22} />
  </div>
@@ -256,7 +263,7 @@ const Inventory = () => {
  <p className="text-xs font-bold text-slate-400 mt-0.5">All inventory items</p>
  </div>
  </div>
- <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+ <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
  <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
  <CheckCircle2 size={22} />
  </div>
@@ -266,7 +273,7 @@ const Inventory = () => {
  <p className="text-xs font-bold text-emerald-500 mt-0.5">Active availability</p>
  </div>
  </div>
- <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+ <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
  <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500">
  <AlertTriangle size={22} />
  </div>
@@ -276,7 +283,7 @@ const Inventory = () => {
  <p className="text-xs font-bold text-amber-500 mt-0.5">Requires attention</p>
  </div>
  </div>
- <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+ <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
  <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
  <XCircle size={22} />
  </div>
@@ -289,7 +296,7 @@ const Inventory = () => {
  </div>
 
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
- <div className="lg:col-span-9 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+ <div className="lg:col-span-9 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
  <div className="p-4 border-b border-slate-100 flex flex-wrap gap-3 items-center bg-slate-50/50">
  <div className="relative flex-1 min-w-[200px]">
  <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -298,23 +305,23 @@ const Inventory = () => {
  placeholder="Search item..."
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
- className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 transition-all placeholder:text-slate-400"
+ className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-indigo-400 transition-all placeholder:text-slate-400"
  />
  </div>
  <select
  value={filterCategory}
  onChange={(e) => setFilterCategory(e.target.value)}
- className="bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:border-purple-400 font-medium"
+ className="bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:border-indigo-400 font-medium"
  >
  <option value="All Categories">All Categories</option>
  {categories.map((cat, idx) => (
  <option key={idx} value={cat}>{cat}</option>
  ))}
  </select>
- <select className="bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:border-purple-400 font-medium">
+ <select className="bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:border-indigo-400 font-medium">
  <option>All Units</option>
  </select>
- <select className="bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:border-purple-400 font-medium">
+ <select className="bg-white border border-slate-200 text-slate-600 text-sm rounded-xl px-4 py-2 outline-none focus:border-indigo-400 font-medium">
  <option>All Status</option>
  </select>
  <button className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition">
@@ -350,7 +357,7 @@ const Inventory = () => {
  <td className="p-4 font-medium text-slate-500">{item.unit}</td>
  <td className="p-4 text-center font-black text-slate-900">{item.qty}</td>
  <td className="p-4 text-center">
- <span className={`px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wider border ${getStatusBadge(item.status)}`}>
+ <span className={`px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider border ${getStatusBadge(item.status)}`}>
  {item.status}
  </span>
  </td>
@@ -374,7 +381,7 @@ const Inventory = () => {
  </div>
 
  <div className="lg:col-span-3 space-y-6">
- <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
  <h3 className="font-black text-slate-900 mb-4 flex items-center gap-2">
  <AlertTriangle size={18} className="text-amber-500" /> Low Stock Alerts
  </h3>
@@ -396,10 +403,10 @@ const Inventory = () => {
  </div>
  </div>
 
- <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
  <h3 className="font-black text-slate-900 mb-4">Quick Actions</h3>
  <div className="grid grid-cols-2 gap-3">
- <button onClick={handleOpenAddModal} className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-50 hover:bg-purple-50 hover:text-purple-600 text-slate-600 rounded-xl border border-slate-100 transition-colors font-semibold text-xs">
+ <button onClick={handleOpenAddModal} className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 text-slate-600 rounded-xl border border-slate-100 transition-colors font-semibold text-xs">
  <Plus size={20} /> Add Item
  </button>
  <button onClick={handleOpenAdjustmentModal} className="flex flex-col items-center justify-center gap-2 p-4 bg-slate-50 hover:bg-orange-50 hover:text-orange-600 text-slate-600 rounded-xl border border-slate-100 transition-colors font-semibold text-xs text-center leading-tight">
@@ -417,10 +424,10 @@ const Inventory = () => {
  {/* MODALS */}
  {isModalOpen && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-md overflow-hidden animate-slide-in">
  <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
- {isEditing ? <Edit2 size={18} className="text-blue-500" /> : <Plus size={18} className="text-purple-500" />}
+ {isEditing ? <Edit2 size={18} className="text-blue-500" /> : <Plus size={18} className="text-indigo-500" />}
  {isEditing ?"Edit Inventory Item" :"Add New Item"}
  </h2>
  <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 bg-white p-1 rounded-lg border border-slate-200 shadow-sm"><X size={16} /></button>
@@ -428,18 +435,18 @@ const Inventory = () => {
  <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
  <div>
  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Item Name</label>
- <input type="text" required value={formName} onChange={(e) => setFormName(e.target.value)} className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm" placeholder="e.g. Olive Oil" />
+ <input type="text" required value={formName} onChange={(e) => setFormName(e.target.value)} className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 transition-all font-medium text-sm" placeholder="e.g. Olive Oil" />
  </div>
  <div className="grid grid-cols-2 gap-4">
  <div>
  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Category</label>
- <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)} className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm">
+ <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)} className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 transition-all font-medium text-sm">
  {categories.map((cat, idx) => <option key={idx} value={cat}>{cat}</option>)}
  </select>
  </div>
  <div>
  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Unit</label>
- <select value={formUnit} onChange={(e) => setFormUnit(e.target.value)} className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-medium text-sm">
+ <select value={formUnit} onChange={(e) => setFormUnit(e.target.value)} className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 transition-all font-medium text-sm">
  <option value="Kg">Kg</option>
  <option value="Ltr">Ltr</option>
  <option value="Pcs">Pcs</option>
@@ -448,7 +455,7 @@ const Inventory = () => {
  </div>
  <div>
  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Stock Quantity</label>
- <input type="number" step="0.01" min="0" value={formQty} onChange={(e) => setFormQty(e.target.value)} className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition-all font-black text-slate-900" />
+ <input type="number" step="0.01" min="0" value={formQty} onChange={(e) => setFormQty(e.target.value)} className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 transition-all font-black text-slate-900" />
  </div>
  <div className="flex gap-3 pt-4 mt-2 border-t border-slate-100">
  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition">Cancel</button>
@@ -462,7 +469,7 @@ const Inventory = () => {
  {/* ADJUSTMENT MODAL */}
  {isAdjustmentModalOpen && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-slide-in">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-md overflow-hidden animate-slide-in">
  <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
  <Settings2 size={18} className="text-orange-500" />
@@ -503,7 +510,7 @@ const Inventory = () => {
  {/* PURCHASE HISTORY MODAL */}
  {isHistoryModalOpen && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-slide-in">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-lg overflow-hidden animate-slide-in">
  <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
  <History size={18} className="text-blue-500" />
@@ -540,7 +547,7 @@ const Inventory = () => {
  {/* CATEGORY MODAL */}
  {isCategoryModalOpen && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-slide-in">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-sm overflow-hidden animate-slide-in">
  <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
  <FolderPlus size={18} className="text-emerald-500" />
@@ -565,7 +572,7 @@ const Inventory = () => {
  {/* DELETE CONFIRMATION MODAL */}
  {isDeleteModalOpen && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex justify-center items-center p-4 transition-opacity">
- <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-slide-in">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-sm p-6 text-center animate-slide-in">
  <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
  <AlertTriangle size={28} className="text-rose-500" />
  </div>

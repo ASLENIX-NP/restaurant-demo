@@ -11,7 +11,7 @@ const Navbar = ({ title }) => {
 
  localStorage.removeItem("user");
 
- navigate("/");
+ navigate("/login");
  };
 
  return (

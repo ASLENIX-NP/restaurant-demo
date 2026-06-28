@@ -1,79 +1,52 @@
 import React, { useState, useEffect } from"react";
 import { QrCode, Star, Eye, EyeOff, Search, Printer, X } from"lucide-react";
 import { QRCodeSVG } from"qrcode.react";
-import { io } from"socket.io-client";
-import apiClient from"../../api/apiClient";
+import { io } from "socket.io-client";
+import apiClient from "../../api/apiClient";
+import { useToast } from "../../context/ToastContext";
+import { useMenuData } from "../../hooks/useMenuData";
+import { useQueryClient } from "@tanstack/react-query";
 
 const QRMenuManager = () => {
- const [menuItems, setMenuItems] = useState([]);
- const [search, setSearch] = useState("");
- const [categoryFilter, setCategoryFilter] = useState("All Categories");
+  const queryClient = useQueryClient();
+  const { data: menuItems = [] } = useMenuData();
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All Categories");
+  const { showToast } = useToast();
 
- const [showQRModal, setShowQRModal] = useState(false);
- // Redirects the user to the Customer Menu page
- const targetUrl = `${window.location.origin}/menu`;
+  const [showQRModal, setShowQRModal] = useState(false);
+  // Redirects the user to the Customer Menu page
+  const targetUrl = `${window.location.origin}/menu`;
 
- useEffect(() => {
- loadProducts();
+  const toggleVisibility = async (item) => {
+    const updatedStatus = item.isAvailable === false ? true : false;
+    try {
+      await apiClient.put(`/api/menu/${item._id || item.id}`, {
+        ...item,
+        isAvailable: updatedStatus,
+      });
+      queryClient.invalidateQueries({ queryKey: ['menu'] });
+    } catch (error) {
+      console.error("Error updating visibility:", error);
+    }
+  };
 
- const socket = io(import.meta.env.VITE_API_URL ||"http://localhost:5001");
- socket.on("menuUpdated", loadProducts);
-
- return () => socket.disconnect();
- }, []);
-
- const loadProducts = async () => {
- try {
- const { data } = await apiClient.get("/api/menu");
- setMenuItems(data);
- } catch (error) {
- console.error("Error fetching menu:", error);
- setMenuItems([]);
- }
- };
-
- const toggleVisibility = async (item) => {
- const updatedStatus = item.isAvailable === false ? true : false;
- const updatedList = menuItems.map((m) =>
- (m._id || m.id) === (item._id || item.id)
- ? { ...m, isAvailable: updatedStatus }
- : m
- );
- setMenuItems(updatedList);
-
- try {
- await apiClient.put(`/api/menu/${item._id || item.id}`, {
- ...item,
- isAvailable: updatedStatus,
- });
- } catch (error) {
- console.error("Error updating visibility:", error);
- loadProducts(); // Revert on failure
- }
- };
-
- const toggleSpecial = async (item) => {
- const updatedSpecial = !item.isSpecial;
- const updatedList = menuItems.map((m) =>
- (m._id || m.id) === (item._id || item.id)
- ? { ...m, isSpecial: updatedSpecial }
- : m
- );
- setMenuItems(updatedList);
-
- try {
- await apiClient.put(`/api/menu/${item._id || item.id}`, {
- ...item,
- isSpecial: updatedSpecial,
- });
- } catch (error) {
- console.error("Error updating special status:", error);
- alert(
- `Failed to save the Star status: ${error.response?.data?.message || error.message}\n\nPlease make sure"isSpecial: { type: Boolean }" is added to your backend MongoDB Menu schema.`
- );
- loadProducts(); // Revert on failure
- }
- };
+  const toggleSpecial = async (item) => {
+    const updatedSpecial = !item.isSpecial;
+    try {
+      await apiClient.put(`/api/menu/${item._id || item.id}`, {
+        ...item,
+        isSpecial: updatedSpecial,
+      });
+      queryClient.invalidateQueries({ queryKey: ['menu'] });
+    } catch (error) {
+      console.error("Error updating special status:", error);
+      showToast(
+        `Failed to save the Star status: ${error.response?.data?.message || error.message}`,
+        "error"
+      );
+    }
+  };
 
  const filteredItems = menuItems.filter((item) => {
  const matchesSearch = item.name
@@ -264,7 +237,7 @@ const QRMenuManager = () => {
  {/* QR Code Generation Modal */}
  {showQRModal && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-slide-in">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-sm overflow-hidden animate-slide-in">
  <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
  <QrCode size={18} className="text-emerald-500" />

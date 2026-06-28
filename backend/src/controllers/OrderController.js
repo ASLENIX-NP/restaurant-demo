@@ -2,30 +2,50 @@ const Order = require("../models/Order");
 const Table = require("../models/Table");
 const Inventory = require("../models/InventoryItem");
 
+const MenuItem = require("../models/MenuItem");
+
 // --- INVENTORY AUTOMATION HELPERS ---
 const deductInventory = async (items, io) => {
   try {
     let updated = false;
-    for (const item of items) {
-      const invItem = await Inventory.findOne({
-        name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") },
+    for (const orderItem of items) {
+      // Find the menu item to get its ingredients recipe
+      const menuItem = await MenuItem.findOne({
+        name: { $regex: new RegExp(`^${orderItem.name.trim()}$`, "i") },
       });
-      if (invItem) {
-        invItem.qty -= item.qty;
-        if (invItem.qty <= 0) {
-          invItem.qty = 0;
-          invItem.status = "Out of Stock";
-        } else if (invItem.qty <= 10) {
-          // Threshold for Low Stock alert
-          invItem.status = "Low Stock";
-        } else {
-          invItem.status = "In Stock";
-        }
-        await invItem.save();
+
+      if (!menuItem || !menuItem.ingredients || menuItem.ingredients.length === 0) {
+        // Fallback to legacy exact-name match if no recipe exists
+        await updateInventoryItem(orderItem.name.trim(), -orderItem.qty, io);
         updated = true;
+        continue;
+      }
+
+      // Deduct based on recipe
+      for (const ingredient of menuItem.ingredients) {
+        const totalDeduction = -(ingredient.qty * orderItem.qty);
+        
+        let query = {};
+        if (ingredient.inventoryItem) {
+          query = { _id: ingredient.inventoryItem };
+        } else if (ingredient.itemName) {
+          query = { name: { $regex: new RegExp(`^${ingredient.itemName.trim()}$`, "i") } };
+        } else {
+          continue;
+        }
+
+        const invItem = await Inventory.findOneAndUpdate(
+          query,
+          { $inc: { qty: totalDeduction } },
+          { new: true }
+        );
+
+        if (invItem) {
+          await evaluateLowStock(invItem, io);
+          updated = true;
+        }
       }
     }
-    // Broadcast update so the Admin Inventory dashboard refreshes instantly
     if (updated && io) io.emit("inventoryUpdated");
   } catch (err) {
     console.error("Inventory deduction error:", err);
@@ -35,26 +55,78 @@ const deductInventory = async (items, io) => {
 const restockInventory = async (items, io) => {
   try {
     let updated = false;
-    for (const item of items) {
-      const invItem = await Inventory.findOne({
-        name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") },
+    for (const orderItem of items) {
+      const menuItem = await MenuItem.findOne({
+        name: { $regex: new RegExp(`^${orderItem.name.trim()}$`, "i") },
       });
-      if (invItem) {
-        invItem.qty += item.qty;
-        if (invItem.qty <= 0) {
-          invItem.status = "Out of Stock";
-        } else if (invItem.qty <= 10) {
-          invItem.status = "Low Stock";
-        } else {
-          invItem.status = "In Stock";
-        }
-        await invItem.save();
+
+      if (!menuItem || !menuItem.ingredients || menuItem.ingredients.length === 0) {
+        await updateInventoryItem(orderItem.name.trim(), orderItem.qty, io);
         updated = true;
+        continue;
+      }
+
+      for (const ingredient of menuItem.ingredients) {
+        const totalAddition = ingredient.qty * orderItem.qty;
+        
+        let query = {};
+        if (ingredient.inventoryItem) {
+          query = { _id: ingredient.inventoryItem };
+        } else if (ingredient.itemName) {
+          query = { name: { $regex: new RegExp(`^${ingredient.itemName.trim()}$`, "i") } };
+        } else {
+          continue;
+        }
+
+        const invItem = await Inventory.findOneAndUpdate(
+          query,
+          { $inc: { qty: totalAddition } },
+          { new: true }
+        );
+
+        if (invItem) {
+          await evaluateLowStock(invItem, io);
+          updated = true;
+        }
       }
     }
     if (updated && io) io.emit("inventoryUpdated");
   } catch (err) {
     console.error("Inventory restock error:", err);
+  }
+};
+
+const updateInventoryItem = async (itemName, changeQty, io) => {
+  const invItem = await Inventory.findOneAndUpdate(
+    { name: { $regex: new RegExp(`^${itemName}$`, "i") } },
+    { $inc: { qty: changeQty } },
+    { new: true }
+  );
+  if (invItem) {
+    await evaluateLowStock(invItem, io);
+  }
+};
+
+const evaluateLowStock = async (invItem, io) => {
+  let newStatus = "In Stock";
+  if (invItem.qty <= 0) {
+    if (invItem.qty < 0) {
+      await Inventory.updateOne({ _id: invItem._id }, { $set: { qty: 0 } });
+    }
+    newStatus = "Out of Stock";
+  } else if (invItem.qty <= 10) { // 10% or fixed 10 units threshold
+    newStatus = "Low Stock";
+    if (io) {
+      io.emit("lowStockAlert", {
+        itemName: invItem.name,
+        qty: invItem.qty,
+        message: `Alert: ${invItem.name} stock has dropped to ${invItem.qty}!`,
+      });
+    }
+  }
+
+  if (invItem.status !== newStatus) {
+    await Inventory.updateOne({ _id: invItem._id }, { $set: { status: newStatus } });
   }
 };
 
@@ -222,7 +294,36 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    // 2. Automatically generate a sequential Order ID (e.g., #ORD-0001)
+    // 2. Fetch True Prices from Database to Prevent Tampering
+    const MenuItem = require("../models/MenuItem"); // Ensure MenuItem is required
+    let safeTotal = 0;
+    const sanitizedItems = [];
+
+    if (req.body.items && req.body.items.length > 0) {
+      for (const item of req.body.items) {
+        // Find the official menu item to get its true price
+        const officialItem = await MenuItem.findOne({
+          name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") },
+        });
+
+        const safePrice = officialItem ? officialItem.price : 0;
+        const safeQty = Math.max(1, parseInt(item.qty, 10) || 1); // Prevent negative or zero quantities
+
+        safeTotal += safePrice * safeQty;
+
+        sanitizedItems.push({
+          ...item,
+          qty: safeQty,
+          price: safePrice, // Force the real price onto the order item
+        });
+      }
+    }
+
+    req.body.items = sanitizedItems;
+    req.body.total = safeTotal;
+    req.body.amount = safeTotal;
+
+    // 3. Automatically generate a sequential Order ID (e.g., #ORD-0001)
     // We do this here so the frontend (or Postman) never has to provide one manually.
     const lastOrder = await Order.findOne().sort({ createdAt: -1 });
     let nextSeq = 1;
@@ -234,7 +335,7 @@ exports.createOrder = async (req, res) => {
     }
     req.body.id = `#ORD-${nextSeq.toString().padStart(4, "0")}`;
 
-    // 3. Automatically generate the server-side timestamp, date, and time
+    // 4. Automatically generate the server-side timestamp, date, and time
     const now = new Date();
     req.body.timestamp = now;
     req.body.date = now.toISOString().split("T")[0];
@@ -292,6 +393,13 @@ exports.createOrder = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
+
+    // Security Check: Only Admin and Cashier can mark an order as "Completed"
+    if (status === "Completed") {
+      if (req.user.role !== "Admin" && req.user.role !== "Cashier") {
+        return res.status(403).json({ message: "Only Cashier and Admin can complete orders." });
+      }
+    }
 
     // Support querying by either MongoDB _id or custom string id (e.g., #ORD-1234)
     const query = req.params.id.match(/^[0-9a-fA-F]{24}$/)

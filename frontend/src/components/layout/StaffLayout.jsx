@@ -10,10 +10,15 @@ import {
  CalendarDays,
  Clock,
  LogOut,
- Store
+ Store,
+ ChevronLeft,
+ ChevronRight,
+ Menu,
+ Download
 } from"lucide-react";
 import { useOrders } from"../../context/OrderContext";
 import { useAuth } from"../../context/AuthContext";
+import { usePWAInstall } from "../../hooks/usePWAInstall";
 
 import"../../styles/layout.css";
 
@@ -21,8 +26,11 @@ const StaffLayout = () => {
  const navigate = useNavigate();
  const { orders } = useOrders();
  const [notification, setNotification] = useState(null);
+ const [isCollapsed, setIsCollapsed] = useState(false);
+ const [isMobileOpen, setIsMobileOpen] = useState(false);
  const { logout } = useAuth();
  const prevOrdersRef = useRef(orders);
+ const { isInstallable, installPWA } = usePWAInstall();
 
  useEffect(() => {
  // Detect if an order was just marked as"Ready"
@@ -60,52 +68,86 @@ const StaffLayout = () => {
 
  const handleLogout = () => {
  logout();
- navigate("/");
+    navigate("/login");
  };
 
  return (
- <div className="layout">
+ <div className="layout relative">
+      {/* MOBILE OVERLAY */}
+      <div 
+        className={`mobile-overlay ${isMobileOpen ? "active" : ""}`} 
+        onClick={() => setIsMobileOpen(false)}
+      ></div>
+
  {/* SIDEBAR */}
- <div className="sidebar">
- <div className="sidebar-header">
+ <div className={`sidebar ${isCollapsed ? "collapsed" : ""} ${isMobileOpen ? "mobile-open" : ""}`}>
+ <div className="sidebar-header flex justify-between items-center">
  <div className="brand-logo">
  <Store size={28} className="brand-icon" />
  <h1 className="logo-text">ASLENIX</h1>
  </div>
- <p className="brand-subtitle">Staff Panel</p>
+        {/* Mobile Close Button */}
+        <button 
+          className="md:hidden text-slate-400 hover:text-white"
+          onClick={() => setIsMobileOpen(false)}
+        >
+          <X size={24} />
+        </button>
  </div>
+ <p className="brand-subtitle">Staff Panel</p>
 
  <nav className="sidebar-menu">
- <NavLink to="/staff" end className="menu-item">
+ <NavLink to="/staff" end className="menu-item" onClick={() => setIsMobileOpen(false)}>
  <LayoutDashboard size={20} />
  <span>Dashboard</span>
  </NavLink>
 
- <NavLink to="/staff/take-order" className="menu-item">
+ <NavLink to="/staff/take-order" className="menu-item" onClick={() => setIsMobileOpen(false)}>
  <PenLine size={20} />
  <span>Take Order</span>
  </NavLink>
 
- <NavLink to="/staff/tables" className="menu-item">
+ <NavLink to="/staff/tables" className="menu-item" onClick={() => setIsMobileOpen(false)}>
  <LayoutGrid size={20} />
  <span>Tables</span>
  </NavLink>
 
- <NavLink to="/staff/ready-orders" className="menu-item">
+ <NavLink to="/staff/ready-orders" className="menu-item" onClick={() => setIsMobileOpen(false)}>
  <PackageCheck size={20} />
  <span>Ready Orders</span>
  </NavLink>
 
- <NavLink to="/staff/reservations" className="menu-item">
+ <NavLink to="/staff/reservations" className="menu-item" onClick={() => setIsMobileOpen(false)}>
  <CalendarDays size={20} />
  <span>Reservations</span>
  </NavLink>
 
- <NavLink to="/staff/history" className="menu-item">
+ <NavLink to="/staff/history" className="menu-item" onClick={() => setIsMobileOpen(false)}>
  <Clock size={20} />
  <span>History</span>
  </NavLink>
  </nav>
+
+ {/* COLLAPSE TOGGLE */}
+ <button 
+   className="collapse-toggle-btn"
+   onClick={() => setIsCollapsed(!isCollapsed)}
+ >
+   {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+ </button>
+
+ {isInstallable && !isCollapsed && (
+    <button className="logout-btn" onClick={installPWA} style={{ marginBottom: '10px', backgroundColor: '#e0e7ff', color: '#4f46e5' }}>
+      <Download size={18} />
+      <span>Install App</span>
+    </button>
+  )}
+
+  {isInstallable && isCollapsed && (
+    <button className="logout-btn" onClick={installPWA} style={{ marginBottom: '10px', backgroundColor: '#e0e7ff', color: '#4f46e5', padding: '12px' }} title="Install App">
+      <Download size={18} style={{ margin: 0 }} />
+    </button>
+  )}
 
  {/* LOGOUT */}
  <button className="logout-btn" onClick={handleLogout}>
@@ -115,8 +157,24 @@ const StaffLayout = () => {
  </div>
 
  {/* MAIN */}
- <div className="main">
- <div className="content">
+ <div className="main flex flex-col min-h-screen">
+      {/* MOBILE HEADER */}
+      <div className="md:hidden flex items-center justify-between bg-white border-b border-slate-200 p-4 sticky top-0 z-50 shadow-sm">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setIsMobileOpen(true)}
+            className="text-slate-600 hover:text-slate-900 focus:outline-none"
+          >
+            <Menu size={24} />
+          </button>
+          <div className="flex items-center gap-2">
+            <Store size={20} className="text-blue-600" />
+            <span className="font-bold text-slate-900 tracking-tight">ASLENIX</span>
+          </div>
+        </div>
+      </div>
+
+ <div className="content flex-1">
  <Outlet />
  </div>
  </div>
@@ -128,7 +186,7 @@ const StaffLayout = () => {
  setNotification(null);
  navigate("/staff/ready-orders");
  }}
- className="fixed bottom-6 right-6 bg-white border-l-4 border-emerald-500 rounded-xl shadow-2xl p-5 w-80 animate-slide-in z-[9999] flex items-start gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
+ className="fixed bottom-6 right-6 bg-white border-l-4 border-emerald-500 rounded-xl shadow-md p-5 w-80 animate-slide-in z-[9999] flex items-start gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
  >
  <div className="bg-emerald-100 text-emerald-600 p-2.5 rounded-full flex-shrink-0">
  <BellRing size={24} className="animate-bounce" />

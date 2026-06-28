@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["Cashier", "Chef", "Staff"],
+      enum: ["Cashier", "Chef", "Staff", "Waiter"],
       default: "Staff",
     },
     name: { type: String },
@@ -29,6 +29,8 @@ const userSchema = new mongoose.Schema(
       enum: ["Active", "Inactive", "Pending"],
       default: "Pending",
     },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
   },
   { timestamps: true }
 );

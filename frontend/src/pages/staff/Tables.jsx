@@ -46,6 +46,7 @@ const Tables = () => {
  ...t,
  customer: t.currentCustomer,
  activeOrder: activeOrder.length > 0 ? activeOrder : null,
+ isUrgent: tableOrders.some(o => (o.elapsedMinutes || 0) >= 15),
  };
  });
 
@@ -268,16 +269,16 @@ const Tables = () => {
  className={`group relative bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:shadow-xl hover:-translate-y-1 border-slate-100 hover:border-slate-200`}
  >
  {/* Background Subtle Gradient */}
- <div className={`absolute inset-0 bg-gradient-to-b ${config.gradient} opacity-50 pointer-events-none`} />
+ <div className={`absolute inset-0 ${table.isUrgent ? 'bg-red-50' : `bg-gradient-to-b ${config.gradient}`} opacity-50 pointer-events-none`} />
  
  {/* Status Top Accent Line */}
- <div className={`h-1.5 w-full ${config.dot} transition-all duration-300 group-hover:h-2`} />
+ <div className={`h-1.5 w-full ${table.isUrgent ? 'bg-red-500 animate-pulse' : config.dot} transition-all duration-300 group-hover:h-2`} />
 
  <div className="p-6 relative z-10 flex-1 flex flex-col justify-between">
  <div className="flex justify-between items-start mb-5">
  <div className="flex items-center gap-3">
- <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${config.bg} ${config.text} group-hover:scale-110 transition-transform duration-300`}>
- <Utensils size={24} />
+ <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${table.isUrgent ? 'bg-red-100 text-red-600 animate-pulse border border-red-300 shadow-red-200' : `${config.bg} ${config.text}`} group-hover:scale-110 transition-transform duration-300`}>
+ {table.isUrgent ? <AlertTriangle size={24} /> : <Utensils size={24} />}
  </div>
  <div>
  <h3 className="text-xl font-black text-slate-900 tracking-tight">

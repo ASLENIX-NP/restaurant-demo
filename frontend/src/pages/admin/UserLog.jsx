@@ -71,7 +71,7 @@ const UserLog = () => {
 
  {/* Quick Stats Grid */}
  <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
- <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+ <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
  <User size={22} />
  </div>
@@ -81,7 +81,7 @@ const UserLog = () => {
  </div>
  </div>
 
- <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+ <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-4">
  <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500">
  <ShieldAlert size={22} />
  </div>
@@ -95,7 +95,7 @@ const UserLog = () => {
  </div>
 
  {/* Main Log Table Workspace */}
- <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
  
  {/* Controls Bar */}
  <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/50">
@@ -106,7 +106,7 @@ const UserLog = () => {
  placeholder="Search user, action, or IP Address..."
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
- className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-50 transition-all placeholder:text-slate-400 shadow-sm font-medium"
+ className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-400 shadow-sm font-medium"
  />
  </div>
 
@@ -189,7 +189,7 @@ const UserLog = () => {
 
  {/* Status */}
  <td className="p-4 pr-6 text-right">
- <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border ${log.status ==="Success" ?"bg-emerald-50 text-emerald-600 border-emerald-100" :"bg-rose-50 text-rose-600 border-rose-100"}`}>
+ <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${log.status ==="Success" ?"bg-emerald-50 text-emerald-600 border-emerald-100" :"bg-rose-50 text-rose-600 border-rose-100"}`}>
  {log.status}
  </span>
  </td>

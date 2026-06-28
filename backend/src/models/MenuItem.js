@@ -19,6 +19,13 @@ const menuItemSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please add a category"],
     },
+    ingredients: [
+      {
+        inventoryItem: { type: mongoose.Schema.Types.ObjectId, ref: "InventoryItem" },
+        itemName: { type: String }, // To map by name if we don't have the ID
+        qty: { type: Number, default: 1 }
+      }
+    ],
     isAvailable: {
       type: Boolean,
       default: true,

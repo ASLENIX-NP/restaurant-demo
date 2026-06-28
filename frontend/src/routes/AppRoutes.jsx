@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from"react-router-dom";
+import { Toaster } from "react-hot-toast";
 
-import Login from"../pages/auth/Login";
-import ProtectedRoute from"./ProtectedRoute";
-import CustomerMenu from"../pages/CustomerMenu";
+import Login from "../pages/auth/Login";
+import ProtectedRoute from "./ProtectedRoute";
+import CustomerMenu from "../pages/CustomerMenu";
 
 // ================= CONTEXT =================
 import { TableProvider } from"../context/TableContext";
@@ -22,6 +23,7 @@ import Employees from"../pages/admin/Employees";
 import Settings from"../pages/admin/Settings";
 import QRMenuManager from"../pages/admin/QRMenuManager";
 import UserLog from"../pages/admin/UserLog";
+import AdminReservations from"../pages/admin/Reservations";
 
 // <-- 1. IMPORT ADDED HERE
 
@@ -54,12 +56,26 @@ const AppRoutes = () => {
  return (
  <ThemeProvider>
  <BrowserRouter>
+ <Toaster 
+  position="top-right" 
+  toastOptions={{
+    duration: 4000,
+    style: {
+      padding: '16px',
+      borderRadius: '12px',
+      fontSize: '14px',
+      fontWeight: '600',
+      boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+    },
+  }} 
+ />
  <TableProvider>
  <Routes>
- {/* LOGIN */}
- <Route path="/" element={<Login />} />
+        {/* LOGIN */}
+        <Route path="/login" element={<Login />} />
 
- {/* PUBLIC CUSTOMER MENU */}
+        {/* PUBLIC CUSTOMER MENU */}
+ <Route path="/" element={<Navigate to="/login" replace />} />
  <Route path="/menu" element={<CustomerMenu />} />
 
  {/* ================= ADMIN ================= */}
@@ -73,7 +89,8 @@ const AppRoutes = () => {
  >
  <Route index element={<Dashboard />} />
  <Route path="menu" element={<MenuManagement />} />
- <Route path="qr-menu" element={<QRMenuManager />} />{""}
+ <Route path="qr-menu" element={<QRMenuManager />} />
+ <Route path="reservations" element={<AdminReservations />} />
  {/* <-- 2. ROUTE ADDED HERE */}
  <Route path="orders" element={<Orders />} />
  <Route path="kitchen" element={<KitchenMonitoring />} />
@@ -142,6 +159,9 @@ const AppRoutes = () => {
  <Route path="payments" element={<Navigate to="/cashier/sales" replace />} />
  <Route path="invoices" element={<Navigate to="/cashier/sales" replace />} />
  </Route>
+
+ {/* ================= GLOBAL FALLBACK ================= */}
+ <Route path="*" element={<Navigate to="/login" replace />} />
  </Routes>
  </TableProvider>
  </BrowserRouter>

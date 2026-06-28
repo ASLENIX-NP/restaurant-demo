@@ -80,7 +80,7 @@ const Kitchen = () => {
  {/* METRICS & STATS GRID */}
  <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
  {/* New Orders Stat */}
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
  <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <ClipboardList size={22} />
  </div>
@@ -91,7 +91,7 @@ const Kitchen = () => {
  </div>
 
  {/* Preparing Stat */}
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
  <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <ChefHat size={22} />
  </div>
@@ -102,7 +102,7 @@ const Kitchen = () => {
  </div>
 
  {/* Ready Stat */}
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
  <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <Utensils size={22} />
  </div>
@@ -113,7 +113,7 @@ const Kitchen = () => {
  </div>
 
  {/* Completed Stat */}
- <div className="group bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
+ <div className="group bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex items-center gap-4">
  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <CheckCircle2 size={22} />
  </div>
@@ -192,10 +192,10 @@ const OrderCard = ({ order, colorTheme, isCompleted = false }) => {
  const theme = themeMap[colorTheme];
 
  return (
- <div className={`group relative bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-slate-100 hover:border-slate-200 ${isCompleted ?'opacity-75' :''}`}>
+ <div className={`group relative bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:-translate-y-1 border-slate-100 hover:border-slate-200 ${isCompleted ?'opacity-75' :''}`}>
  
  {/* Background Subtle Gradient */}
- <div className={`absolute inset-0 bg-gradient-to-b ${theme.gradient} opacity-50 pointer-events-none`} />
+ <div className={`absolute inset-0 bg-${theme.gradient} opacity-50 pointer-events-none`} />
  
  {/* Status Top Accent Line */}
  <div className={`h-1.5 w-full ${theme.dot} transition-all duration-300 group-hover:h-2`} />
@@ -204,7 +204,7 @@ const OrderCard = ({ order, colorTheme, isCompleted = false }) => {
  {/* Top Details */}
  <div className="flex justify-between items-start mb-4">
  <h4 className="font-black text-slate-900 text-lg tracking-tight">{order.id}</h4>
- <span className="flex items-center gap-1 text-[11px] font-bold text-slate-400 bg-white/60 px-2 py-1 rounded-md border border-slate-100/50 backdrop-blur-sm">
+ <span className="flex items-center gap-1 text-[11px] font-bold text-slate-400 bg-white/60 px-2 py-1 rounded-lg border border-slate-100/50 backdrop-blur-sm">
  <Clock size={12} /> {order.time}
  </span>
  </div>

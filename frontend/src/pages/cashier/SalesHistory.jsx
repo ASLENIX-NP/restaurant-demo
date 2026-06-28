@@ -1,5 +1,6 @@
 import"../../styles/saleshistory.css";
 import React, { useState, useMemo, useEffect, useRef } from"react";
+import { useNavigate } from "react-router-dom";
 import {
  Search,
  DollarSign,
@@ -31,11 +32,14 @@ import DatePicker from"react-datepicker";
 import"react-datepicker/dist/react-datepicker.css";
 import { useOrders } from"../../context/OrderContext";
 import apiClient from"../../api/apiClient";
+import { useToast } from "../../context/ToastContext";
 
 const ITEMS_PER_PAGE = 8;
 
 export default function SalesHistory() {
  const { orders = [], fetchOrders, cancelOrder, addOrder } = useOrders() || {};
+ const { showToast } = useToast();
+ const navigate = useNavigate();
 
  useEffect(() => {
  if (fetchOrders) fetchOrders();
@@ -140,7 +144,7 @@ export default function SalesHistory() {
 
  const handleCreateInvoice = () => {
  if (newInvoiceData.items.length === 0) {
- alert("Please add at least one item to the invoice.");
+ showToast("Please add at least one item to the invoice.", "warning");
  return;
  }
 
@@ -279,6 +283,7 @@ export default function SalesHistory() {
  card,
  esewa,
  khalti,
+ orders: todayCompleted,
  };
  }, [allCompletedSales]);
 
@@ -349,7 +354,7 @@ export default function SalesHistory() {
  };
 
  const handlePrintSingle = (invoice) => {
- window.open(`/cashier/invoice/${invoice.id}`,"_blank");
+ navigate(`/cashier/invoice/${encodeURIComponent(invoice.id)}`);
  };
 
  const handlePrintBatch = () => {
@@ -385,7 +390,7 @@ export default function SalesHistory() {
  : filteredData;
 
  if (dataToExport.length === 0) {
- alert("No data to export based on current filters.");
+ showToast("No data to export based on current filters.", "warning");
  setIsExporting(false);
  return;
  }
@@ -434,7 +439,7 @@ export default function SalesHistory() {
  const CustomTooltip = ({ active, payload }) => {
  if (active && payload && payload.length) {
  return (
- <div className="bg-slate-900 text-white p-3 rounded-lg shadow-xl border border-slate-700">
+ <div className="bg-slate-900 text-white p-3 rounded-lg shadow-md border border-slate-700">
  <p className="font-bold text-slate-300 text-xs mb-1">
  {payload[0].name}
  </p>
@@ -1132,13 +1137,39 @@ export default function SalesHistory() {
  `
  : printMode ==="summary" || printMode ==="eod"
  ? `
- @page { margin: 10mm; size: auto; }
- html, body { width: 100% !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
- .sidebar, .navbar, header, footer { display: none !important; }
- .sales-history-page > *:not(.print-container) { display: none !important; }
- .sales-history-page { padding: 0 !important; margin: 0 !important; background: transparent !important; }
- .print-container { position: relative !important; width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important; z-index: 99999; }
- `
+  @page { margin: 10mm; size: auto; }
+  html, body { 
+    width: 100% !important; 
+    background: #fff !important; 
+    margin: 0 !important; 
+    padding: 0 !important; 
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .sidebar, .navbar, header, footer { display: none !important; }
+  .sales-history-page > *:not(.print-container) { display: none !important; }
+  .sales-history-page { padding: 0 !important; margin: 0 !important; background: transparent !important; }
+  .print-container { 
+    position: relative !important; 
+    width: 100% !important; 
+    margin: 0 !important; 
+    padding: 0 !important; 
+    display: block !important; 
+    z-index: 99999; 
+    box-shadow: none !important;
+    border: none !important;
+  }
+  
+  /* Print Typography & Spacing Optimization */
+  .print-container table { width: 100%; border-collapse: collapse; page-break-inside: auto; }
+  .print-container tr { page-break-inside: avoid; page-break-after: auto; }
+  .print-container h2 { font-size: 24px !important; }
+  .print-container h3, .print-container .text-4xl { font-size: 18px !important; }
+  .print-container .text-3xl { font-size: 16px !important; }
+  .print-container .p-8, .print-container .p-6, .print-container .p-5 { padding: 12px !important; }
+  .print-container .mb-8 { margin-bottom: 16px !important; }
+  .print-container .mt-8 { margin-top: 16px !important; }
+  `
  : `
  @page { margin: 0; size: 80mm auto; }
  html, body { width: 80mm !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
@@ -1156,7 +1187,7 @@ export default function SalesHistory() {
  </style>
 
  {/* HEADER */}
- <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+ <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 print:hidden">
  <div>
  <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
  {viewMode ==="ledger" &&"Sales Ledger"}
@@ -1183,8 +1214,8 @@ export default function SalesHistory() {
  .react-datepicker__close-icon::after { background-color: #f1f5f9; color: #64748b; font-size: 16px; height: 22px; width: 22px; line-height: 20px; border-radius: 6px; transition: all 0.2s ease; }
  .react-datepicker__close-icon:hover::after { background-color: #fee2e2; color: #ef4444; }
  `}</style>
- <div className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm hover:border-purple-300 transition-all w-full max-w-[260px] relative z-10">
- <Calendar size={16} className="text-purple-500 flex-shrink-0" />
+ <div className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm hover:border-indigo-300 transition-all w-full max-w-[260px] relative z-10">
+ <Calendar size={16} className="text-indigo-500 flex-shrink-0" />
  <DatePicker
  selectsRange={true}
  startDate={startDate}
@@ -1211,7 +1242,7 @@ export default function SalesHistory() {
  :"Export"}
  </button>
  {isExportMenuOpen && (
- <div className="absolute top-full right-0 mt-2 bg-white border border-slate-100 shadow-xl rounded-xl w-56 z-50 overflow-hidden text-left animate-slide-in">
+ <div className="absolute top-full right-0 mt-2 bg-white border border-slate-100 shadow-md rounded-xl w-56 z-50 overflow-hidden text-left animate-slide-in">
  {selectedTxns.length > 0 ? (
  <>
  <button
@@ -1244,7 +1275,7 @@ export default function SalesHistory() {
  }}
  className="w-full text-left px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition-colors border-b border-slate-50"
  >
- <Printer size={16} className="text-purple-500" /> Print
+ <Printer size={16} className="text-indigo-500" /> Print
  Summary Report
  </button>
  <button
@@ -1282,11 +1313,11 @@ export default function SalesHistory() {
  </div>
 
  {/* UNIFIED VIEW SWITCHER TABS */}
- <div className="flex gap-2 mb-8 mt-6 overflow-x-auto scrollbar-hide">
+ <div className="flex gap-2 mb-8 mt-6 overflow-x-auto scrollbar-hide print:hidden">
  {[
  { mode:"ledger", label:"Sales Ledger", icon: TrendingUp, color:"emerald" },
  { mode:"invoices", label:"Invoices", icon: FileText, color:"blue" },
- { mode:"payments", label:"Payments", icon: CreditCard, color:"purple" },
+ { mode:"payments", label:"Payments", icon: CreditCard, color:"indigo" },
  { mode:"eod", label:"End of Day", icon: DollarSign, color:"amber" },
  ].map((tab) => {
  const Icon = tab.icon;
@@ -1294,7 +1325,7 @@ export default function SalesHistory() {
  const colorMap = {
  emerald: { active:"bg-emerald-50 text-emerald-700 border-emerald-200 ring-emerald-100", icon:"text-emerald-500" },
  blue: { active:"bg-blue-50 text-blue-700 border-blue-200 ring-blue-100", icon:"text-blue-500" },
- purple: { active:"bg-purple-50 text-purple-700 border-purple-200 ring-purple-100", icon:"text-purple-500" },
+ indigo: { active:"bg-indigo-50 text-indigo-700 border-indigo-200 ring-indigo-100", icon:"text-indigo-500" },
  amber: { active:"bg-amber-50 text-amber-700 border-amber-200 ring-amber-100", icon:"text-amber-500" },
  };
  const colors = colorMap[tab.color];
@@ -1315,8 +1346,8 @@ export default function SalesHistory() {
  })}
  </div>
 
- {viewMode ==="eod" ? (
- <div className="max-w-4xl mx-auto my-8 bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+ {viewMode === "eod" ? (
+ <div className={`max-w-4xl mx-auto my-8 bg-white p-8 rounded-xl shadow-sm border border-slate-100 ${printMode === 'eod' ? 'print-container' : ''}`}>
  <div className="text-center mb-8 pb-8 border-b border-slate-100">
  <h2 className="text-3xl font-black text-slate-900 mb-2">
  End of Day Report
@@ -1333,7 +1364,7 @@ export default function SalesHistory() {
  </div>
 
  <div className="grid grid-cols-2 gap-6 mb-8">
- <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+ <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
  <span className="text-slate-500 font-bold uppercase tracking-wider text-xs">
  Total Revenue Today
  </span>
@@ -1344,7 +1375,7 @@ export default function SalesHistory() {
  })}
  </h3>
  </div>
- <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+ <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
  <span className="text-slate-500 font-bold uppercase tracking-wider text-xs">
  Total Orders Today
  </span>
@@ -1358,7 +1389,7 @@ export default function SalesHistory() {
  Payment Breakdown
  </h3>
  <div className="space-y-3 mb-8">
- <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
+ <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-xl shadow-sm">
  <div className="flex items-center gap-3">
  <span className="w-3.5 h-3.5 rounded-full bg-emerald-500"></span>
  <span className="font-bold text-slate-700">Cash Payments</span>
@@ -1370,7 +1401,7 @@ export default function SalesHistory() {
  })}
  </span>
  </div>
- <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
+ <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-xl shadow-sm">
  <div className="flex items-center gap-3">
  <span className="w-3.5 h-3.5 rounded-full bg-blue-500"></span>
  <span className="font-bold text-slate-700">Card Payments</span>
@@ -1382,7 +1413,7 @@ export default function SalesHistory() {
  })}
  </span>
  </div>
- <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
+ <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-xl shadow-sm">
  <div className="flex items-center gap-3">
  <span className="w-3.5 h-3.5 rounded-full bg-green-500"></span>
  <span className="font-bold text-slate-700">eSewa</span>
@@ -1394,9 +1425,9 @@ export default function SalesHistory() {
  })}
  </span>
  </div>
- <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl shadow-sm">
+ <div className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-xl shadow-sm">
  <div className="flex items-center gap-3">
- <span className="w-3.5 h-3.5 rounded-full bg-purple-500"></span>
+ <span className="w-3.5 h-3.5 rounded-full bg-indigo-500"></span>
  <span className="font-bold text-slate-700">Khalti</span>
  </div>
  <span className="font-black text-lg text-slate-900">
@@ -1408,7 +1439,7 @@ export default function SalesHistory() {
  </div>
  </div>
 
- <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 flex justify-between items-center">
+ <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-100 flex justify-between items-center">
  <div>
  <h4 className="text-lg font-bold text-emerald-800">
  Expected Cash in Drawer
@@ -1425,7 +1456,53 @@ export default function SalesHistory() {
  </span>
  </div>
 
- <div className="mt-8 flex gap-4">
+ <div className="mt-8">
+ <h3 className="text-lg font-bold text-slate-900 mb-4">Today's Orders</h3>
+ <div className="overflow-x-auto rounded-xl border border-slate-100 shadow-sm">
+ <table className="w-full text-left bg-white text-sm">
+ <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
+ <tr>
+ <th className="p-4">Time</th>
+ <th className="p-4">Order ID</th>
+ <th className="p-4">Customer</th>
+ <th className="p-4">Payment</th>
+ <th className="p-4 text-right">Amount</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y divide-slate-100">
+ {eodMetrics.orders.map((order) => (
+ <tr key={order._id || order.id}>
+ <td className="p-4 text-slate-500 whitespace-nowrap">
+ {order.timestamp ? new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
+ </td>
+ <td className="p-4 font-semibold text-slate-900">{(order._id || order.id).substring(0, 8)}...</td>
+ <td className="p-4 text-slate-700">{order.customerName || "Walk-in"}</td>
+ <td className="p-4">
+ <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+ order.paymentMethod === 'Card' ? 'bg-blue-100 text-blue-700' :
+ order.paymentMethod === 'eSewa' ? 'bg-green-100 text-green-700' :
+ order.paymentMethod === 'Khalti' ? 'bg-indigo-100 text-indigo-700' :
+ 'bg-emerald-100 text-emerald-700'
+ }`}>
+ {order.paymentMethod || "Cash"}
+ </span>
+ </td>
+ <td className="p-4 text-right font-black text-slate-900">
+ Rs. {((order.amount || (order.items || []).reduce((sum, item) => sum + item.qty * (parseFloat(item.price) || 0), 0) + ((order.items || []).reduce((sum, item) => sum + item.qty * (parseFloat(item.price) || 0), 0) > 0 ? 50 : 0))).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+ </td>
+ </tr>
+ ))}
+ {eodMetrics.orders.length === 0 && (
+ <tr>
+ <td colSpan="5" className="p-8 text-center text-slate-500 font-medium">No orders completed today.</td>
+ </tr>
+ )}
+ </tbody>
+ </table>
+ </div>
+ </div>
+
+ <div className="mt-8 flex gap-4 print:hidden">
  <button
  onClick={() => {
  setPrintMode("eod");
@@ -1456,18 +1533,18 @@ export default function SalesHistory() {
  { label:"Total Invoiced", value: `Rs. ${totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: Receipt, bg:"bg-blue-50", text:"text-blue-600", border:"border-blue-100" },
  ],
  payments: [
- { label:"Total Collected", value: `Rs. ${totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: DollarSign, bg:"bg-purple-50", text:"text-purple-600", border:"border-purple-100" },
+ { label:"Total Collected", value: `Rs. ${totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: DollarSign, bg:"bg-indigo-50", text:"text-indigo-600", border:"border-indigo-100" },
  { label:"Settled Payments", value: completedSales.length, icon: CheckCircle, bg:"bg-emerald-50", text:"text-emerald-600", border:"border-emerald-100" },
  { label:"Cash Received", value: `Rs. ${completedSales.filter(s => !s.paymentMethod || s.paymentMethod ==="Cash").reduce((sum, s) => sum + (s.amount || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: Receipt, bg:"bg-amber-50", text:"text-amber-600", border:"border-amber-100" },
- { label:"Digital Payments", value: `Rs. ${completedSales.filter(s => s.paymentMethod && s.paymentMethod !=="Cash").reduce((sum, s) => sum + (s.amount || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: CreditCard, bg:"bg-purple-50", text:"text-purple-600", border:"border-purple-100" },
+ { label:"Digital Payments", value: `Rs. ${completedSales.filter(s => s.paymentMethod && s.paymentMethod !=="Cash").reduce((sum, s) => sum + (s.amount || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, icon: CreditCard, bg:"bg-indigo-50", text:"text-indigo-600", border:"border-indigo-100" },
  ],
  };
  const cards = metricSets[viewMode] || metricSets.ledger;
  return cards.map((card) => {
  const Icon = card.icon;
  return (
- <div key={card.label} className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
- <div className={`w-14 h-14 rounded-2xl ${card.bg} flex items-center justify-center ${card.text} shadow-inner border ${card.border}`}>
+ <div key={card.label} className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md hover:-translate-y-1 transition-all">
+ <div className={`w-14 h-14 rounded-xl ${card.bg} flex items-center justify-center ${card.text} shadow-inner border ${card.border}`}>
  <Icon size={24} strokeWidth={2.5} />
  </div>
  <div>
@@ -1487,8 +1564,8 @@ export default function SalesHistory() {
  {/* UNIFIED WORKSPACE */}
  <div className="flex flex-col xl:flex-row gap-6">
  {/* LEFT COLUMN: HISTORY LIST */}
- <div className="flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
- <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center bg-slate-50/50">
+ <div className="flex-1 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+ <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center bg-slate-50/50 print:hidden">
  <div className="relative w-full md:max-w-xs shrink-0">
  <Search
  size={16}
@@ -1501,7 +1578,7 @@ export default function SalesHistory() {
  placeholder="Search ID or Customer..."
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
- className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-50 transition-all placeholder:text-slate-400 shadow-sm"
+ className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-400 shadow-sm"
  />
  </div>
  <select
@@ -1509,7 +1586,7 @@ export default function SalesHistory() {
  name="paymentFilter"
  value={paymentFilter}
  onChange={(e) => setPaymentFilter(e.target.value)}
- className="w-full md:w-auto px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:border-purple-400 transition-all shadow-sm"
+ className="w-full md:w-auto px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:border-indigo-400 transition-all shadow-sm"
  >
  <option value="All">All Methods</option>
  {activePaymentMethods.map(method => (
@@ -1521,7 +1598,7 @@ export default function SalesHistory() {
  name="statusFilter"
  value={activeTab}
  onChange={(e) => setActiveTab(e.target.value)}
- className="w-full md:w-auto px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:border-purple-400 transition-all shadow-sm"
+ className="w-full md:w-auto px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:border-indigo-400 transition-all shadow-sm"
  >
  <option value="All">All Status</option>
  {viewMode ==="invoices" && (
@@ -1554,7 +1631,7 @@ export default function SalesHistory() {
  >
  <td className="p-4 pl-6">
  <div className="font-bold text-slate-900 flex items-center gap-1.5">
- <Receipt size={14} className="text-purple-500" />{""}
+ <Receipt size={14} className="text-indigo-500" />{""}
  {sale.transactionId}
  </div>
  <div className="text-xs text-slate-500 font-medium mt-0.5">
@@ -1580,7 +1657,7 @@ export default function SalesHistory() {
  </div>
  </td>
  <td className="p-4 text-center">
- <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 shadow-sm flex items-center gap-1.5 w-max mx-auto">
+ <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 shadow-sm flex items-center gap-1.5 w-max mx-auto">
  <CreditCard
  size={12}
  className="text-slate-400"
@@ -1596,7 +1673,7 @@ export default function SalesHistory() {
  </td>
  <td className="p-4 text-center">
  <span
- className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider flex items-center gap-1 w-max mx-auto ${
+ className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 w-max mx-auto ${
  sale.status ==="Completed"
  ?"bg-emerald-50 text-emerald-600 border border-emerald-100"
  : sale.status ==="Cancelled"
@@ -1617,7 +1694,7 @@ export default function SalesHistory() {
  <td className="p-4 pr-6 text-right">
  <div className="flex gap-2 justify-end">
  <button
- className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-purple-600 hover:border-purple-200 hover:bg-purple-50 flex items-center justify-center transition-all shadow-sm"
+ className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 flex items-center justify-center transition-all shadow-sm"
  onClick={() => setSelectedInvoice(sale)}
  title="View Details"
  >
@@ -1651,7 +1728,7 @@ export default function SalesHistory() {
  </table>
 
  {paginatedData.length < filteredData.length && (
- <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+ <div className="p-4 border-t border-slate-100 bg-slate-50/50 print:hidden">
  <button
  className="w-full py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all text-sm"
  onClick={() => setCurrentPage((p) => p + 1)}
@@ -1664,8 +1741,8 @@ export default function SalesHistory() {
  </div>
 
  {/* RIGHT COLUMN: OVERVIEW CHARTS */}
- <div className="w-full xl:w-[340px] shrink-0 flex flex-col gap-6">
- <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+ <div className="w-full xl:w-[340px] shrink-0 flex flex-col gap-6 print:hidden">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6">
  Sales by Payment Method
  </h3>
@@ -1757,7 +1834,7 @@ export default function SalesHistory() {
  </div>
  </div>
 
- <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+ <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">
  Sales Summary
  </h3>
@@ -1836,7 +1913,7 @@ export default function SalesHistory() {
  onClick={() => setSelectedInvoice(null)}
  >
  <div
- className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-slide-in flex flex-col max-h-[90vh]"
+ className="bg-white rounded-xl shadow-md w-full max-w-lg overflow-hidden animate-slide-in flex flex-col max-h-[90vh]"
  onClick={(e) => e.stopPropagation()}
  >
  <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
@@ -1930,7 +2007,7 @@ export default function SalesHistory() {
  <span className="font-bold text-slate-600 uppercase tracking-wider text-xs">
  Grand Total
  </span>
- <span className="text-xl font-black text-purple-600">
+ <span className="text-xl font-black text-indigo-600">
  Rs.{""}
  {selectedInvoice.totalAmount.toLocaleString(undefined, {
  minimumFractionDigits: 2,
@@ -1961,7 +2038,6 @@ export default function SalesHistory() {
  .filter((t) => selectedTxns.includes(t.transactionId))
  .map(renderReceipt)}
  {printMode ==="summary" && renderSummaryReport()}
- {printMode ==="eod" && renderEODReport()}
  </div>
 
  {/* CREATE NEW INVOICE MODAL */}
@@ -1971,7 +2047,7 @@ export default function SalesHistory() {
  onClick={() => setIsNewInvoiceOpen(false)}
  >
  <div
- className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-slide-in flex flex-col"
+ className="bg-white rounded-xl shadow-md w-full max-w-2xl overflow-hidden animate-slide-in flex flex-col"
  onClick={(e) => e.stopPropagation()}
  >
  <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
@@ -2003,7 +2079,7 @@ export default function SalesHistory() {
  customer: e.target.value,
  })
  }
- className="w-full rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
+ className="w-full rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-indigo-400"
  placeholder="Walk-in Customer"
  />
  </div>
@@ -2021,7 +2097,7 @@ export default function SalesHistory() {
  method: e.target.value,
  })
  }
- className="w-full rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
+ className="w-full rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-indigo-400"
  >
  {activePaymentMethods.map(method => (
  <option key={method} value={method}>{method}</option>
@@ -2044,7 +2120,7 @@ export default function SalesHistory() {
  onChange={(e) =>
  setNewItemInput({ ...newItemInput, name: e.target.value })
  }
- className="flex-2 w-full rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
+ className="flex-2 w-full rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-indigo-400"
  />
  <input
  id="newItemQty"
@@ -2059,7 +2135,7 @@ export default function SalesHistory() {
  qty: parseInt(e.target.value) || 0,
  })
  }
- className="flex-1 w-20 rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
+ className="flex-1 w-20 rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-indigo-400"
  />
  <input
  id="newItemPrice"
@@ -2074,7 +2150,7 @@ export default function SalesHistory() {
  price: parseFloat(e.target.value) || 0,
  })
  }
- className="flex-1 w-24 rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-purple-400"
+ className="flex-1 w-24 rounded-lg border border-slate-200 text-sm p-2 outline-none focus:border-indigo-400"
  />
  <button
  onClick={handleAddNewItem}

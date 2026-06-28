@@ -29,9 +29,54 @@ const stationOptions = [
 const statusOptions = ["All","Pending","Cooking","Ready"];
 
 const statusIcons = {
- Pending: Timer,
- Cooking: Flame,
- Ready: CheckCircle2,
+  Pending: Timer,
+  Cooking: Flame,
+  Ready: CheckCircle2,
+};
+
+const CountdownTimer = ({ timestamp, isAudioMuted, status }) => {
+  const [timeLeft, setTimeLeft] = useState("");
+  const [isWarning, setIsWarning] = useState(false);
+  const audioPlayedRef = useRef(false);
+
+  useEffect(() => {
+    if (status === "Ready" || status === "Completed" || status === "Served") {
+       setTimeLeft("00:00");
+       return;
+    }
+
+    const targetTime = new Date(timestamp || Date.now()).getTime() + 15 * 60 * 1000;
+    
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const diff = targetTime - now;
+
+      if (diff <= 0) {
+        setTimeLeft("00:00");
+        setIsWarning(true);
+        if (!audioPlayedRef.current && !isAudioMuted) {
+          audioPlayedRef.current = true;
+          // Play a loud beep for warning
+          const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2868/2868-preview.mp3");
+          audio.play().catch(e => console.log("Audio block", e));
+        }
+      } else {
+        const m = Math.floor((diff / 1000 / 60) % 60);
+        const s = Math.floor((diff / 1000) % 60);
+        setTimeLeft(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+      }
+    };
+
+    updateTimer();
+    const intervalId = setInterval(updateTimer, 1000);
+    return () => clearInterval(intervalId);
+  }, [timestamp, isAudioMuted, status]);
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[10px] font-black tracking-widest ${isWarning ? 'bg-red-50 text-red-600 border-red-200 animate-pulse shadow-sm shadow-red-500/20' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+       <Timer size={12} className={isWarning ? 'animate-bounce' : ''} /> {timeLeft}
+    </span>
+  );
 };
 
 const Dashboard = () => {
@@ -222,7 +267,7 @@ const Dashboard = () => {
 
  <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8 mt-6">
  <button
- className={`rounded-2xl p-6 border shadow-sm flex items-center gap-4 transition-all duration-300 text-left ${
+ className={`rounded-xl p-6 border shadow-sm flex items-center gap-4 transition-all duration-300 text-left ${
  statusFilter ==="All"
  ?"border-blue-300 bg-blue-50 ring-4 ring-blue-100 scale-[1.02]"
  :"border-slate-100 bg-white hover:border-slate-200 hover:shadow-md hover:bg-slate-50"
@@ -250,7 +295,7 @@ const Dashboard = () => {
  </button>
 
  <button
- className={`rounded-2xl p-6 border shadow-sm flex items-center gap-4 transition-all duration-300 text-left ${
+ className={`rounded-xl p-6 border shadow-sm flex items-center gap-4 transition-all duration-300 text-left ${
  statusFilter ==="Pending"
  ?"border-slate-400 bg-slate-100 ring-4 ring-slate-200 scale-[1.02]"
  :"border-slate-100 bg-white hover:border-slate-200 hover:shadow-md hover:bg-slate-50"
@@ -278,7 +323,7 @@ const Dashboard = () => {
  </button>
 
  <button
- className={`rounded-2xl p-6 border shadow-sm flex items-center gap-4 transition-all duration-300 text-left ${
+ className={`rounded-xl p-6 border shadow-sm flex items-center gap-4 transition-all duration-300 text-left ${
  statusFilter ==="Cooking"
  ?"border-orange-300 bg-orange-50 ring-4 ring-orange-100 scale-[1.02]"
  :"border-slate-100 bg-white hover:border-slate-200 hover:shadow-md hover:bg-slate-50"
@@ -306,7 +351,7 @@ const Dashboard = () => {
  </button>
 
  <button
- className={`rounded-2xl p-6 border shadow-sm flex items-center gap-4 transition-all duration-300 text-left ${
+ className={`rounded-xl p-6 border shadow-sm flex items-center gap-4 transition-all duration-300 text-left ${
  statusFilter ==="Ready"
  ?"border-emerald-300 bg-emerald-50 ring-4 ring-emerald-100 scale-[1.02]"
  :"border-slate-100 bg-white hover:border-slate-200 hover:shadow-md hover:bg-slate-50"
@@ -365,14 +410,19 @@ const Dashboard = () => {
  Server: {order.server ||"System"}
  </span>
  </div>
- <span
- className={`status-badge state-${(
- order.status ||"Pending"
- ).toLowerCase()}`}
- >
- {StatusIcon && <StatusIcon size={13} />}
- {order.status}
- </span>
+ <div className="flex flex-col items-end gap-2">
+  <span
+  className={`status-badge state-${(
+  order.status ||"Pending"
+  ).toLowerCase()}`}
+  >
+  {StatusIcon && <StatusIcon size={13} />}
+  {order.status}
+  </span>
+  {(order.status === "Pending" || order.status === "Cooking") && (
+    <CountdownTimer timestamp={order.timestamp} isAudioMuted={isAudioMuted} status={order.status} />
+  )}
+ </div>
  </div>
 
  <ul className="items-list-advanced">

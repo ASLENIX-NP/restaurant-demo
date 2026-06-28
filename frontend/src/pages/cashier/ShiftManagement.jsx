@@ -1,12 +1,14 @@
-import React, { useState, useMemo, useEffect } from"react";
-import { useOrders } from"../../context/OrderContext";
-import { useAuth } from"../../context/AuthContext";
-import { PlayCircle, LogOut, ArrowDownCircle, Printer, X, AlertTriangle } from"lucide-react";
-import apiClient from"../../api/apiClient";
+import React, { useState, useMemo, useEffect } from "react";
+import { useOrders } from "../../context/OrderContext";
+import { useAuth } from "../../context/AuthContext";
+import { PlayCircle, LogOut, ArrowDownCircle, Printer, X, AlertTriangle } from "lucide-react";
+import apiClient from "../../api/apiClient";
+import { useToast } from "../../context/ToastContext";
 
 const ShiftManagement = () => {
  const { orders = [] } = useOrders() || {};
  const { user } = useAuth() || {};
+ const { showToast } = useToast();
 
  // --- STATE MANAGEMENT ---
  const [shift, setShift] = useState({
@@ -97,9 +99,10 @@ const ShiftManagement = () => {
  });
  setIsStartModalOpen(false);
  setStartFloatInput("");
+ showToast("Shift started successfully!", "success");
  } catch (error) {
  console.error("Failed to start shift:", error);
- alert("Failed to start shift.");
+ showToast("Failed to start shift.", "error");
  }
  };
 
@@ -126,9 +129,10 @@ const ShiftManagement = () => {
  setIsPayoutModalOpen(false);
  setPayoutAmountInput("");
  setPayoutReasonInput("");
+ showToast("Payout recorded successfully!", "success");
  } catch (error) {
  console.error("Failed to add payout:", error);
- alert("Failed to add payout.");
+ showToast("Failed to add payout.", "error");
  }
  };
 
@@ -156,10 +160,11 @@ const ShiftManagement = () => {
  });
  setIsCloseModalOpen(false);
  setIsConfirmCloseModalOpen(false);
+ showToast("Shift closed successfully!", "success");
  }, 200); // Give a moment for the print dialog to appear
  } catch (error) {
  console.error("Failed to close shift:", error);
- alert("Failed to close shift.");
+ showToast("Failed to close shift.", "error");
  }
  };
 
@@ -167,7 +172,7 @@ const ShiftManagement = () => {
  if (!shift.active) {
  return (
  <div className="p-6 flex flex-col items-center justify-center text-center min-h-[calc(100vh-150px)]">
- <div className="bg-white p-12 rounded-2xl shadow-sm border border-slate-100 max-w-md">
+ <div className="bg-white p-12 rounded-xl shadow-sm border border-slate-100 max-w-md">
  <LogOut size={48} className="mx-auto text-slate-300 mb-4" />
  <h2 className="text-2xl font-black text-slate-900">
  No Active Shift
@@ -184,7 +189,7 @@ const ShiftManagement = () => {
  </div>
  {isStartModalOpen && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-slide-in">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-sm p-6 animate-slide-in">
  <h2 className="text-xl font-black text-slate-900 mb-4">
  Enter Starting Cash
  </h2>
@@ -195,7 +200,7 @@ const ShiftManagement = () => {
  type="number"
  value={startFloatInput}
  onChange={(e) => setStartFloatInput(e.target.value)}
- className="w-full border border-slate-300 rounded-xl px-4 py-3 text-center text-2xl font-bold text-slate-900 bg-white outline-none focus:border-purple-500 transition"
+ className="w-full border border-slate-300 rounded-xl px-4 py-3 text-center text-2xl font-bold text-slate-900 bg-white outline-none focus:border-indigo-500 transition"
  placeholder="Rs. 0.00"
  autoFocus
  required
@@ -232,7 +237,7 @@ const ShiftManagement = () => {
  </p>
  </div>
 
- <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 max-w-2xl screen-only">
+ <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-100 max-w-2xl screen-only">
  <div className="flex justify-between items-center mb-6">
  <h2 className="text-xl font-black text-slate-900">
  Current Shift Details
@@ -299,7 +304,7 @@ const ShiftManagement = () => {
  {/* MODALS */}
  {isPayoutModalOpen && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-slide-in">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-sm p-6 animate-slide-in">
  <h2 className="text-xl font-black text-slate-900 mb-4">
  Record a Cash Payout
  </h2>
@@ -345,7 +350,7 @@ const ShiftManagement = () => {
 
  {isCloseModalOpen && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4">
- <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-slide-in">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-md p-6 animate-slide-in">
  <div className="flex justify-between items-start">
  <h2 className="text-xl font-black text-slate-900 mb-4">
  End of Shift Report (Z)
@@ -407,7 +412,7 @@ const ShiftManagement = () => {
 
  {isConfirmCloseModalOpen && (
  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex justify-center items-center p-4">
- <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center animate-slide-in">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-sm p-6 text-center animate-slide-in">
  <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
  <AlertTriangle size={28} className="text-rose-500" />
  </div>

@@ -7,12 +7,12 @@ export const SocketProvider = ({ children }) => {
  const [socket, setSocket] = useState(null);
 
  useEffect(() => {
- // Initialize the socket connection once globally
- const newSocket = io("http://localhost:5001");
- setSocket(newSocket);
+    // Initialize the socket connection once globally
+    const newSocket = io(import.meta.env.VITE_API_URL || "http://localhost:5001");
+    setSocket(newSocket);
 
- // Clean up the connection when the app is closed
- return () => newSocket.disconnect();
+    // Clean up the connection when the app is closed
+    return () => newSocket.disconnect();
  }, []);
 
  return (
