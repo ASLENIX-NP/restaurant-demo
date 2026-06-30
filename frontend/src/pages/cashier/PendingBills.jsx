@@ -856,7 +856,7 @@ export default function PendingBillsPage() {
  <div id="printable-receipt">
  <div style={{ textAlign:"center", marginBottom:"15px" }}>
  <h2 style={{ fontSize:"20px", margin:"0 0 5px 0" }}>
- ASLENIX RESTAURANT
+ मिठ्ठो चिया & Tiffin घर
  </h2>
  <p style={{ margin:"2px 0" }}>Kathmandu, Nepal</p>
  <p style={{ margin:"2px 0" }}>Tel: +977 9812345678</p>

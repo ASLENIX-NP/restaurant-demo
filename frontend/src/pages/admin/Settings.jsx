@@ -131,7 +131,7 @@ const Settings = () => {
  const url = window.URL.createObjectURL(new Blob([response.data]));
  const a = document.createElement("a");
  a.href = url;
- a.download = "aslenix_backup.json";
+ a.download = "restaurant_backup.json";
  a.click();
  window.URL.revokeObjectURL(url);
  showToast("Database backup downloaded successfully", "success");
@@ -359,7 +359,7 @@ const Settings = () => {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div>
  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Restaurant Name</label>
- <input type="text" defaultValue="Aslenix Restaurant" className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all font-bold text-sm text-slate-900" />
+ <input type="text" defaultValue="मिठ्ठो चिया & Tiffin घर" className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all font-bold text-sm text-slate-900" />
  </div>
  <div>
  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Branch Name</label>
@@ -379,7 +379,7 @@ const Settings = () => {
  </div>
  <div>
  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Website</label>
- <input type="text" defaultValue="www.aslenix.com" className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all font-bold text-sm text-slate-900" />
+ <input type="text" defaultValue="www.restaurant.com" className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all font-bold text-sm text-slate-900" />
  </div>
  <div className="md:col-span-2">
  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Full Address</label>

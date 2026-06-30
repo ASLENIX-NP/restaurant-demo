@@ -1,56 +1,70 @@
 .layout {
     display: flex;
     min-height: 100vh;
-    background: #f1f5f9;
+    background: #f4f7f9; /* Soft, light neutral background for the main app */
 }
 
-
-/* SIDEBAR */
-
+/* ULTRA-PREMIUM SIDEBAR */
 .sidebar {
     width: 280px;
-    background: #020617;
-    color: #94a3b8;
-    padding: 24px 20px;
+    background: rgba(11, 15, 25, 0.98); /* Deepest navy/black */
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    color: #8b9bb4;
+    padding: 32px 20px;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #1e293b;
-    transition: all 0.3s ease;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     position: sticky;
     top: 0;
     height: 100vh;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+    z-index: 50;
 }
 
 .sidebar-header {
-    margin-bottom: 40px;
+    margin-bottom: 50px;
     padding: 0 12px;
 }
 
 .brand-logo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     color: #ffffff;
 }
 
 .brand-icon {
-    color: #3b82f6;
+    color: #4f46e5; /* Indigo */
+    filter: drop-shadow(0 0 12px rgba(79, 70, 229, 0.6));
+    animation: float-icon 4s ease-in-out infinite;
+}
+
+@keyframes float-icon {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-3px); }
+    100% { transform: translateY(0px); }
 }
 
 .logo-text {
-    font-size: 24px;
-    font-weight: 900;
-    letter-spacing: 1px;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
     margin: 0;
+    background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .brand-subtitle {
-    font-size: 11px;
-    color: #64748b;
-    font-weight: 600;
+    font-size: 10px;
+    color: #4f46e5;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    margin: 4px 0 0 40px;
+    letter-spacing: 4px;
+    margin: 4px 0 0 42px;
+    opacity: 0.9;
 }
 
 .sidebar-menu {
@@ -58,43 +72,61 @@
     flex-direction: column;
     gap: 8px;
     overflow-y: auto;
+    padding-bottom: 20px;
 }
 
-/* Hide scrollbar for a cleaner look */
+/* Invisible scrollbar */
 .sidebar-menu::-webkit-scrollbar {
-    width: 4px;
-}
-
-.sidebar-menu::-webkit-scrollbar-thumb {
-    background: #1e293b;
-    border-radius: 4px;
+    width: 0px;
+    background: transparent;
 }
 
 .menu-item {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 16px;
     text-decoration: none;
-    color: #94a3b8;
-    padding: 12px 16px;
+    color: #8b9bb4;
+    padding: 14px 16px;
     border-radius: 12px;
     font-size: 15px;
-    font-weight: 600;
-    transition: all 0.2s ease;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    border: 1px solid transparent;
 }
 
+/* Hover State */
 .menu-item:hover {
-    background: rgba(255, 255, 255, 0.05);
     color: #ffffff;
+    background: rgba(255, 255, 255, 0.03);
+    transform: translateX(4px);
 }
 
+/* Active State */
 .menu-item.active {
-    background: #2563eb;
+    background: rgba(255, 255, 255, 0.06);
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* OVERRIDE NAVBAR CSS BUTTON STYLING LOCALLY */
+/* Glowing Indicator for Active Tab */
+.menu-item.active::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 4px;
+    background: #4f46e5;
+    border-radius: 0 4px 4px 0;
+    box-shadow: 0 0 12px #4f46e5;
+}
+
+/* LOGOUT BUTTON */
 .sidebar .logout-btn {
     display: flex;
     align-items: center;
@@ -102,29 +134,33 @@
     gap: 10px;
     width: 100%;
     padding: 14px;
-    margin-top: 20px;
-    border: none;
+    margin-top: 10px;
+    border: 1px solid rgba(244, 63, 94, 0.15);
     border-radius: 12px;
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    background: transparent;
+    color: #f43f5e;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sidebar .logout-btn:hover {
-    background: #ef4444;
+    background: #f43f5e;
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+    border-color: #f43f5e;
     transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3);
+}
+
+.sidebar .logout-btn:active {
+    transform: scale(0.96);
 }
 
 /* COLLAPSED SIDEBAR STATE */
 .sidebar.collapsed {
-    width: 80px;
-    padding: 24px 12px;
+    width: 90px;
+    padding: 32px 12px;
 }
 
 .sidebar.collapsed .brand-subtitle,
@@ -148,7 +184,7 @@
 
 .sidebar.collapsed .menu-item {
     justify-content: center;
-    padding: 12px;
+    padding: 14px;
 }
 
 .sidebar.collapsed .logout-btn {
@@ -159,41 +195,35 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    padding: 10px;
-    margin-top: auto;
-    margin-bottom: 10px;
-    border: none;
-    border-radius: 12px;
-    background: transparent;
-    color: #64748b;
+    width: 32px;
+    height: 32px;
+    margin: auto auto 10px auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.02);
+    color: #8b9bb4;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .collapse-toggle-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.1);
     color: #ffffff;
-}
-
-.sidebar.collapsed .collapse-toggle-btn {
-    padding: 10px 0;
+    transform: scale(1.1);
 }
 
 /* MAIN */
-
 .main {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-
 /* CONTENT */
-
 .content {
     padding: 36px;
 }
+
 @media (max-width: 768px) {
     .sidebar {
         position: fixed;
@@ -214,7 +244,8 @@
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0,0,0,0.4);
+        backdrop-filter: blur(4px);
         z-index: 999;
     }
     .mobile-overlay.active {
@@ -235,4 +266,3 @@
         padding: 10px !important;
     }
 }
-

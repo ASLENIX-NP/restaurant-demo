@@ -74,7 +74,7 @@ exports.backupDatabase = async (req, res) => {
        backupData[name] = await Model.find({});
     }
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', 'attachment; filename=aslenix_backup.json');
+    res.setHeader('Content-Disposition', 'attachment; filename=restaurant_backup.json');
     res.status(200).send(JSON.stringify(backupData));
   } catch (error) {
     console.error("Error backing up database:", error);

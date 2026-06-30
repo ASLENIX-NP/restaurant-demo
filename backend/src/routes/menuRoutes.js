@@ -12,7 +12,7 @@ router.get("/", menuController.getMenuItems);
 router.post(
   "/",
   protect,
-  authorize("Admin", "Cashier"),
+  authorize("Admin", "Cashier", "Chef"),
   validate(menuItemSchema),
   menuController.createMenuItem
 );
@@ -20,14 +20,14 @@ router.post(
 router.put(
   "/:id",
   protect,
-  authorize("Admin", "Cashier"),
+  authorize("Admin", "Cashier", "Chef"),
   validate(menuItemSchema),
   menuController.updateMenuItem
 );
 router.delete(
   "/:id",
   protect,
-  authorize("Admin", "Cashier"),
+  authorize("Admin", "Cashier", "Chef"),
   menuController.deleteMenuItem
 );
 

@@ -85,7 +85,7 @@ const StaffLayout = () => {
     <div>
       <div className="brand-logo">
         <Store size={28} className="brand-icon" />
-        <h1 className="logo-text">ASLENIX</h1>
+        <h1 className="logo-text">मिठ्ठो चिया & Tiffin घर</h1>
       </div>
       <p className="brand-subtitle">Staff Panel</p>
     </div>
@@ -171,7 +171,7 @@ const StaffLayout = () => {
           </button>
           <div className="flex items-center gap-2">
             <Store size={20} className="text-blue-600" />
-            <span className="font-bold text-slate-900 tracking-tight">ASLENIX</span>
+            <span className="font-bold text-slate-900 tracking-tight">मिठ्ठो चिया & Tiffin घर</span>
           </div>
         </div>
       </div>

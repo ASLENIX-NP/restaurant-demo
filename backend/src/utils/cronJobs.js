@@ -23,7 +23,7 @@ const startCronJobs = () => {
       }
 
       const dateStr = new Date().toISOString().split("T")[0];
-      const filename = `aslenix_backup_${dateStr}.json`;
+      const filename = `restaurant_backup_${dateStr}.json`;
       const filepath = path.join(backupsDir, filename);
 
       fs.writeFileSync(filepath, JSON.stringify(backupData, null, 2));

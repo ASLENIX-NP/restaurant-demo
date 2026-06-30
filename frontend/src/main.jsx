@@ -28,25 +28,15 @@ ReactDOM.createRoot(
  <React.StrictMode>
 
   <SocketProvider>
-
-   <AuthProvider>
-
-    <OrderProvider>
-
-     <TableProvider>
-
-      <ToastProvider>
-
+   <ToastProvider>
+    <AuthProvider>
+     <OrderProvider>
+      <TableProvider>
        <App />
-
-      </ToastProvider>
-
-     </TableProvider>
-
-    </OrderProvider>
-
-   </AuthProvider>
-
+      </TableProvider>
+     </OrderProvider>
+    </AuthProvider>
+   </ToastProvider>
   </SocketProvider>
 
  </React.StrictMode>

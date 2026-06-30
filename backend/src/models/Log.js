@@ -29,4 +29,8 @@ const LogSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Performance indexes for faster queries
+LogSchema.index({ createdAt: -1 });
+LogSchema.index({ action: 1 });
+
 module.exports = mongoose.model("Log", LogSchema);

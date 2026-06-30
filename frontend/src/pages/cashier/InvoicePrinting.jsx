@@ -86,7 +86,7 @@ const InvoicePrinting = () => {
  {/* Printable Receipt Area */}
  <div id="invoice-container" className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 text-slate-800 print:shadow-none print:border-none print:p-0 mx-auto" style={{ maxWidth:'400px' }}>
  <div className="text-center border-b border-slate-200 border-dashed pb-6 mb-6">
- <h1 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">ASLENIX</h1>
+ <h1 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">मिठ्ठो चिया & Tiffin घर</h1>
  <p className="text-slate-500 text-sm mt-1 font-medium">123 Culinary Avenue, Food City</p>
  <p className="text-slate-500 text-sm font-medium">Tel: +977-9800000000</p>
  </div>

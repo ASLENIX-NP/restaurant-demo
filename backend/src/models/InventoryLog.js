@@ -11,4 +11,7 @@ const inventoryLogSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Performance indexes for faster queries
+inventoryLogSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model("InventoryLog", inventoryLogSchema);

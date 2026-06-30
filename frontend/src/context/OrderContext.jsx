@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useSocket } from "./SocketContext";
 import apiClient from "../api/apiClient";
+import { useToast } from "./ToastContext";
 
 const OrderContext = createContext();
 
@@ -14,6 +15,7 @@ export const OrderProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const socket = useSocket();
+  const { showToast } = useToast();
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -32,13 +34,17 @@ export const OrderProvider = ({ children }) => {
     if (offlineOrders.length === 0) return;
 
     console.log(`Syncing ${offlineOrders.length} offline orders...`);
+    showToast(`You're back online! Syncing ${offlineOrders.length} offline orders...`, "info");
+    
     const token = localStorage.getItem("token");
+    const remainingOrders = [];
+    let syncedCount = 0;
     
     for (const order of offlineOrders) {
       try {
         // Strip mock offline IDs before sending to server
         const { id, _id, sync_pending, ...orderPayload } = order;
-        await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/orders`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/orders`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -46,15 +52,28 @@ export const OrderProvider = ({ children }) => {
           },
           body: JSON.stringify(orderPayload)
         });
+        
+        if (!response.ok) {
+          throw new Error("Failed to sync order to server");
+        }
+        syncedCount++;
       } catch (err) {
         console.error("Failed to sync an offline order:", err);
+        remainingOrders.push(order);
       }
     }
     
-    // Clear local storage and refetch actual orders from DB
-    localStorage.setItem("offline_orders", "[]");
-    fetchOrders();
-  }, [fetchOrders]);
+    // Clear successfully synced orders from local storage, keep remaining
+    localStorage.setItem("offline_orders", JSON.stringify(remainingOrders));
+    
+    if (syncedCount > 0) {
+      showToast(`Successfully synced ${syncedCount} offline orders!`, "success");
+      fetchOrders();
+    }
+    if (remainingOrders.length > 0) {
+      showToast(`${remainingOrders.length} orders failed to sync. Will try again later.`, "error");
+    }
+  }, [fetchOrders, showToast]);
 
   useEffect(() => {
     window.addEventListener("online", syncOfflineOrders);

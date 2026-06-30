@@ -467,7 +467,7 @@ export default function SalesHistory() {
  >
  <div style={{ textAlign:"center", marginBottom:"15px" }}>
  <h2 style={{ fontSize:"18px", margin:"0 0 5px 0" }}>
- ASLENIX RESTAURANT
+ मिठ्ठो चिया & Tiffin घर
  </h2>
  <p style={{ margin:"2px 0" }}>Kathmandu, Nepal</p>
  <p style={{ margin:"2px 0" }}>Tel: +977 9812345678</p>
@@ -627,7 +627,7 @@ export default function SalesHistory() {
  }}
  >
  <h1 style={{ fontSize:"24px", margin:"0 0 10px 0" }}>
- ASLENIX RESTAURANT
+ मिठ्ठो चिया & Tiffin घर
  </h1>
  <h2 style={{ fontSize:"18px", margin:"0 0 5px 0", color:"#475569" }}>
  Sales & Payment Summary Report
@@ -894,7 +894,7 @@ export default function SalesHistory() {
  }}
  >
  <h1 style={{ fontSize:"24px", margin:"0 0 10px 0" }}>
- ASLENIX RESTAURANT
+ मिठ्ठो चिया & Tiffin घर
  </h1>
  <h2 style={{ fontSize:"18px", margin:"0 0 5px 0", color:"#475569" }}>
  End of Day Summary (Z-Report)
@@ -1123,19 +1123,7 @@ export default function SalesHistory() {
  {`
  @media print {
  ${
- printMode ==="ledger"
- ? `
- @page { margin: 10mm; size: auto; }
- body { background: #fff; }
- .sidebar, .navbar, header, footer { display: none !important; }
- .sales-top, .sales-stats, .sales-right, .sales-filters, .load-more { display: none !important; }
- .sales-content { display: block !important; width: 100% !important; grid-template-columns: 1fr !important; }
- .sales-left { width: 100% !important; box-shadow: none !important; border: none !important; }
- .print-hide-row { display: none !important; }
- .print-container { display: none !important; }
- .details-btn, .arrow-icon { display: none !important; }
- `
- : printMode ==="summary" || printMode ==="eod"
+ printMode ==="ledger" || printMode ==="summary" || printMode ==="eod"
  ? `
   @page { margin: 10mm; size: auto; }
   html, body { 
@@ -1161,8 +1149,10 @@ export default function SalesHistory() {
   }
   
   /* Print Typography & Spacing Optimization */
-  .print-container table { width: 100%; border-collapse: collapse; page-break-inside: auto; }
+  .print-container table { width: 100%; border-collapse: collapse; page-break-inside: auto; text-align: left; }
   .print-container tr { page-break-inside: avoid; page-break-after: auto; }
+  .print-container th, .print-container td { border-bottom: 1px solid #e2e8f0; padding: 10px 12px; font-size: 13px; }
+  .print-container th { font-weight: bold; color: #475569; background-color: #f8fafc; }
   .print-container h2 { font-size: 24px !important; }
   .print-container h3, .print-container .text-4xl { font-size: 18px !important; }
   .print-container .text-3xl { font-size: 16px !important; }
@@ -2228,6 +2218,63 @@ export default function SalesHistory() {
  </div>
  </div>
  )}
+
+ {/* LEDGER PRINT CONTAINER */}
+ {printMode === "ledger" && (
+    <div className="print-container bg-white p-8">
+      <div className="text-center mb-6 border-b border-slate-200 pb-6">
+        <h2 className="text-2xl font-black text-slate-900 uppercase tracking-widest">Sales Ledger Report</h2>
+        <p className="text-slate-500 font-medium mt-1">Generated on {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}</p>
+        <p className="text-slate-700 font-bold mt-3 bg-slate-50 inline-block px-4 py-1.5 rounded-full border border-slate-100">
+          Date Filter: {startDate ? new Date(startDate).toLocaleDateString() : "All-Time"} to {endDate ? new Date(endDate).toLocaleDateString() : "All-Time"}
+        </p>
+      </div>
+      
+      <div className="flex justify-between items-center bg-slate-50 p-6 rounded-xl border border-slate-200 mb-8">
+        <div>
+          <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">Total Transactions</span>
+          <p className="text-2xl font-black text-slate-900 mt-1">{filteredData.length}</p>
+        </div>
+        <div className="text-right">
+          <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">Total Ledger Value</span>
+          <p className="text-2xl font-black text-slate-900 mt-1">Rs. {totalSalesAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+        </div>
+      </div>
+
+      <table className="w-full">
+        <thead>
+          <tr>
+            <th>Txn ID</th>
+            <th>Date & Time</th>
+            <th>Customer</th>
+            <th>Method</th>
+            <th className="text-right">Total Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredData.map((sale) => (
+            <tr key={sale.id}>
+              <td className="font-semibold text-slate-900">{sale.transactionId}</td>
+              <td className="text-slate-600">{sale.date} <span className="text-slate-400 ml-1">{sale.time}</span></td>
+              <td className="text-slate-800">{sale.customer || "Walk-in"}</td>
+              <td className="text-slate-600">{sale.paymentMethod || "Cash"}</td>
+              <td className="text-right font-bold text-slate-900">Rs. {sale.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+            </tr>
+          ))}
+          {filteredData.length === 0 && (
+            <tr>
+              <td colSpan="5" className="text-center py-8 text-slate-400">No transactions found for the selected dates.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+
+      <div className="mt-12 pt-6 border-t border-slate-200 text-center text-xs text-slate-400 font-medium">
+        End of Ledger Report. System generated document.
+      </div>
+    </div>
+  )}
+
  </div>
  );
 }

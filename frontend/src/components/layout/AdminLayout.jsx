@@ -80,7 +80,7 @@ const AdminLayout = () => {
           <div>
             <div className="brand-logo">
               <Store size={28} className="brand-icon" />
-              <h1 className="logo-text">ASLENIX</h1>
+              <h1 className="logo-text">मिठ्ठो चिया & Tiffin घर</h1>
             </div>
             <p className="brand-subtitle">ERP System</p>
           </div>
@@ -173,7 +173,7 @@ const AdminLayout = () => {
         <div className="md:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center sticky top-0 z-40 shadow-sm">
           <div className="flex items-center gap-2 text-indigo-600">
             <Store size={24} />
-            <span className="font-black text-xl tracking-tight text-slate-800">ASLENIX</span>
+            <span className="font-black text-xl tracking-tight text-slate-800">मिठ्ठो चिया & Tiffin घर</span>
           </div>
           <button 
             onClick={() => setIsMobileOpen(true)}

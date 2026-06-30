@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       devOptions: { enabled: true },
       manifest: {
-        name: 'Aslenix POS',
-        short_name: 'Aslenix',
+        name: 'मिठ्ठो चिया & Tiffin घर',
+        short_name: 'मिठ्ठो चिया & Tiffin घर',
         description: 'Restaurant Point of Sale System',
         theme_color: '#ffffff',
         background_color: '#ffffff',

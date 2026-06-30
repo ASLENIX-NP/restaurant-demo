@@ -536,7 +536,7 @@ const History = () => {
  {/* DEDICATED PRINTABLE PDF REPORT LAYOUT */}
  <div id="printable-order-history">
  <div style={{ textAlign:"center", marginBottom:"20px" }}>
- <h2 style={{ fontSize:"22px", margin:"0 0 8px 0" }}>ASLENIX RESTAURANT</h2>
+ <h2 style={{ fontSize:"22px", margin:"0 0 8px 0" }}>मिठ्ठो चिया & Tiffin घर</h2>
  <h3 style={{ fontSize:"16px", margin:"0 0 5px 0", color:"#475569" }}>Order History Report</h3>
  <p style={{ margin:"3px 0", fontSize:"13px" }}><strong>Filter Status:</strong> {activeTab}</p>
  <p style={{ margin:"3px 0", fontSize:"13px" }}><strong>Generated On:</strong> {new Date().toLocaleString()}</p>

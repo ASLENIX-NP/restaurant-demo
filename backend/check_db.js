@@ -19,7 +19,7 @@ mongoose.connect("mongodb://localhost:27017/restaurant_db").then(async () => {
             password: hashedPassword,
             name: "System Admin",
             role: "Admin",
-            email: "admin@aslenix.com"
+            email: "admin@restaurant.com"
         });
         console.log("Created default admin: admin / admin123");
     }

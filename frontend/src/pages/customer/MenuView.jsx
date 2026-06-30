@@ -1,8 +1,9 @@
-import { useState, useEffect } from"react";
-import { useParams } from"react-router-dom";
-import apiClient from"../../api/apiClient";
-import Skeleton from"../../components/ui/Skeleton";
-import"../../styles/menuview.css";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import apiClient from "../../api/apiClient";
+import Skeleton from "../../components/ui/Skeleton";
+import { Utensils } from "lucide-react";
+import "../../styles/menuview.css";
 
 const MenuView = () => {
  const { tableId } = useParams();
@@ -34,7 +35,7 @@ const MenuView = () => {
  return (
  <div className="menu-view-page min-h-screen bg-slate-50 pb-12 transition-colors duration-300">
  <div className="menu-header bg-slate-900 backdrop-blur-md text-white p-6 rounded-b-[40px] mb-8 shadow-md border-b border-white/10">
- <h1 className="text-3xl font-black text-center tracking-tighter">ASLENIX</h1>
+ <h1 className="text-3xl font-black text-center tracking-tighter">मिठ्ठो चिया & Tiffin घर</h1>
  <p className="text-center text-slate-400 font-bold mt-1 text-sm uppercase tracking-widest">Table {tableId ||"Walk-in"}</p>
  </div>
 
@@ -74,15 +75,19 @@ const MenuView = () => {
  ) : (
  <div className="food-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
  {filteredMenu.map(item => (
- <div key={item._id} className={`bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition-shadow ${!item.available ?"opacity-60 grayscale-[50%]" :""}`}>
- <div className="h-52 w-full bg-slate-100 relative p-2">
+ <div key={item._id} className={`bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition-shadow ${!item.isAvailable ?"opacity-60 grayscale-[50%]" :""}`}>
+ <div className="h-52 w-full bg-slate-100 relative p-2 flex items-center justify-center">
+ {item.image ? (
  <img loading="lazy" src={item.image} alt={item.name} className="w-full h-full object-cover rounded-xl" />
- {!item.available && (
+ ) : (
+ <Utensils size={48} className="text-slate-300" />
+ )}
+ {!item.isAvailable && (
  <div className="absolute inset-0 bg-slate-900/30 flex items-center justify-center rounded-xl m-2 backdrop-blur-[2px]">
  <span className="bg-rose-500 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">Sold Out</span>
  </div>
  )}
- {item.available && (
+ {item.isAvailable && (
  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black text-slate-900 shadow-sm border border-white/50">
  Rs. {item.price}
  </div>

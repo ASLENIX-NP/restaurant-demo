@@ -21,7 +21,7 @@ async function seed() {
             if (u.role === "Admin") {
                 const existing = await Admin.findOne({ username: u.username });
                 if (!existing) {
-                    await Admin.create({ ...u, email: `${u.username}@aslenix.com` });
+                    await Admin.create({ ...u, email: `${u.username}@restaurant.com` });
                     console.log(`Created default Admin: ${u.username} / ${u.password}`);
                 } else {
                     existing.password = u.password;
@@ -31,7 +31,7 @@ async function seed() {
             } else {
                 const existing = await User.findOne({ username: u.username });
                 if (!existing) {
-                    await User.create({ ...u, status: "Active", email: `${u.username}@aslenix.com` });
+                    await User.create({ ...u, status: "Active", email: `${u.username}@restaurant.com` });
                     console.log(`Created default User: ${u.username} / ${u.password}`);
                 } else {
                     existing.password = u.password;

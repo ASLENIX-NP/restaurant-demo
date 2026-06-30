@@ -5,6 +5,7 @@ const connectDB = require("./db");
 const http = require("http");
 const { Server } = require("socket.io");
 const { apiLimiter } = require("./middleware/rateLimiter");
+const path = require("path");
 
 // Initialize Express app
 const app = express();
@@ -21,9 +22,13 @@ connectDB();
 
 // Middleware
 const helmet = require("helmet");
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false, // Allows images to be accessed cross-origin
+}));
 app.use(cors()); // Allows your React frontend to communicate with this backend
 app.use(express.json()); // Allows the server to accept JSON data in request bodies
+
+
 
 // Attach Socket.io to the request object so controllers can emit events
 app.use((req, res, next) => {
@@ -44,6 +49,7 @@ app.use("/api/settings", require("./routes/settingsRoutes"));
 app.use("/api/reservations", require("./routes/reservationRoutes"));
 app.use("/api/shifts", require("./routes/shiftRoutes"));
 app.use("/api/customers", require("./routes/customerRoutes"));
+app.use("/api/upload", require("./routes/uploadRoutes"));
 
 // Basic Health Check Route to verify it's working
 app.get("/api/health", (req, res) => {

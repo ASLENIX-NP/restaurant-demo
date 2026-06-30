@@ -302,7 +302,7 @@ export default function CustomerMenu() {
  </nav>
 
  <section className="menu-hero">
- <h1>Food Menu</h1>
+ <h1>मीठो चिया & Tiffin घर</h1>
  </section>
 
  <div className="menu-container">

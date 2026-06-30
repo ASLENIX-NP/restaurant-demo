@@ -5,7 +5,7 @@ const menuItemSchema = Joi.object({
   description: Joi.string().optional().allow(""),
   price: Joi.number().min(0).required(),
   category: Joi.string().required().max(50),
-  image: Joi.string().uri().optional().allow(""),
+  image: Joi.string().optional().allow(""),
   isAvailable: Joi.boolean().default(true),
   isSpecial: Joi.boolean().default(false),
   availability: Joi.boolean().default(true),

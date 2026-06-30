@@ -32,6 +32,7 @@ const Menu = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
   const [isNewCategory, setIsNewCategory] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const { showToast } = useToast();
 
   const [newItem, setNewItem] = useState({
@@ -141,6 +142,32 @@ const Menu = () => {
       } catch (error) {
         showToast(`Error: ${error.response?.data?.message || error.message}`, "error");
       }
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("File size must be less than 5MB", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    setUploadingImage(true);
+    try {
+      const response = await apiClient.post("/api/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      setNewItem({ ...newItem, image: response.data.url });
+      showToast("Image uploaded successfully!", "success");
+    } catch (error) {
+      showToast(`Upload failed: ${error.response?.data?.message || error.message}`, "error");
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -495,17 +522,57 @@ const Menu = () => {
 
           <div>
             <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-              Image URL
+              Food Image
             </label>
-            <input
-              type="text"
-              value={newItem.image}
-              onChange={(e) =>
-                setNewItem({ ...newItem, image: e.target.value })
-              }
-              className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 transition-all font-medium text-sm"
-              placeholder="https://..."
-            />
+            <div className="flex gap-4 items-end">
+              <div 
+                className="w-24 h-24 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0 shadow-sm relative group"
+              >
+                {newItem.image ? (
+                  <>
+                    <img 
+                      src={newItem.image} 
+                      alt="Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        type="button"
+                        onClick={() => setNewItem({...newItem, image: ""})}
+                        className="p-1.5 bg-rose-500 text-white rounded-full hover:bg-rose-600 shadow-md transition"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <ImageIcon size={28} className="text-slate-300" />
+                )}
+              </div>
+              <div className="flex-1 pb-1">
+                <input
+                  type="file"
+                  id="imageUpload"
+                  accept="image/jpeg, image/png, image/webp, image/gif, image/svg+xml"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+                <label 
+                  htmlFor="imageUpload"
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm cursor-pointer transition-colors border ${
+                    uploadingImage 
+                      ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed" 
+                      : "bg-white border-slate-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200"
+                  }`}
+                >
+                  <FolderOpen size={16} />
+                  {uploadingImage ? "Uploading..." : "Upload Image"}
+                </label>
+                <p className="text-[10px] font-medium text-slate-400 mt-2 ml-1">
+                  Max size: 5MB. Formats: JPG, PNG, WEBP, GIF.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Order = require("../models/Order");
 const Table = require("../models/Table");
 const Inventory = require("../models/InventoryItem");
@@ -6,18 +7,18 @@ const MenuItem = require("../models/MenuItem");
 const { createLog } = require("./logController");
 
 // --- INVENTORY AUTOMATION HELPERS ---
-const deductInventory = async (items, io) => {
+const deductInventory = async (items, io, session) => {
   try {
     let updated = false;
     for (const orderItem of items) {
       // Find the menu item to get its ingredients recipe
       const menuItem = await MenuItem.findOne({
         name: { $regex: new RegExp(`^${orderItem.name.trim()}$`, "i") },
-      });
+      }).session(session);
 
       if (!menuItem || !menuItem.ingredients || menuItem.ingredients.length === 0) {
         // Fallback to legacy exact-name match if no recipe exists
-        await updateInventoryItem(orderItem.name.trim(), -orderItem.qty, io);
+        await updateInventoryItem(orderItem.name.trim(), -orderItem.qty, io, session);
         updated = true;
         continue;
       }
@@ -38,11 +39,11 @@ const deductInventory = async (items, io) => {
         const invItem = await Inventory.findOneAndUpdate(
           query,
           { $inc: { qty: totalDeduction } },
-          { new: true }
+          { new: true, session }
         );
 
         if (invItem) {
-          await evaluateLowStock(invItem, io);
+          await evaluateLowStock(invItem, io, session);
           updated = true;
         }
       }
@@ -53,16 +54,16 @@ const deductInventory = async (items, io) => {
   }
 };
 
-const restockInventory = async (items, io) => {
+const restockInventory = async (items, io, session) => {
   try {
     let updated = false;
     for (const orderItem of items) {
       const menuItem = await MenuItem.findOne({
         name: { $regex: new RegExp(`^${orderItem.name.trim()}$`, "i") },
-      });
+      }).session(session);
 
       if (!menuItem || !menuItem.ingredients || menuItem.ingredients.length === 0) {
-        await updateInventoryItem(orderItem.name.trim(), orderItem.qty, io);
+        await updateInventoryItem(orderItem.name.trim(), orderItem.qty, io, session);
         updated = true;
         continue;
       }
@@ -82,11 +83,11 @@ const restockInventory = async (items, io) => {
         const invItem = await Inventory.findOneAndUpdate(
           query,
           { $inc: { qty: totalAddition } },
-          { new: true }
+          { new: true, session }
         );
 
         if (invItem) {
-          await evaluateLowStock(invItem, io);
+          await evaluateLowStock(invItem, io, session);
           updated = true;
         }
       }
@@ -97,22 +98,22 @@ const restockInventory = async (items, io) => {
   }
 };
 
-const updateInventoryItem = async (itemName, changeQty, io) => {
+const updateInventoryItem = async (itemName, changeQty, io, session) => {
   const invItem = await Inventory.findOneAndUpdate(
     { name: { $regex: new RegExp(`^${itemName}$`, "i") } },
     { $inc: { qty: changeQty } },
-    { new: true }
+    { new: true, session }
   );
   if (invItem) {
-    await evaluateLowStock(invItem, io);
+    await evaluateLowStock(invItem, io, session);
   }
 };
 
-const evaluateLowStock = async (invItem, io) => {
+const evaluateLowStock = async (invItem, io, session) => {
   let newStatus = "In Stock";
   if (invItem.qty <= 0) {
     if (invItem.qty < 0) {
-      await Inventory.updateOne({ _id: invItem._id }, { $set: { qty: 0 } });
+      await Inventory.updateOne({ _id: invItem._id }, { $set: { qty: 0 } }, { session });
     }
     newStatus = "Out of Stock";
   } else if (invItem.qty <= 10) { // 10% or fixed 10 units threshold
@@ -127,7 +128,7 @@ const evaluateLowStock = async (invItem, io) => {
   }
 
   if (invItem.status !== newStatus) {
-    await Inventory.updateOne({ _id: invItem._id }, { $set: { status: newStatus } });
+    await Inventory.updateOne({ _id: invItem._id }, { $set: { status: newStatus } }, { session });
   }
 };
 
@@ -245,6 +246,8 @@ exports.getOrders = async (req, res) => {
 // @route   POST /api/orders
 // @access  Private
 exports.createOrder = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     // Staff don't ask for customer name, so default it to "Guest"
     req.body.customer = req.body.customer || "Guest";
@@ -264,7 +267,7 @@ exports.createOrder = async (req, res) => {
     ) {
       const targetTable = await Table.findOne({
         name: { $regex: new RegExp(`^${req.body.table.trim()}$`, "i") },
-      });
+      }).session(session);
 
       if (!targetTable) {
         return res.status(404).json({
@@ -277,7 +280,7 @@ exports.createOrder = async (req, res) => {
         const activeOrder = await Order.findOne({
           table: { $regex: new RegExp(`^${req.body.table.trim()}$`, "i") },
           status: { $nin: ["Completed", "Cancelled"] },
-        });
+        }).session(session);
 
         if (activeOrder) {
           // Append new items and calculate the new combined totals
@@ -289,13 +292,19 @@ exports.createOrder = async (req, res) => {
           // Bump status back to Pending so the kitchen sees the new items
           activeOrder.status = "Pending";
 
-          const updatedOrder = await activeOrder.save();
+          const updatedOrder = await activeOrder.save({ session });
 
-          // Deduct inventory for the newly appended items
-          await deductInventory(req.body.items || [], req.io);
+          // Deduct inventory for the newly appended items (pass null for io to defer emission)
+          await deductInventory(req.body.items || [], null, session);
+
+          await session.commitTransaction();
+          session.endSession();
 
           // 📢 Broadcast to all clients that an existing order was updated
-          if (req.io) req.io.emit("orderUpdated", updatedOrder);
+          if (req.io) {
+            req.io.emit("orderUpdated", updatedOrder);
+            req.io.emit("inventoryUpdated");
+          }
 
           return res.status(200).json(updatedOrder);
         }
@@ -312,7 +321,7 @@ exports.createOrder = async (req, res) => {
         // Find the official menu item to get its true price
         const officialItem = await MenuItem.findOne({
           name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") },
-        });
+        }).session(session);
 
         const safePrice = officialItem ? officialItem.price : 0;
         const safeQty = Math.max(1, parseInt(item.qty, 10) || 1); // Prevent negative or zero quantities
@@ -333,7 +342,7 @@ exports.createOrder = async (req, res) => {
 
     // 3. Automatically generate a sequential Order ID (e.g., #ORD-0001)
     // We do this here so the frontend (or Postman) never has to provide one manually.
-    const lastOrder = await Order.findOne().sort({ createdAt: -1 });
+    const lastOrder = await Order.findOne().sort({ createdAt: -1 }).session(session);
     let nextSeq = 1;
     if (lastOrder && lastOrder.id && lastOrder.id.startsWith("#ORD-")) {
       const lastSeq = parseInt(lastOrder.id.replace("#ORD-", ""), 10);
@@ -354,10 +363,10 @@ exports.createOrder = async (req, res) => {
     });
 
     const order = new Order(req.body);
-    const createdOrder = await order.save();
+    const createdOrder = await order.save({ session });
 
     // Deduct inventory for the new order items
-    await deductInventory(req.body.items || [], req.io);
+    await deductInventory(req.body.items || [], null, session);
 
     // Automatically mark the table as Occupied if a specific table is assigned
     if (
@@ -373,7 +382,7 @@ exports.createOrder = async (req, res) => {
       const updatedTable = await Table.findOneAndUpdate(
         { name: { $regex: new RegExp(`^${order.table.trim()}$`, "i") } }, // Case-insensitive match
         updateData,
-        { new: true }
+        { new: true, session }
       );
 
       if (!updatedTable) {
@@ -383,11 +392,19 @@ exports.createOrder = async (req, res) => {
       }
     }
 
+    await session.commitTransaction();
+    session.endSession();
+
     // 📢 Broadcast to all clients (like the Kitchen screen) that a brand new order arrived!
-    if (req.io) req.io.emit("newOrder", createdOrder);
+    if (req.io) {
+      req.io.emit("newOrder", createdOrder);
+      req.io.emit("inventoryUpdated");
+    }
 
     res.status(201).json(createdOrder);
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     console.error("Error creating order:", error);
     res
       .status(500)
@@ -501,6 +518,8 @@ exports.completeOrder = async (req, res) => {
 // @route   PUT /api/orders/:id/cancel
 // @access  Private
 exports.cancelOrder = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     // Support querying by either MongoDB _id or custom string id
     const query = req.params.id.match(/^[0-9a-fA-F]{24}$/)
@@ -510,13 +529,13 @@ exports.cancelOrder = async (req, res) => {
     const cancelledOrder = await Order.findOneAndUpdate(
       query,
       { status: "Cancelled" },
-      { new: true }
+      { new: true, session }
     );
     if (!cancelledOrder)
       return res.status(404).json({ message: "Order not found" });
 
     // Restock inventory for the cancelled items
-    await restockInventory(cancelledOrder.items || [], req.io);
+    await restockInventory(cancelledOrder.items || [], null, session);
 
     // Free up the table since the order was cancelled
     if (
@@ -529,12 +548,18 @@ exports.cancelOrder = async (req, res) => {
           name: { $regex: new RegExp(`^${cancelledOrder.table.trim()}$`, "i") },
         }, // Case-insensitive match
         { status: "Available", currentCustomer: "No Customer" },
-        { new: true }
+        { new: true, session }
       );
     }
 
+    await session.commitTransaction();
+    session.endSession();
+
     // 📢 Broadcast cancellation
-    if (req.io) req.io.emit("orderCancelled", cancelledOrder);
+    if (req.io) {
+      req.io.emit("orderCancelled", cancelledOrder);
+      req.io.emit("inventoryUpdated");
+    }
 
     createLog({
       user: req.user.username,
@@ -547,6 +572,8 @@ exports.cancelOrder = async (req, res) => {
 
     res.status(200).json(cancelledOrder);
   } catch (error) {
-    res.status(500).json({ message: "Server error cancelling order" });
+    await session.abortTransaction();
+    session.endSession();
+    res.status(500).json({ message: "Server error cancelling order", error: error.message });
   }
 };

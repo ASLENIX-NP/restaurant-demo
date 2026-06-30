@@ -469,7 +469,7 @@ const ShiftManagement = () => {
  {/* PRINT-ONLY Z-REPORT */}
  <div id="printable-z-report">
  <div style={{ textAlign:"center", marginBottom:"15px" }}>
- <h2 style={{ fontSize:"16px", margin:"0 0 5px 0" }}>ASLENIX RESTAURANT</h2>
+ <h2 style={{ fontSize:"16px", margin:"0 0 5px 0" }}>मिठ्ठो चिया & Tiffin घर</h2>
  <p style={{ margin:"2px 0" }}>End of Shift Report (Z-Report)</p>
  </div>
  

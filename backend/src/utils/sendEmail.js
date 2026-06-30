@@ -29,14 +29,14 @@ const sendEmail = async (options) => {
   }
 
   const mailOptions = {
-    from: process.env.EMAIL_USER ? `"ASLENIX POS" <${process.env.EMAIL_USER}>` : '"Aslenix POS" <test@ethereal.email>',
+    from: process.env.EMAIL_USER ? `"मिठ्ठो चिया & Tiffin घर" <${process.env.EMAIL_USER}>` : '"मिठ्ठो चिया & Tiffin घर" <test@ethereal.email>',
     replyTo: process.env.EMAIL_USER,
     to: options.email,
     subject: options.subject,
     text: options.message,
     html: options.html || `
       <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-        <h2 style="color: #4f46e5;">ASLENIX System</h2>
+        <h2 style="color: #4f46e5;">मिठ्ठो चिया & Tiffin घर</h2>
         <p style="white-space: pre-wrap; font-size: 16px;">${options.message}</p>
         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
         <p style="font-size: 12px; color: #999;">This is an automated system message. Please do not reply directly to this email.</p>

@@ -175,80 +175,80 @@ const Dashboard = () => {
  }
  };
 
- return (
- <div className="min-h-screen w-full overflow-x-hidden bg-slate-50 p-3 sm:p-6 md:p-8 text-slate-800 font-sans">
- <main className="max-w-[1600px] mx-auto pb-28 lg:pb-12">
+  return (
+  <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-4 sm:p-6 md:p-10 text-slate-800 font-sans">
+  <main className="max-w-[1600px] mx-auto pb-28 lg:pb-12">
         {/* HEADER SECTION */}
-        <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-4 mb-8 md:mb-10">
           <div>
-            <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-[32px] font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 tracking-tight">
               Staff Dashboard
             </h1>
-            <p className="text-slate-400 text-xs sm:text-sm mt-0.5 font-medium">
+            <p className="text-slate-500 text-xs sm:text-sm mt-1 font-semibold tracking-wide uppercase">
               Overview of today's restaurant activity
             </p>
           </div>
           <button
  onClick={() => navigate("/staff/take-order")}
-            className="flex w-full sm:w-auto justify-center bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm px-5 py-3 sm:py-2.5 rounded-xl shadow-sm items-center gap-2 transition-all active:scale-95"
+            className="flex w-full sm:w-auto justify-center bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold text-sm px-6 py-3 rounded-2xl shadow-[0_8px_20px_rgba(79,70,229,0.25)] hover:shadow-[0_12px_25px_rgba(79,70,229,0.35)] items-center gap-2 transition-all duration-300 hover:-translate-y-1 active:scale-95"
           >
- <Plus size={16} /> Take New Order
+ <Plus size={18} strokeWidth={2.5} /> Take New Order
  </button>
  </div>
 
  {/* STATS OVERVIEW CARDS */}
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 mb-6 md:mb-8">
- <div className="group bg-white rounded-xl p-4 sm:p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 hover:shadow-md transition-all duration-300">
- <div className="w-8 h-8 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner border border-blue-100 group-hover:scale-110 transition-transform duration-300">
- <Utensils size={20} className="sm:w-6 sm:h-6" strokeWidth={2.5} />
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10">
+ <div className="group bg-white/80 backdrop-blur-xl rounded-3xl p-5 sm:p-7 border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-400">
+ <div className="w-10 h-10 sm:w-16 sm:h-16 shrink-0 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 flex items-center justify-center text-blue-600 shadow-inner border border-blue-200/50 group-hover:scale-110 transition-transform duration-400">
+ <Utensils size={22} className="sm:w-7 sm:h-7" strokeWidth={2.5} />
  </div>
  <div>
- <h4 className="text-slate-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-0.5 sm:mb-1">
+ <h4 className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">
  Active Tables
  </h4>
- <h2 className="text-xl sm:text-3xl font-black text-slate-900 leading-none">
+ <h2 className="text-2xl sm:text-4xl font-black text-slate-900 leading-none tracking-tight">
  {tablesList.filter((t) => t.status ==="Occupied").length}
  </h2>
  </div>
  </div>
 
- <div className="group bg-white rounded-xl p-4 sm:p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 hover:shadow-md transition-all duration-300">
- <div className="w-8 h-8 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-100 group-hover:scale-110 transition-transform duration-300">
- <Package size={20} className="sm:w-6 sm:h-6" strokeWidth={2.5} />
+ <div className="group bg-white/80 backdrop-blur-xl rounded-3xl p-5 sm:p-7 border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-400">
+ <div className="w-10 h-10 sm:w-16 sm:h-16 shrink-0 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/50 flex items-center justify-center text-amber-500 shadow-inner border border-amber-200/50 group-hover:scale-110 transition-transform duration-400">
+ <Package size={22} className="sm:w-7 sm:h-7" strokeWidth={2.5} />
  </div>
  <div>
- <h4 className="text-slate-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-0.5 sm:mb-1">
+ <h4 className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">
  Pending Orders
  </h4>
- <h2 className="text-xl sm:text-3xl font-black text-slate-900 leading-none">
+ <h2 className="text-2xl sm:text-4xl font-black text-slate-900 leading-none tracking-tight">
  {orders.filter((o) => o.status ==="Pending" || o.status ==="Cooking").length}
  </h2>
  </div>
  </div>
 
- <div className="group bg-white rounded-xl p-4 sm:p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 hover:shadow-md transition-all duration-300">
- <div className="w-8 h-8 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner border border-emerald-100 group-hover:scale-110 transition-transform duration-300">
- <CheckCircle2 size={20} className="sm:w-6 sm:h-6" strokeWidth={2.5} />
+ <div className="group bg-white/80 backdrop-blur-xl rounded-3xl p-5 sm:p-7 border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-400">
+ <div className="w-10 h-10 sm:w-16 sm:h-16 shrink-0 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 flex items-center justify-center text-emerald-600 shadow-inner border border-emerald-200/50 group-hover:scale-110 transition-transform duration-400">
+ <CheckCircle2 size={22} className="sm:w-7 sm:h-7" strokeWidth={2.5} />
  </div>
  <div>
- <h4 className="text-slate-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-0.5 sm:mb-1">
+ <h4 className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">
  Completed
  </h4>
- <h2 className="text-xl sm:text-3xl font-black text-slate-900 leading-none">
+ <h2 className="text-2xl sm:text-4xl font-black text-slate-900 leading-none tracking-tight">
  {orders.filter((o) => o.status ==="Completed").length}
  </h2>
  </div>
  </div>
 
- <div className="group bg-white rounded-xl p-4 sm:p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 hover:shadow-md transition-all duration-300">
- <div className="w-8 h-8 sm:w-14 sm:h-14 shrink-0 rounded-xl sm:rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner border border-indigo-100 group-hover:scale-110 transition-transform duration-300">
- <CalendarClock size={20} className="sm:w-6 sm:h-6" strokeWidth={2.5} />
+ <div className="group bg-white/80 backdrop-blur-xl rounded-3xl p-5 sm:p-7 border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-400">
+ <div className="w-10 h-10 sm:w-16 sm:h-16 shrink-0 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 flex items-center justify-center text-indigo-600 shadow-inner border border-indigo-200/50 group-hover:scale-110 transition-transform duration-400">
+ <CalendarClock size={22} className="sm:w-7 sm:h-7" strokeWidth={2.5} />
  </div>
  <div>
- <h4 className="text-slate-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider mb-0.5 sm:mb-1">
+ <h4 className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1">
  Reservations
  </h4>
- <h2 className="text-xl sm:text-3xl font-black text-slate-900 leading-none">
+ <h2 className="text-2xl sm:text-4xl font-black text-slate-900 leading-none tracking-tight">
  {tablesList.filter((t) => t.status ==="Reserved").length}
  </h2>
  </div>
