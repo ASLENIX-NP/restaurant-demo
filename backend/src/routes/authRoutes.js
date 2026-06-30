@@ -3,12 +3,18 @@ const router = express.Router();
 const authController = require("../controllers/authController");
 const { protect, authorize } = require("../middleware/authMiddleware");
 const validate = require("../middleware/validate");
+const { loginLimiter } = require("../middleware/rateLimiter");
 const { registerSchema, loginSchema } = require("../validators/authValidator");
 
 // @route   POST /api/auth/login
 // @desc    Authenticate user & get token
 // @access  Public
-router.post("/login", validate(loginSchema), authController.login);
+router.post("/login", loginLimiter, validate(loginSchema), authController.login);
+
+// @route   POST /api/auth/verify-2fa
+// @desc    Verify 2FA OTP after login
+// @access  Public
+router.post("/verify-2fa", loginLimiter, authController.verify2FA);
 
 // @route   POST /api/auth/register
 // @desc    Register a new user (Pending approval)
@@ -19,6 +25,11 @@ router.post("/register", validate(registerSchema), authController.register);
 // @desc    Generate password reset token
 // @access  Public
 router.post("/forgot-password", authController.forgotPassword);
+
+// @route   POST /api/auth/verify-registration-otp
+// @desc    Verify email OTP for a new registration
+// @access  Public
+router.post("/verify-registration-otp", authController.verifyRegistrationOtp);
 
 // @route   POST /api/auth/reset-password
 // @desc    Reset password using token
@@ -59,6 +70,11 @@ router.get("/profile", protect, authController.getProfile);
 // @desc    Update user profile and password
 // @access  Private (Any logged-in user)
 router.put("/profile", protect, authController.updateProfile);
+
+// @route   PUT /api/auth/2fa/toggle
+// @desc    Toggle 2FA for current user
+// @access  Private (Any logged-in user)
+router.put("/2fa/toggle", protect, authController.toggle2FA);
 
 // --- TEST ROUTES FOR MIDDLEWARE ---
 

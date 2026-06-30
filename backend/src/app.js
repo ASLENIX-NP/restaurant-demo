@@ -4,14 +4,7 @@ const cors = require("cors");
 const connectDB = require("./db");
 const http = require("http");
 const { Server } = require("socket.io");
-const rateLimit = require("express-rate-limit");
-
-// Setup rate limiter: maximum of 100 requests per 15 minutes (increased for dev)
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 1000 requests per windowMs (raised from 100)
-  message: { message: "Too many requests from this IP, please try again after 15 minutes" }
-});
+const { apiLimiter } = require("./middleware/rateLimiter");
 
 // Initialize Express app
 const app = express();
@@ -39,7 +32,8 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use("/api/auth", authLimiter, require("./routes/authRoutes"));
+app.use("/api", apiLimiter); // Apply general API limiter to all API routes
+app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/menu", require("./routes/menuRoutes"));
 app.use("/api/tables", require("./routes/tableRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));

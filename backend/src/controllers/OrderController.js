@@ -3,6 +3,7 @@ const Table = require("../models/Table");
 const Inventory = require("../models/InventoryItem");
 
 const MenuItem = require("../models/MenuItem");
+const { createLog } = require("./logController");
 
 // --- INVENTORY AUTOMATION HELPERS ---
 const deductInventory = async (items, io) => {
@@ -246,7 +247,14 @@ exports.getOrders = async (req, res) => {
 exports.createOrder = async (req, res) => {
   try {
     // Staff don't ask for customer name, so default it to "Guest"
-    req.body.customer = "Guest";
+    req.body.customer = req.body.customer || "Guest";
+
+    // Automatically mark who took the order based on the logged-in user
+    if (req.user && req.user.name) {
+      req.body.server = req.user.name;
+    } else {
+      req.body.server = "System";
+    }
 
     // 1. Check Table Availability BEFORE creating the order
     if (
@@ -527,6 +535,15 @@ exports.cancelOrder = async (req, res) => {
 
     // 📢 Broadcast cancellation
     if (req.io) req.io.emit("orderCancelled", cancelledOrder);
+
+    createLog({
+      user: req.user.username,
+      role: req.user.role,
+      action: `Cancelled Order: ${cancelledOrder.id || cancelledOrder._id}`,
+      device: req.headers["user-agent"],
+      ip: req.ip,
+      status: "Success",
+    });
 
     res.status(200).json(cancelledOrder);
   } catch (error) {

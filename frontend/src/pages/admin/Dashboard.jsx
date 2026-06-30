@@ -407,14 +407,30 @@ export default function AdminDashboard() {
  cy="50%"
  innerRadius={65}
  outerRadius={85}
- paddingAngle={4}
+ paddingAngle={6}
  dataKey="value"
+ cornerRadius={6}
+ stroke="none"
  >
  {orderDistributionData.map((entry, index) => (
- <Cell key={`cell-${index}`} fill={entry.color} />
+ <Cell 
+   key={`cell-${index}`} 
+   fill={entry.color} 
+   style={{ filter: "drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.1))" }}
+ />
  ))}
  </Pie>
- <Tooltip formatter={(value) => [`${value} Orders`]} />
+ <Tooltip 
+   contentStyle={{
+     backgroundColor: "#0f172a",
+     borderRadius: "12px",
+     border: "none",
+     color: "#fff",
+     boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+   }}
+   itemStyle={{ color: "#e2e8f0", fontSize: "13px", fontWeight: "600" }}
+   formatter={(value) => [`${value} Orders`, "Amount"]} 
+ />
  </PieChart>
  </ResponsiveContainer>
 

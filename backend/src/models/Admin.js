@@ -24,6 +24,9 @@ const adminSchema = new mongoose.Schema(
     status: { type: String, default: "Active" },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+    twoFactorEnabled: { type: Boolean, default: false },
+    twoFactorOtp: { type: String },
+    twoFactorExpires: { type: Date },
   },
   { timestamps: true }
 );

@@ -563,6 +563,7 @@ export default function PendingBillsPage() {
  <div className="grid grid-cols-2 gap-2 mb-5 text-[11px] font-bold text-slate-500">
  <div className="flex items-center gap-1.5"><Clock size={14} /> {bill.time}</div>
  <div className="flex items-center gap-1.5"><User size={14} /> {bill.guests} guests</div>
+ <div className="flex items-center gap-1.5 col-span-2 text-purple-600 bg-purple-50 p-1.5 rounded-lg"><User size={14} /> Taken By: {bill.server}</div>
  </div>
 
  <div className="bg-slate-50/80 rounded-xl p-3.5 flex justify-between items-center border border-slate-100 group-hover:bg-slate-100 transition-colors">

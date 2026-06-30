@@ -81,20 +81,22 @@ const StaffLayout = () => {
 
  {/* SIDEBAR */}
  <div className={`sidebar ${isCollapsed ? "collapsed" : ""} ${isMobileOpen ? "mobile-open" : ""}`}>
- <div className="sidebar-header flex justify-between items-center">
- <div className="brand-logo">
- <Store size={28} className="brand-icon" />
- <h1 className="logo-text">ASLENIX</h1>
- </div>
-        {/* Mobile Close Button */}
-        <button 
-          className="md:hidden text-slate-400 hover:text-white"
-          onClick={() => setIsMobileOpen(false)}
-        >
-          <X size={24} />
-        </button>
- </div>
- <p className="brand-subtitle">Staff Panel</p>
+  <div className="sidebar-header flex justify-between items-center">
+    <div>
+      <div className="brand-logo">
+        <Store size={28} className="brand-icon" />
+        <h1 className="logo-text">ASLENIX</h1>
+      </div>
+      <p className="brand-subtitle">Staff Panel</p>
+    </div>
+         {/* Mobile Close Button */}
+         <button 
+           className="md:hidden text-slate-400 hover:text-white"
+           onClick={() => setIsMobileOpen(false)}
+         >
+           <X size={24} />
+         </button>
+  </div>
 
  <nav className="sidebar-menu">
  <NavLink to="/staff" end className="menu-item" onClick={() => setIsMobileOpen(false)}>

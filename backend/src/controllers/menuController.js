@@ -1,4 +1,5 @@
 const MenuItem = require("../models/MenuItem");
+const { createLog } = require("./logController");
 
 // @desc    Get all menu items
 // @route   GET /api/menu
@@ -64,8 +65,17 @@ exports.createMenuItem = async (req, res) => {
 
     const createdItem = await menuItem.save();
 
+    createLog({
+      user: req.user.username,
+      role: req.user.role,
+      action: `Created Menu Item: ${menuItem.name}`,
+      device: req.headers["user-agent"],
+      ip: req.ip,
+      status: "Success",
+    });
+
     // 📢 Broadcast that the menu list has changed
-    if (req.io) req.io.emit("menuUpdated");
+    if (req.io) req.io.emit("menuUpdated", { action: "create", item: createdItem });
 
     res.status(201).json(createdItem);
   } catch (error) {
@@ -88,6 +98,15 @@ exports.updateMenuItem = async (req, res) => {
     if (!updatedItem)
       return res.status(404).json({ message: "Menu item not found" });
 
+    createLog({
+      user: req.user.username,
+      role: req.user.role,
+      action: `Updated Menu Item: ${updatedItem.name}`,
+      device: req.headers["user-agent"],
+      ip: req.ip,
+      status: "Success",
+    });
+
     // 📢 Broadcast that the menu list has changed
     if (req.io) req.io.emit("menuUpdated");
 
@@ -106,6 +125,15 @@ exports.deleteMenuItem = async (req, res) => {
     const menuItem = await MenuItem.findByIdAndDelete(req.params.id);
     if (!menuItem)
       return res.status(404).json({ message: "Menu item not found" });
+
+    createLog({
+      user: req.user.username,
+      role: req.user.role,
+      action: `Deleted Menu Item: ${menuItem.name}`,
+      device: req.headers["user-agent"],
+      ip: req.ip,
+      status: "Success",
+    });
 
     // 📢 Broadcast that the menu list has changed
     if (req.io) req.io.emit("menuUpdated");

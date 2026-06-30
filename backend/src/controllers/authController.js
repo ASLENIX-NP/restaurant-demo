@@ -35,33 +35,37 @@ exports.register = async (req, res) => {
         email,
         phone,
         status: "Pending", // Explicitly pending for Admin approval
+        isEmailVerified: false,
     });
+
+    // Generate 6-digit OTP for email verification
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.emailVerificationOtp = otp;
+    user.emailVerificationExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     await user.save();
 
-    // 📢 Broadcast to all listening admins that a new user needs approval
-    if (formattedRole !== "Admin" && req.io) {
-      req.io.emit("newRegistration", {
-        message: `New user '${user.username}' is awaiting approval.`,
-        user: {
-          _id: user._id,
-          username: user.username,
-          name: user.name,
-          role: user.role,
-          status: user.status,
-        },
+    // Send the OTP via email
+    const message = `Welcome to ASLENIX!\n\nYour registration OTP is: ${otp}\n\nPlease use this to verify your email. The code is valid for 10 minutes.\n\nThank you,\nThe Team`;
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "ASLENIX Registration - Verify your email",
+        message,
       });
+    } catch (err) {
+      console.error("Email could not be sent:", err);
+      // We do not fail registration if email fails, but in production we might want to handle it better.
     }
 
     res.status(201).json({
       success: true,
       message:
-        "Registration successful. Please wait for an Admin to approve your account.",
+        "Registration successful. An OTP has been sent to your email.",
       user: {
         id: user._id,
         username: user.username,
-        role: user.role,
-        status: user.status,
+        email: user.email,
       },
     });
   } catch (error) {
@@ -70,6 +74,51 @@ exports.register = async (req, res) => {
       message: "Server error during registration",
       error: error.message,
     });
+  }
+};
+
+// Verify Registration OTP
+exports.verifyRegistrationOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({
+      email,
+      emailVerificationOtp: otp,
+      emailVerificationExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationOtp = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+
+    // 📢 Broadcast to all listening admins that a new user needs approval
+    if (user.role !== "Admin" && req.io) {
+      req.io.emit("newRegistration", {
+        message: `New user '${user.username}' has verified their email and is awaiting approval.`,
+        user: {
+          _id: user._id,
+          username: user.username,
+          name: user.name,
+          role: user.role,
+          status: user.status,
+          email: user.email,
+        },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Email verified successfully! Please wait for Admin approval.",
+    });
+  } catch (error) {
+    console.error("OTP Verification Error:", error);
+    res.status(500).json({ message: "Server error verifying OTP" });
   }
 };
 
@@ -124,10 +173,38 @@ exports.login = async (req, res) => {
         .json({ message: "Your account has been deactivated." });
     }
 
+    // 2FA Verification Step
+    if (user.twoFactorEnabled) {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      user.twoFactorOtp = otp;
+      user.twoFactorExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+      await user.save();
+
+      const message = `ASLENIX Login Attempt\n\nYour 2-Factor Authentication code is: ${otp}\n\nPlease enter this code to complete your login. It is valid for 10 minutes.\n\nIf you did not request this, please change your password immediately.\n\nThank you,\nThe Team`;
+      try {
+        await sendEmail({
+          email: user.email,
+          subject: "ASLENIX - Your 2FA Login Code",
+          message,
+        });
+      } catch (err) {
+        console.error("2FA Email could not be sent:", err);
+      }
+
+      return res.status(200).json({
+        success: true,
+        requires2FA: true,
+        userId: user._id,
+        message: "2FA code sent to your email."
+      });
+    }
+
+    const expiresIn = (user.role === "Admin" || user.role === "Manager") ? "1h" : "12h";
+    
     const token = jwt.sign(
       { userId: user._id, role: user.role, username: user.username },
       process.env.JWT_SECRET || "fallback_secret_key",
-      { expiresIn: "12h" }
+      { expiresIn }
     );
 
     // Log successful login
@@ -156,6 +233,74 @@ exports.login = async (req, res) => {
       message: "Server error during login",
       error: error?.message,
     });
+  }
+};
+
+// Verify 2FA OTP and login
+exports.verify2FA = async (req, res) => {
+  try {
+    const { userId, otp } = req.body;
+
+    if (!userId || !otp) {
+      return res.status(400).json({ message: "User ID and OTP are required" });
+    }
+
+    let user = await Admin.findById(userId);
+    if (!user) {
+      user = await User.findById(userId);
+    }
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.twoFactorOtp !== otp || user.twoFactorExpires < Date.now()) {
+      createLog({
+        user: user.username,
+        role: user.role,
+        action: "Failed 2FA Login",
+        device: req.headers["user-agent"],
+        ip: req.ip,
+        status: "Failed",
+      });
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // Clear 2FA fields
+    user.twoFactorOtp = undefined;
+    user.twoFactorExpires = undefined;
+    await user.save();
+
+    const expiresIn = (user.role === "Admin" || user.role === "Manager") ? "1h" : "12h";
+    
+    const token = jwt.sign(
+      { userId: user._id, role: user.role, username: user.username },
+      process.env.JWT_SECRET || "fallback_secret_key",
+      { expiresIn }
+    );
+
+    // Log successful login
+    createLog({
+      user: user.username,
+      role: user.role,
+      action: "Logged In (2FA)",
+      device: req.headers["user-agent"],
+      ip: req.ip,
+      status: "Success",
+    });
+
+    res.status(200).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        role: user.role,
+        name: user.name,
+      },
+    });
+  } catch (error) {
+    console.error("2FA Verification Error:", error);
+    res.status(500).json({ message: "Server error verifying 2FA" });
   }
 };
 
@@ -273,6 +418,15 @@ exports.updateUserStatus = async (req, res) => {
       });
     }
 
+    createLog({
+      user: req.user.username,
+      role: req.user.role,
+      action: `Updated User Status: ${user.username} to ${status}`,
+      device: req.headers["user-agent"],
+      ip: req.ip,
+      status: "Success",
+    });
+
     res.status(200).json({ message: `User status updated to ${status}` });
   } catch (error) {
     console.error("Update status error:", error);
@@ -305,6 +459,15 @@ exports.updateUser = async (req, res) => {
     if (image !== undefined) user.image = image;
 
     await user.save();
+
+    createLog({
+      user: req.user.username,
+      role: req.user.role,
+      action: `Updated User Details: ${user.username}`,
+      device: req.headers["user-agent"],
+      ip: req.ip,
+      status: "Success",
+    });
 
     res.status(200).json({
       success: true,
@@ -402,6 +565,41 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
+// @desc    Toggle 2FA for current user
+// @route   PUT /api/auth/2fa/toggle
+// @access  Private
+exports.toggle2FA = async (req, res) => {
+  try {
+    let user = await Admin.findById(req.user._id);
+    if (!user) {
+      user = await User.findById(req.user._id);
+    }
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.twoFactorEnabled = !user.twoFactorEnabled;
+    await user.save();
+
+    createLog({
+      user: req.user.username,
+      role: req.user.role,
+      action: `Toggled 2FA to ${user.twoFactorEnabled}`,
+      device: req.headers["user-agent"],
+      ip: req.ip,
+      status: "Success",
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Two-Factor Authentication has been ${user.twoFactorEnabled ? 'enabled' : 'disabled'}.`,
+      twoFactorEnabled: user.twoFactorEnabled
+    });
+  } catch (error) {
+    console.error("Toggle 2FA error:", error);
+    res.status(500).json({ message: "Server error toggling 2FA." });
+  }
+};
+
 // @desc    Delete a user by ID
 // @route   DELETE /api/auth/users/:id
 // @access  Private (Admin)
@@ -421,6 +619,15 @@ exports.deleteUser = async (req, res) => {
     }
 
     await user.deleteOne();
+
+    createLog({
+      user: req.user.username,
+      role: req.user.role,
+      action: `Deleted User: ${user.username}`,
+      device: req.headers["user-agent"],
+      ip: req.ip,
+      status: "Success",
+    });
 
     // 📢 Broadcast that a user has been deleted to update UIs in real-time
     if (req.io) req.io.emit("userDeleted", { _id: req.params.id });

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useOrders } from "../../context/OrderContext";
 import { useAuth } from "../../context/AuthContext";
-import { PlayCircle, LogOut, ArrowDownCircle, Printer, X, AlertTriangle } from "lucide-react";
+import { PlayCircle, LogOut, ArrowDownCircle, Printer, X, AlertTriangle, DollarSign, CreditCard, Banknote, Clock } from "lucide-react";
 import apiClient from "../../api/apiClient";
 import { useToast } from "../../context/ToastContext";
 
@@ -229,77 +229,103 @@ const ShiftManagement = () => {
  }
 
  return (
- <div className="p-6">
- <div className="mb-6">
- <h1 className="text-3xl font-bold text-slate-900">Shift & Drawer</h1>
- <p className="text-slate-500">
- Manage your cash flow and daily closing reports
- </p>
- </div>
+    <div className="p-6 max-w-7xl mx-auto font-sans">
+      <div className="mb-8 flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Shift & Drawer</h1>
+          <p className="text-slate-500 mt-1">
+            Manage your cash flow and daily closing reports
+          </p>
+        </div>
+        <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl font-bold text-sm shadow-sm border border-emerald-100">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Active Shift
+        </div>
+      </div>
 
- <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-100 max-w-2xl screen-only">
- <div className="flex justify-between items-center mb-6">
- <h2 className="text-xl font-black text-slate-900">
- Current Shift Details
- </h2>
- <span className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
- Active
- </span>
- </div>
+      {/* METRICS GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8 screen-only">
+        {/* Starting Float */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+              <DollarSign size={20} />
+            </div>
+            <span className="text-xs font-bold text-slate-400">Opened at {new Date(shift.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Starting Float</h3>
+            <p className="text-2xl font-black text-slate-900">Rs. {shift.startingFloat.toLocaleString()}</p>
+          </div>
+        </div>
 
- <div className="space-y-4">
- <div className="flex justify-between border-b border-slate-100 pb-3">
- <span className="text-slate-500 font-medium">
- Starting Cash Float
- </span>
- <span className="font-bold text-slate-900">
- Rs. {shift.startingFloat.toLocaleString()}
- </span>
- </div>
- <div className="flex justify-between border-b border-slate-100 pb-3">
- <span className="text-slate-500 font-medium">Cash Sales Today</span>
- <span className="font-bold text-slate-900">
- Rs. {shiftMetrics.cashSales.toLocaleString()}
- </span>
- </div>
- <div className="flex justify-between border-b border-slate-100 pb-3">
- <span className="text-slate-500 font-medium">
- Card/Digital Sales
- </span>
- <span className="font-bold text-slate-900">
- Rs. {shiftMetrics.digitalSales.toLocaleString()}
- </span>
- </div>
- <div className="flex justify-between border-b border-slate-100 pb-3 text-rose-600">
- <span className="font-medium">Cash Payouts</span>
- <span className="font-bold">
- - Rs. {shiftMetrics.totalPayouts.toLocaleString()}
- </span>
- </div>
- <div className="flex justify-between pt-3">
- <span className="text-lg font-black text-slate-900">
- Expected Cash in Drawer
- </span>
- <span className="text-lg font-black text-emerald-600">
- Rs. {shiftMetrics.expectedInDrawer.toLocaleString()}
- </span>
- </div>
- </div>
- <div className="mt-8 flex gap-4">
- <button
- onClick={() => setIsPayoutModalOpen(true)}
- className="flex-1 bg-amber-100 text-amber-600 border border-amber-200 font-bold py-3 rounded-xl hover:bg-amber-200 transition flex items-center justify-center gap-2"
- >
- <ArrowDownCircle size={16} /> Cash Payout / Drop
- </button>
- <button
- onClick={() => setIsCloseModalOpen(true)}
- className="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition shadow-md flex items-center justify-center gap-2"
- >
- <LogOut size={16} /> Close Shift (Z-Report)
- </button>
- </div>
- </div>
+        {/* Cash Sales */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+              <Banknote size={20} />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Cash Sales</h3>
+            <p className="text-2xl font-black text-slate-900">Rs. {shiftMetrics.cashSales.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* Digital Sales */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
+              <CreditCard size={20} />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Digital Sales</h3>
+            <p className="text-2xl font-black text-slate-900">Rs. {shiftMetrics.digitalSales.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* Payouts */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
+              <ArrowDownCircle size={20} />
+            </div>
+            <span className="text-xs font-bold text-rose-500">{shift.payouts.length} drops</span>
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Cash Payouts</h3>
+            <p className="text-2xl font-black text-rose-600">- Rs. {shiftMetrics.totalPayouts.toLocaleString()}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* EXPECTED DRAWER AND ACTIONS */}
+      <div className="bg-slate-900 rounded-3xl p-8 shadow-xl shadow-slate-900/10 flex flex-col md:flex-row items-center justify-between gap-6 screen-only border border-slate-800">
+        <div>
+          <h3 className="text-slate-400 font-bold uppercase tracking-wider text-sm mb-2 flex items-center gap-2">
+            <Clock size={16} /> Expected Cash in Drawer
+          </h3>
+          <div className="text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight">
+            Rs. {shiftMetrics.expectedInDrawer.toLocaleString()}
+          </div>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
+          <button
+            onClick={() => setIsPayoutModalOpen(true)}
+            className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-bold py-3.5 px-6 rounded-xl transition flex items-center justify-center gap-2"
+          >
+            <ArrowDownCircle size={18} /> Record Payout
+          </button>
+          <button
+            onClick={() => setIsCloseModalOpen(true)}
+            className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 px-6 rounded-xl transition shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2"
+          >
+            <LogOut size={18} /> Close Shift
+          </button>
+        </div>
+      </div>
 
  {/* MODALS */}
  {isPayoutModalOpen && (

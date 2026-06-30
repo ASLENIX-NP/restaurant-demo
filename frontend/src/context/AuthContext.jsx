@@ -62,10 +62,31 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       const { data } = await apiClient.post("/api/auth/login", { username, password });
+      
+      if (data.requires2FA) {
+        toast.success(data.message || "2FA code sent to your email.");
+        return { success: true, requires2FA: true, userId: data.userId };
+      }
+
       setUser(data.user);
       localStorage.setItem("restaurant_user", JSON.stringify(data.user));
       localStorage.setItem("token", data.token);
       toast.success(data.message || "Logged in successfully!");
+      return { success: true, role: data.user.role };
+    } catch (error) {
+      const message = error.response?.data?.message || error.message;
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  const verify2FA = async (userId, otp) => {
+    try {
+      const { data } = await apiClient.post("/api/auth/verify-2fa", { userId, otp });
+      setUser(data.user);
+      localStorage.setItem("restaurant_user", JSON.stringify(data.user));
+      localStorage.setItem("token", data.token);
+      toast.success("Logged in successfully!");
       return { success: true, role: data.user.role };
     } catch (error) {
       const message = error.response?.data?.message || error.message;
@@ -115,6 +136,7 @@ export const AuthProvider = ({ children }) => {
       value={{
         user,
         login,
+        verify2FA,
         logout,
         register,
         forgotPassword,

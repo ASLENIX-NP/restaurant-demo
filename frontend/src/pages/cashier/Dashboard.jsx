@@ -377,30 +377,45 @@ const Dashboard = () => {
  <div className="payment-chart-wrapper flex flex-col justify-center mt-4">
  <div className="relative h-[220px] w-[220px] mx-auto mb-6">
  <ResponsiveContainer width="99%" height="100%">
- <PieChart>
- <Pie
- data={
- paymentData.length > 0
- ? paymentData
- : [{ name:"No Data", value: 1, color:"#e2e8f0" }]
- }
- cx="50%"
- cy="50%"
- innerRadius={70}
- outerRadius={95}
- paddingAngle={4}
- dataKey="value"
- stroke="none"
- >
- {(paymentData.length > 0
- ? paymentData
- : [{ name:"No Data", value: 1, color:"#e2e8f0" }]
- ).map((entry, index) => (
- <Cell key={`cell-${index}`} fill={entry.color} />
- ))}
- </Pie>
- <Tooltip content={<CustomTooltip />} />
- </PieChart>
+                <PieChart>
+                <Pie
+                  data={
+                    paymentData.length > 0
+                      ? paymentData
+                      : [{ name: "No Data", value: 1, color: "#e2e8f0" }]
+                  }
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={70}
+                  outerRadius={95}
+                  paddingAngle={6}
+                  dataKey="value"
+                  stroke="none"
+                  cornerRadius={6}
+                >
+                  {(paymentData.length > 0
+                    ? paymentData
+                    : [{ name: "No Data", value: 1, color: "#e2e8f0" }]
+                  ).map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color} 
+                      style={{ filter: "drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.1))" }}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: "#0f172a",
+                    borderRadius: "12px",
+                    border: "none",
+                    color: "#fff",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                  }}
+                  itemStyle={{ color: "#e2e8f0", fontSize: "13px", fontWeight: "600" }}
+                  formatter={(value, name) => [`Rs. ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, name]} 
+                />
+                </PieChart>
  </ResponsiveContainer>
  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">

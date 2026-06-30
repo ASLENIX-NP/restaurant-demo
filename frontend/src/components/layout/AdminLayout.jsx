@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Outlet,
   NavLink,
@@ -44,6 +44,26 @@ const AdminLayout = () => {
   const closeMobileMenu = () => {
     setIsMobileOpen(false);
   };
+
+  // SESSION TIMEOUT (30 mins of inactivity)
+  useEffect(() => {
+    let timeout;
+    const resetTimeout = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        handleLogout();
+      }, 30 * 60 * 1000); // 30 mins
+    };
+
+    const events = ["mousemove", "keydown", "mousedown", "touchstart"];
+    events.forEach((evt) => window.addEventListener(evt, resetTimeout));
+    resetTimeout();
+
+    return () => {
+      events.forEach((evt) => window.removeEventListener(evt, resetTimeout));
+      clearTimeout(timeout);
+    };
+  }, []);
 
   return (
     <div className="layout">

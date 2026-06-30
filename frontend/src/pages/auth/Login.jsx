@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import apiClient from "../../api/apiClient";
 import toast from "react-hot-toast";
 import { 
   User, Mail, Briefcase, Utensils, Eye, EyeOff, Loader2, ArrowRight, Phone, Lock, Download
@@ -16,6 +17,7 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [resetEmail, setResetEmail] = useState("");
+  const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -41,6 +43,31 @@ const Login = () => {
     setLoading(true);
 
     const result = await login(username, password);
+
+    if (result?.requires2FA) {
+      setUserId(result.userId);
+      setView("verify2fa");
+      setLoading(false);
+      return;
+    }
+
+    if (result?.success) {
+      let route = result.role?.toLowerCase() || "staff";
+      if (route === "manager" || route === "admin") route = "admin";
+      else if (route === "waiter" || route === "staff") route = "staff";
+      else if (route === "chef") route = "chef";
+      else if (route === "cashier") route = "cashier";
+
+      navigate(`/${route}`);
+    }
+    setLoading(false);
+  };
+
+  const handleVerify2FA = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const result = await useAuth().verify2FA(userId, otp);
 
     if (result?.success) {
       let route = result.role?.toLowerCase() || "staff";
@@ -82,12 +109,13 @@ const Login = () => {
 
     if (result?.success) {
       setUsername(registration.username);
+      setResetEmail(registration.email);
       setPassword("");
       setRegistration({
         name: "", username: "", email: "", phone: "",
         role: "Staff", password: "", confirmPassword: "",
       });
-      setView("login");
+      setView("verifyRegOtp");
       setShowPassword(false);
       setShowConfirmPassword(false);
     }
@@ -131,6 +159,24 @@ const Login = () => {
     setLoading(false);
   };
 
+  const handleVerifyRegOtp = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { data } = await apiClient.post("/api/auth/verify-registration-otp", {
+        email: resetEmail,
+        otp
+      });
+      toast.success(data.message || "Email verified successfully! Please wait for Admin approval.");
+      setView("login");
+      setResetEmail("");
+      setOtp("");
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
+    setLoading(false);
+  };
+
   const switchView = (newView) => {
     setView(newView);
   };
@@ -168,6 +214,10 @@ const Login = () => {
               ? "Enter your details to register as staff."
               : view === "verifyOtp"
               ? `Enter the 6-digit code sent to ${resetEmail}`
+              : view === "verifyRegOtp"
+              ? `Enter the 6-digit verification code sent to ${resetEmail}`
+              : view === "verify2fa"
+              ? "Enter the 6-digit 2FA code sent to your email"
               : "We'll send you instructions to reset your password."}
           </p>
         </div>
@@ -383,6 +433,33 @@ const Login = () => {
                   Sign up
                 </button>
               </p>
+            </form>
+          ) : view === "verifyRegOtp" ? (
+            <form id="verify-reg-otp-form" onSubmit={handleVerifyRegOtp} className="space-y-5">
+              <div>
+                <label className="block text-[13px] font-medium text-slate-700 mb-1.5">Verification OTP</label>
+                <div className="relative group">
+                  <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-700 transition-colors" />
+                  <input
+                    type="text"
+                    maxLength="6"
+                    pattern="\d{6}"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 text-slate-900 placeholder:text-slate-400 pl-10 pr-4 py-2.5 rounded-xl text-[14px] text-center tracking-[0.5em] font-mono outline-none transition-all shadow-sm"
+                    placeholder="••••••"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || otp.length < 6}
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-70 shadow-sm"
+              >
+                {loading ? <Loader2 size={18} className="animate-spin" /> : "Verify Email"}
+              </button>
             </form>
           ) : view === "verifyOtp" ? (
             <form id="verify-otp-form" onSubmit={handleResetPassword} className="space-y-5">

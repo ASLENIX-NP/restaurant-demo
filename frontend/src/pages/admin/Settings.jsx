@@ -29,6 +29,7 @@ import {
 import { useNavigate } from"react-router-dom";
 import apiClient from"../../api/apiClient";
 import { useToast } from "../../context/ToastContext";
+import { useAuth } from "../../context/AuthContext";
 
 import"../../styles/settings.css"; // Kept for any global custom overrides
 
@@ -38,7 +39,15 @@ const Settings = () => {
  const [taxSettings, setTaxSettings] = useState({ vat: 13, serviceCharge: 10, defaultDiscount: 0 });
  const [loading, setLoading] = useState(true);
  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+ const [showPasswordModal, setShowPasswordModal] = useState(false);
+ const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
  const { showToast } = useToast();
+ const { user } = useAuth();
+ const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+
+ useEffect(() => {
+   if (user) setIs2FAEnabled(!!user.twoFactorEnabled);
+ }, [user]);
 
  useEffect(() => {
  const fetchSettings = async () => {
@@ -145,6 +154,35 @@ const Settings = () => {
  showToast("Failed to export CSV", "error");
  }
  };
+
+ const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      return showToast("New passwords do not match", "error");
+    }
+
+    try {
+      await apiClient.put("/api/auth/profile", {
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword
+      });
+      showToast("Password updated successfully!", "success");
+      setShowPasswordModal(false);
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      showToast(error.response?.data?.message || "Failed to update password", "error");
+    }
+  };
+
+  const handleToggle2FA = async () => {
+    try {
+      const { data } = await apiClient.put("/api/auth/2fa/toggle");
+      setIs2FAEnabled(data.twoFactorEnabled);
+      showToast(data.message, "success");
+    } catch (error) {
+      showToast("Failed to toggle 2FA", "error");
+    }
+  };
 
  const restoreFileRef = React.useRef(null);
  const handleRestoreDB = async (e) => {
@@ -492,12 +530,21 @@ const Settings = () => {
  <h2 className="text-lg font-black text-slate-900">Account Security</h2>
  </div>
  <div className="space-y-3">
- <button className="w-full flex items-center gap-3 p-4 rounded-xl border border-slate-100 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all text-left shadow-sm">
+ <button onClick={() => setShowPasswordModal(true)} className="w-full flex items-center gap-3 p-4 rounded-xl border border-slate-100 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all text-left shadow-sm">
  <ShieldCheck size={18} className="text-slate-400"/> Change Password
  </button>
- <button className="w-full flex items-center gap-3 p-4 rounded-xl border border-slate-100 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all text-left shadow-sm">
- <Smartphone size={18} className="text-slate-400"/> Two-Factor Authentication
- </button>
+ <div className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-white shadow-sm">
+  <div className="flex items-center gap-3">
+    <Smartphone size={18} className="text-slate-400"/>
+    <div>
+      <h4 className="text-sm font-bold text-slate-700">Two-Factor Authentication</h4>
+      <p className="text-[11px] font-medium text-slate-400 mt-0.5">Protect your account with Email OTPs</p>
+    </div>
+  </div>
+  <div onClick={handleToggle2FA} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${is2FAEnabled ? 'bg-slate-900' : 'bg-slate-200'}`}>
+    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${is2FAEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+  </div>
+ </div>
  <button onClick={() => navigate("/admin/user-log")} className="w-full flex items-center gap-3 p-4 rounded-xl border border-slate-100 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-all text-left shadow-sm">
  <History size={18} className="text-slate-400"/> Login Activity Log
  </button>
@@ -593,6 +640,34 @@ const Settings = () => {
  </div>
  </div>
  )}
+
+ {/* PASSWORD MODAL */}
+ {showPasswordModal && (
+ <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex justify-center items-center p-4">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-sm p-6 animate-slide-in">
+ <h2 className="text-xl font-black text-slate-900 mb-4">Change Password</h2>
+ <form onSubmit={handlePasswordChange} className="space-y-4">
+ <div>
+ <label className="block text-xs font-bold text-slate-500 mb-1">Current Password</label>
+ <input type="password" required className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" value={passwordForm.currentPassword} onChange={e => setPasswordForm({...passwordForm, currentPassword: e.target.value})} />
+ </div>
+ <div>
+ <label className="block text-xs font-bold text-slate-500 mb-1">New Password</label>
+ <input type="password" required className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" value={passwordForm.newPassword} onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})} />
+ </div>
+ <div>
+ <label className="block text-xs font-bold text-slate-500 mb-1">Confirm New Password</label>
+ <input type="password" required className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" value={passwordForm.confirmPassword} onChange={e => setPasswordForm({...passwordForm, confirmPassword: e.target.value})} />
+ </div>
+ <div className="flex gap-3 pt-2">
+ <button type="button" onClick={() => setShowPasswordModal(false)} className="flex-1 bg-slate-100 text-slate-600 font-bold py-2 rounded-lg hover:bg-slate-200 transition">Cancel</button>
+ <button type="submit" className="flex-1 bg-slate-900 text-white font-bold py-2 rounded-lg hover:bg-slate-800 transition">Save</button>
+ </div>
+ </form>
+ </div>
+ </div>
+ )}
+ 
  </div>
  );
 };
