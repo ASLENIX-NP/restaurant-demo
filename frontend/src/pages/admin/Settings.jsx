@@ -40,13 +40,24 @@ const Settings = () => {
  const [loading, setLoading] = useState(true);
  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
  const [showPasswordModal, setShowPasswordModal] = useState(false);
+ const [showProfileModal, setShowProfileModal] = useState(false);
  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+ const [profileForm, setProfileForm] = useState({ name: "", email: "", phone: "", username: "" });
+ const [uploadingImage, setUploadingImage] = useState(false);
  const { showToast } = useToast();
  const { user } = useAuth();
  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
  useEffect(() => {
-   if (user) setIs2FAEnabled(!!user.twoFactorEnabled);
+   if (user) {
+     setIs2FAEnabled(!!user.twoFactorEnabled);
+     setProfileForm({
+       name: user.name || "",
+       email: user.email || "",
+       phone: user.phone || "",
+       username: user.username || ""
+     });
+   }
  }, [user]);
 
  useEffect(() => {
@@ -184,6 +195,54 @@ const Settings = () => {
     }
   };
 
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const { data } = await apiClient.put("/api/auth/profile", profileForm);
+      const currentUser = JSON.parse(localStorage.getItem("restaurant_user")) || {};
+      const updatedUser = { ...currentUser, ...data.user };
+      localStorage.setItem("restaurant_user", JSON.stringify(updatedUser));
+      
+      showToast("Profile updated successfully! Refreshing...", "success");
+      setShowProfileModal(false);
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (error) {
+      showToast(error.response?.data?.message || "Failed to update profile", "error");
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("File size must be less than 5MB", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    setUploadingImage(true);
+    try {
+      const uploadRes = await apiClient.post("/api/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      const { data } = await apiClient.put("/api/auth/profile", { image: uploadRes.data.url });
+      
+      const currentUser = JSON.parse(localStorage.getItem("restaurant_user")) || {};
+      const updatedUser = { ...currentUser, ...data.user };
+      localStorage.setItem("restaurant_user", JSON.stringify(updatedUser));
+
+      showToast("Profile image updated! Refreshing...", "success");
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (error) {
+      showToast(`Image upload failed: ${error.response?.data?.message || error.message}`, "error");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
  const restoreFileRef = React.useRef(null);
  const handleRestoreDB = async (e) => {
  const file = e.target.files[0];
@@ -300,20 +359,27 @@ const Settings = () => {
  {/* Avatar */}
  <div className="relative group shrink-0">
  <div className="p-1.5 bg-white rounded-full shadow-sm">
- <img 
- src="https://randomuser.me/api/portraits/men/32.jpg" 
- alt="Admin" 
- className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover" 
- />
+ {user?.image ? (
+  <img 
+    src={user.image} 
+    alt={user?.name || "Admin"} 
+    className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover" 
+  />
+ ) : (
+  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+    <UserCircle size={48} />
+  </div>
+ )}
  </div>
- <button className="absolute bottom-2 right-2 w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center border-2 border-white shadow-md hover:bg-slate-800 hover:scale-105 transition-all">
+ <label className="absolute bottom-2 right-2 w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center border-2 border-white shadow-md hover:bg-slate-800 hover:scale-105 transition-all cursor-pointer">
  <Camera size={14} />
- </button>
+ <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
+ </label>
  </div>
 
  {/* Action Buttons */}
  <div className="flex items-center gap-3 pb-2 md:pb-4">
- <button className="hidden sm:flex bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2 px-4 md:py-2.5 md:px-5 rounded-xl transition-all text-sm shadow-sm items-center justify-center gap-2">
+ <button onClick={() => setShowProfileModal(true)} className="hidden sm:flex bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-2 px-4 md:py-2.5 md:px-5 rounded-xl transition-all text-sm shadow-sm items-center justify-center gap-2">
  <UserCircle size={16} /> Edit Profile
  </button>
  <button className="flex bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 px-4 md:py-2.5 md:px-5 rounded-xl transition-all text-sm shadow-md shadow-slate-200 items-center justify-center gap-2">
@@ -326,10 +392,10 @@ const Settings = () => {
  <div>
  <div className="flex flex-wrap items-center gap-3 mb-2">
  <h2 className="text-2xl md:text-[28px] font-black text-slate-900 tracking-tight leading-none">
- Admin User
+ {user?.name || "Admin User"}
  </h2>
  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-black uppercase tracking-wider">
- <ShieldCheck size={14} className="text-indigo-500" /> Super Administrator
+ <ShieldCheck size={14} className="text-indigo-500" /> {user?.role || "Super Administrator"}
  </span>
  </div>
  <p className="text-slate-500 text-sm font-medium max-w-2xl leading-relaxed">
@@ -337,7 +403,7 @@ const Settings = () => {
  </p>
  
  {/* Mobile Edit Button */}
- <button className="mt-5 w-full sm:hidden bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-5 rounded-xl transition-all text-sm shadow-sm flex items-center justify-center gap-2">
+ <button onClick={() => setShowProfileModal(true)} className="mt-5 w-full sm:hidden bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-5 rounded-xl transition-all text-sm shadow-sm flex items-center justify-center gap-2">
  <UserCircle size={16} /> Edit Profile
  </button>
  </div>
@@ -662,6 +728,37 @@ const Settings = () => {
  <div className="flex gap-3 pt-2">
  <button type="button" onClick={() => setShowPasswordModal(false)} className="flex-1 bg-slate-100 text-slate-600 font-bold py-2 rounded-lg hover:bg-slate-200 transition">Cancel</button>
  <button type="submit" className="flex-1 bg-slate-900 text-white font-bold py-2 rounded-lg hover:bg-slate-800 transition">Save</button>
+ </div>
+ </form>
+ </div>
+ </div>
+ )}
+
+ {/* PROFILE MODAL */}
+ {showProfileModal && (
+ <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex justify-center items-center p-4">
+ <div className="bg-white rounded-xl shadow-md w-full max-w-md p-6 animate-slide-in">
+ <h2 className="text-xl font-black text-slate-900 mb-4">Edit Profile</h2>
+ <form onSubmit={handleProfileUpdate} className="space-y-4">
+ <div>
+ <label className="block text-xs font-bold text-slate-500 mb-1">Full Name</label>
+ <input type="text" required className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" value={profileForm.name} onChange={e => setProfileForm({...profileForm, name: e.target.value})} />
+ </div>
+ <div>
+ <label className="block text-xs font-bold text-slate-500 mb-1">Username</label>
+ <input type="text" required className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" value={profileForm.username} onChange={e => setProfileForm({...profileForm, username: e.target.value})} />
+ </div>
+ <div>
+ <label className="block text-xs font-bold text-slate-500 mb-1">Email</label>
+ <input type="email" required className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" value={profileForm.email} onChange={e => setProfileForm({...profileForm, email: e.target.value})} />
+ </div>
+ <div>
+ <label className="block text-xs font-bold text-slate-500 mb-1">Phone</label>
+ <input type="text" required className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" value={profileForm.phone} onChange={e => setProfileForm({...profileForm, phone: e.target.value})} />
+ </div>
+ <div className="flex gap-3 pt-4">
+ <button type="button" onClick={() => setShowProfileModal(false)} className="flex-1 bg-slate-100 text-slate-600 font-bold py-2 rounded-lg hover:bg-slate-200 transition">Cancel</button>
+ <button type="submit" className="flex-1 bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition">Save Changes</button>
  </div>
  </form>
  </div>

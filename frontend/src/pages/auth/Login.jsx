@@ -185,21 +185,31 @@ const Login = () => {
   const labelClass = "block text-[13px] font-bold text-slate-700 mb-2";
 
   return (
-    <div className="min-h-screen w-full bg-[#F8FAFC] flex items-center justify-center p-4 sm:p-8 font-['Outfit'] relative overflow-hidden selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen w-full bg-[#fff9f5] flex items-center justify-center p-4 sm:p-8 font-['Outfit'] relative overflow-hidden selection:bg-[#F37021]/20 selection:text-[#2F4858]">
       
+      {/* Background Watermark */}
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none" 
+        style={{
+          backgroundImage: "url('/logo.png')",
+          backgroundSize: "140%",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          opacity: 0.05
+        }}
+      />
+
       {/* Decorative airy background shapes for a modern SaaS look */}
-      <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-indigo-200/40 to-purple-100/40 blur-[100px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[700px] h-[700px] rounded-full bg-gradient-to-bl from-emerald-100/30 to-amber-100/40 blur-[120px] pointer-events-none"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-[#F37021]/20 to-[#F37021]/5 blur-[100px] pointer-events-none z-0"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[700px] h-[700px] rounded-full bg-gradient-to-bl from-[#2F4858]/20 to-[#2F4858]/5 blur-[120px] pointer-events-none z-0"></div>
 
       <div className="w-full max-w-[480px] bg-white rounded-[32px] p-8 sm:p-12 relative z-10 border border-slate-100 shadow-[0_32px_64px_-24px_rgba(15,23,42,0.06)] animate-fade-in-up">
         
         {/* Branding */}
         <div className="flex flex-col items-center text-center mb-10">
-          <div className="w-16 h-16 bg-slate-900 rounded-[20px] flex items-center justify-center shadow-lg shadow-slate-900/20 mb-6">
-            <Utensils size={28} className="text-white" />
-          </div>
-          <h1 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">
-            मिठ्ठो चिया & Tiffin घर
+          <img src="/logo.png" alt="Logo" style={{ height: "120px", marginBottom: "16px" }} />
+          <h1 className="text-3xl font-black text-[#2F4858] mb-2 tracking-tight">
+            मिठो चिया & Tiffin घर
           </h1>
           <p className="text-slate-500 text-[15px] font-medium">
             {view === "login"
@@ -321,7 +331,7 @@ const Login = () => {
                 id="register-submit-button"
                 type="submit"
                 disabled={loading}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-[18px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-slate-900/10 mt-8"
+                className="w-full bg-[#2F4858] hover:bg-[#1f303a] text-white font-bold py-4 rounded-[18px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-[#2F4858]/20 mt-8"
               >
                 {loading && <Loader2 size={20} className="animate-spin" />}
                 <span className="text-[16px]">Create Account</span>
@@ -329,7 +339,7 @@ const Login = () => {
 
               <p className="text-center text-[14px] text-slate-500 mt-6 font-medium">
                 Already have an account?{" "}
-                <button type="button" onClick={() => switchView("login")} className="text-indigo-600 font-bold hover:text-indigo-700 transition-colors">
+                <button type="button" onClick={() => switchView("login")} className="text-[#F37021] font-bold hover:text-[#d35f1a] transition-colors">
                   Sign in here
                 </button>
               </p>
@@ -356,7 +366,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => switchView("forgotPassword")}
-                    className="text-[13px] font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+                    className="text-[13px] font-bold text-[#F37021] hover:text-[#d35f1a] transition-colors"
                   >
                     Forgot password?
                   </button>
@@ -381,7 +391,7 @@ const Login = () => {
                 id="login-submit-button"
                 type="submit"
                 disabled={loading}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-[18px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-slate-900/10 mt-8 group"
+                className="w-full bg-[#2F4858] hover:bg-[#1f303a] text-white font-bold py-4 rounded-[18px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-[#2F4858]/20 mt-8 group"
               >
                 {loading ? (
                   <Loader2 size={20} className="animate-spin" />
@@ -395,7 +405,7 @@ const Login = () => {
 
               <p className="text-center text-[14px] text-slate-500 pt-6 mt-6 border-t border-slate-100 font-medium">
                 Don't have an account?{" "}
-                <button type="button" onClick={() => switchView("register")} className="text-indigo-600 font-bold hover:text-indigo-700 transition-colors">
+                <button type="button" onClick={() => switchView("register")} className="text-[#F37021] font-bold hover:text-[#d35f1a] transition-colors">
                   Create one now
                 </button>
               </p>
@@ -420,7 +430,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading || otp.length < 6}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-[18px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-slate-900/10"
+                className="w-full bg-[#2F4858] hover:bg-[#1f303a] text-white font-bold py-4 rounded-[18px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-[#2F4858]/20"
               >
                 {loading ? <Loader2 size={20} className="animate-spin" /> : <span className="text-[16px]">Verify Email</span>}
               </button>
@@ -471,7 +481,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-[18px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-slate-900/10 mt-8"
+                className="w-full bg-[#2F4858] hover:bg-[#1f303a] text-white font-bold py-4 rounded-[18px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-[#2F4858]/20 mt-8"
               >
                 {loading && <Loader2 size={20} className="animate-spin" />}
                 <span className="text-[16px]">{loading ? "Verifying..." : "Verify & Reset Password"}</span>
@@ -479,7 +489,7 @@ const Login = () => {
 
               <p className="text-center text-[14px] text-slate-500 pt-4 font-medium">
                 Changed your mind?{" "}
-                <button type="button" onClick={() => switchView("login")} className="text-indigo-600 font-bold hover:text-indigo-700 transition-colors">
+                <button type="button" onClick={() => switchView("login")} className="text-[#F37021] font-bold hover:text-[#d35f1a] transition-colors">
                   Back to login
                 </button>
               </p>
@@ -504,7 +514,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading || otp.length < 6}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-[18px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-slate-900/10"
+                className="w-full bg-[#2F4858] hover:bg-[#1f303a] text-white font-bold py-4 rounded-[18px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-[#2F4858]/20"
               >
                 {loading ? <Loader2 size={20} className="animate-spin" /> : <span className="text-[16px]">Verify 2FA</span>}
               </button>
@@ -527,7 +537,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-[18px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-slate-900/10 mt-8"
+                className="w-full bg-[#2F4858] hover:bg-[#1f303a] text-white font-bold py-4 rounded-[18px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70 shadow-lg shadow-[#2F4858]/20 mt-8"
               >
                 {loading && <Loader2 size={20} className="animate-spin" />}
                 <span className="text-[16px]">{loading ? "Sending link..." : "Send Reset Link"}</span>
@@ -535,7 +545,7 @@ const Login = () => {
 
               <p className="text-center text-[14px] text-slate-500 pt-4 font-medium">
                 Remember your password?{" "}
-                <button type="button" onClick={() => switchView("login")} className="text-indigo-600 font-bold hover:text-indigo-700 transition-colors">
+                <button type="button" onClick={() => switchView("login")} className="text-[#F37021] font-bold hover:text-[#d35f1a] transition-colors">
                   Back to login
                 </button>
               </p>

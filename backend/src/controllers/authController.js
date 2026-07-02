@@ -519,7 +519,7 @@ exports.updateProfile = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const { username, name, email, phone, currentPassword, newPassword } =
+    const { username, name, email, phone, currentPassword, newPassword, image } =
       req.body;
 
     // If the user is trying to change their password, verify the old one first
@@ -541,6 +541,7 @@ exports.updateProfile = async (req, res) => {
     if (name) user.name = name;
     if (email) user.email = email;
     if (phone) user.phone = phone;
+    if (image !== undefined) user.image = image;
 
     await user.save();
 
@@ -552,6 +553,9 @@ exports.updateProfile = async (req, res) => {
         username: user.username,
         role: user.role,
         name: user.name,
+        email: user.email,
+        phone: user.phone,
+        image: user.image
       },
     });
   } catch (error) {

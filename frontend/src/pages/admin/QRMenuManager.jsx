@@ -20,25 +20,33 @@ const QRMenuManager = () => {
 
   const toggleVisibility = async (item) => {
     const updatedStatus = item.isAvailable === false ? true : false;
+    const { _id, __v, createdAt, updatedAt, id, ...rest } = item;
     try {
       await apiClient.put(`/api/menu/${item._id || item.id}`, {
-        ...item,
+        ...rest,
         isAvailable: updatedStatus,
       });
       queryClient.invalidateQueries({ queryKey: ['menu'] });
+      showToast(updatedStatus ? "Item is now visible" : "Item is now hidden", "success");
     } catch (error) {
       console.error("Error updating visibility:", error);
+      showToast(
+        `Failed to update visibility: ${error.response?.data?.message || error.message}`,
+        "error"
+      );
     }
   };
 
   const toggleSpecial = async (item) => {
     const updatedSpecial = !item.isSpecial;
+    const { _id, __v, createdAt, updatedAt, id, ...rest } = item;
     try {
       await apiClient.put(`/api/menu/${item._id || item.id}`, {
-        ...item,
+        ...rest,
         isSpecial: updatedSpecial,
       });
       queryClient.invalidateQueries({ queryKey: ['menu'] });
+      showToast(updatedSpecial ? "Marked as Chef's Special" : "Removed Chef's Special", "success");
     } catch (error) {
       console.error("Error updating special status:", error);
       showToast(
@@ -96,17 +104,17 @@ const QRMenuManager = () => {
  font-size: 52px;
  font-weight: 900;
  margin-bottom: 16px;
- color: #000;
+ color: #2F4858;
  }
  .qr-print-subtitle {
  font-size: 24px;
  margin-bottom: 40px;
- color: #333;
+ color: #F37021;
  }
  .qr-print-footer {
  margin-top: 40px;
  font-size: 18px;
- color: #555;
+ color: #2F4858;
  font-weight: bold;
  }
  }
@@ -271,11 +279,12 @@ const QRMenuManager = () => {
  {/* DEDICATED PRINTABLE QR LAYOUT */}
  {showQRModal && (
  <div id="printable-qr">
+ <img src="/logo.png" alt="Logo" style={{ height: "150px", margin: "0 auto 20px auto", display: "block" }} />
  <h1 className="qr-print-title">Scan for Menu!</h1>
  <p className="qr-print-subtitle">
  Point your phone camera here to view our delicious offerings.
  </p>
- <QRCodeSVG value={targetUrl} size={300} />
+ <QRCodeSVG value={targetUrl} size={300} fgColor="#2F4858" />
  <p className="qr-print-footer">मिठ्ठो चिया & Tiffin घर</p>
  </div>
  )}

@@ -7,9 +7,9 @@ exports.apiLimiter = rateLimit({
   message: { message: "Too many requests from this IP, please try again after 15 minutes." }
 });
 
-// Strict Login Limiter (5 requests per 15 mins)
+// Strict Login Limiter (Increased for development)
 exports.loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login requests per windowMs
+  max: 5000, 
   message: { message: "Too many login attempts from this IP, please try again after 15 minutes. Brute force protection activated." }
 });

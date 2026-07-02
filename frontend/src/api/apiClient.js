@@ -33,7 +33,7 @@ apiClient.interceptors.response.use(
       // Clear token and redirect to login
       localStorage.removeItem('token');
       localStorage.removeItem('restaurant_user');
-      if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/' && !window.location.pathname.startsWith('/menu')) {
         window.location.href = '/login';
       }
     }

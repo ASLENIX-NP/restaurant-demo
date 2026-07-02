@@ -87,12 +87,12 @@ export default function CustomerMenu() {
 
   :root {
   --bg-white: #ffffff;
-  --bg-cream: #fbf9f4;
-  --text-brown: #4a2f1d;
-  --text-brown-light: #6a4a35;
-  --border-brown: #3a2210; 
-  --hover-taupe: #f7f3eb;
-  --accent-gold: #c29b57;
+  --bg-cream: #fff9f5;
+  --text-brown: #2F4858;
+  --text-brown-light: #4A6E8A;
+  --border-brown: #2F4858; 
+  --hover-taupe: #ffeadb;
+  --accent-gold: #F37021;
   --font-heading:'Playfair Display', serif;
   --font-body:'Poppins', sans-serif;
   }
@@ -113,11 +113,11 @@ export default function CustomerMenu() {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=1920&q=80');
-  background-size: cover;
+  background-image: url('/logo.png');
+  background-size: 140%;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.12; 
+  opacity: 0.05; 
   z-index: 0;
   pointer-events: none;
   }
@@ -161,8 +161,9 @@ export default function CustomerMenu() {
   }
 
   .menu-hero h1 {
-  font-family: var(--font-heading);
-  font-size: 3.5rem;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 2.8rem;
   color: var(--text-brown);
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -328,7 +329,7 @@ export default function CustomerMenu() {
     padding: 2.5rem 1rem 1.5rem;
   }
   .menu-hero h1 {
-    font-size: 2.2rem;
+    font-size: 1.8rem;
   }
   .menu-container {
   padding: 1.5rem;
@@ -372,7 +373,8 @@ export default function CustomerMenu() {
  </nav>
 
  <section className="menu-hero">
- <h1>मीठो चिया & Tiffin घर</h1>
+ <img src="/logo.png" alt="Logo" style={{ height: "180px", margin: "0 auto 15px auto", display: "block" }} />
+ <h1>मिठ्ठो चिया & Tiffin घर Menu</h1>
  </section>
 
  <div className="menu-container">

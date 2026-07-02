@@ -15,8 +15,8 @@ const MenuView = () => {
     const fetchMenu = async () => {
       try {
         const { data } = await apiClient.get("/api/menu");
-        // Filter out unavailable items if needed, but usually we just show them as greyed out
-        setMenuItems(Array.isArray(data) ? data : (data?.items || []));
+        const items = Array.isArray(data) ? data : (data?.items || []);
+        setMenuItems(items.filter(item => item.isAvailable !== false));
       } catch (error) {
         console.error("Failed to fetch menu:", error);
       } finally {
@@ -34,9 +34,10 @@ const MenuView = () => {
 
  return (
  <div className="menu-view-page min-h-screen bg-slate-50 pb-12 transition-colors duration-300">
- <div className="menu-header bg-slate-900 backdrop-blur-md text-white p-6 rounded-b-[40px] mb-8 shadow-md border-b border-white/10">
- <h1 className="text-3xl font-black text-center tracking-tighter">मिठ्ठो चिया & Tiffin घर</h1>
- <p className="text-center text-slate-400 font-bold mt-1 text-sm uppercase tracking-widest">Table {tableId ||"Walk-in"}</p>
+ <div className="menu-header bg-white text-slate-900 p-6 rounded-b-[40px] mb-8 shadow-sm border-b border-slate-200 flex flex-col items-center">
+ <img src="/logo.svg" alt="Logo" className="h-24 md:h-32 object-contain mb-4" />
+ <h1 className="text-3xl font-black text-center tracking-tighter text-[#2F4858]">मिठ्ठो चिया <span className="text-[#F37021]">& Tiffin घर</span></h1>
+ <p className="text-center text-[#F37021] font-bold mt-1 text-sm uppercase tracking-widest">Table {tableId ||"Walk-in"}</p>
  </div>
 
  <div className="category-scroll-container px-4 mb-8 flex gap-3 overflow-x-auto scrollbar-hide py-1">
@@ -46,8 +47,8 @@ const MenuView = () => {
  onClick={() => setActiveCategory(cat)}
  className={`px-5 py-2.5 rounded-full font-bold whitespace-nowrap transition-all ${
  activeCategory === cat 
- ?"bg-indigo-600 text-white shadow-md ring-2 ring-indigo-600 ring-offset-2" 
- :"bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 :bg-slate-800"
+ ?"bg-[#F37021] text-white shadow-md ring-2 ring-[#F37021] ring-offset-2" 
+ :"bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
  }`}
  >
  {cat}
@@ -88,14 +89,14 @@ const MenuView = () => {
  </div>
  )}
  {item.isAvailable && (
- <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black text-slate-900 shadow-sm border border-white/50">
+ <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-black text-[#2F4858] shadow-sm border border-white/50">
  Rs. {item.price}
  </div>
  )}
  </div>
  <div className="p-5 pt-4">
  <div className="flex justify-between items-start mb-1.5">
- <h3 className="text-[17px] font-black text-slate-900 leading-tight pr-4">{item.name}</h3>
+ <h3 className="text-[17px] font-black text-[#2F4858] leading-tight pr-4">{item.name}</h3>
  </div>
  <p className="text-[13px] text-slate-500 font-medium leading-relaxed line-clamp-2">{item.description}</p>
  </div>
