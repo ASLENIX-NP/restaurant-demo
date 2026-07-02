@@ -1,5 +1,7 @@
-import React from "react";
-import { X, AlertTriangle } from "lucide-react";
+import React, { useState } from "react";
+import { X, AlertTriangle, Image as ImageIcon, FolderOpen, Trash2 } from "lucide-react";
+import apiClient from "../../api/apiClient";
+import { useToast } from "../../context/ToastContext";
 
 const EmployeeModal = ({
   showModal,
@@ -9,6 +11,35 @@ const EmployeeModal = ({
   setNewEmployee,
   handleSaveEmployee
 }) => {
+  const { showToast } = useToast();
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("File size must be less than 5MB", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    setUploadingImage(true);
+    try {
+      const response = await apiClient.post("/api/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      setNewEmployee({ ...newEmployee, image: response.data.url });
+      showToast("Image uploaded successfully!", "success");
+    } catch (error) {
+      showToast(`Upload failed: ${error.response?.data?.message || error.message}`, "error");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   if (!showModal) return null;
 
   return (
@@ -139,14 +170,55 @@ const EmployeeModal = ({
               </select>
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Profile Image URL</label>
-              <input
-                type="text"
-                value={newEmployee.image}
-                onChange={(e) => setNewEmployee({ ...newEmployee, image: e.target.value })}
-                className="w-full border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 transition-all font-medium text-sm"
-                placeholder="https://..."
-              />
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                Profile Image
+              </label>
+              <div className="flex gap-4 items-end">
+                <div 
+                  className="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0 shadow-sm relative group"
+                >
+                  {newEmployee.image ? (
+                    <>
+                      <img 
+                        src={newEmployee.image} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          type="button"
+                          onClick={() => setNewEmployee({...newEmployee, image: ""})}
+                          className="p-1.5 bg-rose-500 text-white rounded-full hover:bg-rose-600 shadow-md transition"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <ImageIcon size={24} className="text-slate-300" />
+                  )}
+                </div>
+                <div className="flex-1 pb-1">
+                  <input
+                    type="file"
+                    id="empImageUpload"
+                    accept="image/jpeg, image/png, image/webp, image/gif, image/svg+xml"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                  <label 
+                    htmlFor="empImageUpload"
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs shadow-sm cursor-pointer transition-colors border ${
+                      uploadingImage 
+                        ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed" 
+                        : "bg-white border-slate-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200"
+                    }`}
+                  >
+                    <FolderOpen size={14} />
+                    {uploadingImage ? "Uploading..." : "Upload Image"}
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 

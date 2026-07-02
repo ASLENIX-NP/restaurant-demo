@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Trash2, User } from "lucide-react";
 
 const EmployeeList = ({
   filteredEmployees,
@@ -44,11 +44,17 @@ const EmployeeList = ({
                 >
                   <td className="p-5 pl-8">
                     <div className="flex items-center gap-4">
-                      <img
-                        src={employee.image || "https://randomuser.me/api/portraits/men/1.jpg"}
-                        alt={employee.name}
-                        className="w-11 h-11 rounded-full object-cover shadow-sm ring-2 ring-white"
-                      />
+                      {employee.image ? (
+                        <img
+                          src={employee.image}
+                          alt={employee.name}
+                          className="w-11 h-11 rounded-full object-cover shadow-sm ring-2 ring-white"
+                        />
+                      ) : (
+                        <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shadow-sm ring-2 ring-white">
+                          <User size={20} />
+                        </div>
+                      )}
                       <div>
                         <h4 className="font-bold text-slate-900 leading-tight">
                           {employee.name}

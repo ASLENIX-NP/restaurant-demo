@@ -1,5 +1,5 @@
 import React from "react";
-import { Mail, Phone, Clock, Banknote, XCircle, CheckCircle2, Edit2, Trash2 } from "lucide-react";
+import { Mail, Phone, Clock, Banknote, XCircle, CheckCircle2, Edit2, Trash2, User } from "lucide-react";
 
 const EmployeeCard = ({
   employee,
@@ -13,11 +13,17 @@ const EmployeeCard = ({
       {/* Header Info */}
       <div className="flex items-center gap-4 mb-6">
         <div className="relative">
-          <img
-            src={employee.image || "https://randomuser.me/api/portraits/men/1.jpg"}
-            alt={employee.name}
-            className="w-16 h-16 rounded-2xl object-cover shadow-sm"
-          />
+          {employee.image ? (
+            <img
+              src={employee.image}
+              alt={employee.name}
+              className="w-16 h-16 rounded-2xl object-cover shadow-sm"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 shadow-sm">
+              <User size={32} />
+            </div>
+          )}
           <div
             className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${
               employee.status === "Active"
