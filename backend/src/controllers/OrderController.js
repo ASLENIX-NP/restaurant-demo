@@ -159,8 +159,21 @@ exports.getOrders = async (req, res) => {
       dbQuery.status = req.query.status;
     }
 
-    // Use .lean() to get plain JavaScript objects for easier manipulation
-    const orders = await Order.find(dbQuery).sort({ createdAt: -1 }).lean();
+    // 2. Pagination Logic
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 50;
+    const skip = (page - 1) * limit;
+
+    // 3. Execute query with pagination
+    const totalOrders = await Order.countDocuments(dbQuery);
+    const orders = await Order.find(dbQuery)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const totalPages = Math.ceil(totalOrders / limit);
+    const paginationMeta = { totalOrders, totalPages, currentPage: page, limit };
 
     // If the user requesting the orders is a Chef, strip out pricing details, filter, and sort
     if (req.user.role === "Chef") {
@@ -206,7 +219,7 @@ exports.getOrders = async (req, res) => {
         return timeA - timeB;
       });
 
-      return res.status(200).json(chefOrders);
+      return res.status(200).json({ data: chefOrders, ...paginationMeta });
     }
 
     // If the user is a Cashier, return full financial details needed for billing
@@ -226,16 +239,16 @@ exports.getOrders = async (req, res) => {
         discountAmount: order.discountAmount,
         serviceCharge: order.serviceCharge,
       }));
-      return res.status(200).json(cashierOrders);
+      return res.status(200).json({ data: cashierOrders, ...paginationMeta });
     }
 
     // If the user is a Staff member, they should only see active orders, not payment history
     if (req.user.role === "Staff") {
-      return res.status(200).json(orders);
+      return res.status(200).json({ data: orders, ...paginationMeta });
     }
 
     // Admin gets the fully unedited order details (including completed payment history)
-    res.status(200).json(orders);
+    res.status(200).json({ data: orders, ...paginationMeta });
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.status(500).json({ message: "Server error fetching orders" });

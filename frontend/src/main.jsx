@@ -21,23 +21,25 @@ import {
 
 import { ToastProvider } from "./context/ToastContext";
 
+import ErrorBoundary from "./components/ui/ErrorBoundary";
+
 ReactDOM.createRoot(
  document.getElementById("root")
 ).render(
 
  <React.StrictMode>
-
-  <SocketProvider>
-   <ToastProvider>
-    <AuthProvider>
-     <OrderProvider>
-      <TableProvider>
-       <App />
-      </TableProvider>
-     </OrderProvider>
-    </AuthProvider>
-   </ToastProvider>
-  </SocketProvider>
-
+  <ErrorBoundary>
+   <SocketProvider>
+    <ToastProvider>
+     <AuthProvider>
+      <OrderProvider>
+       <TableProvider>
+        <App />
+       </TableProvider>
+      </OrderProvider>
+     </AuthProvider>
+    </ToastProvider>
+   </SocketProvider>
+  </ErrorBoundary>
  </React.StrictMode>
 );

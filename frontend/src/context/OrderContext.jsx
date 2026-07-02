@@ -20,7 +20,8 @@ export const OrderProvider = ({ children }) => {
   const fetchOrders = useCallback(async () => {
     try {
       const { data } = await apiClient.get("/api/orders");
-      setOrders(data);
+      // Handle both the old array format and the new paginated object format
+      setOrders(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
