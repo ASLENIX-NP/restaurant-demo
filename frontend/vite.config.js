@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      devOptions: { enabled: true },
+      devOptions: { enabled: false }, // Disabled in dev to prevent caching old CSS/UI
       manifest: {
         name: 'मिठ्ठो चिया & Tiffin घर',
         short_name: 'मिठ्ठो चिया & Tiffin घर',
