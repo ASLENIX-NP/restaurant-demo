@@ -34,7 +34,6 @@ export default function TakeOrder() {
  };
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedTable, setSelectedTable] = useState("All Tables");
-  const [isTableDropdownOpen, setIsTableDropdownOpen] = useState(false);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [cart, setCart] = useState([]);
   const [orderNote, setOrderNote] = useState("");
@@ -127,14 +126,15 @@ export default function TakeOrder() {
  priority: "Normal",
  station: "Hot Line",
  notes: orderNote,
- items: cart.map(({ id, name, qty, price, category }) => ({
- id,
- name,
- qty,
- price,
- category: category || "Mains",
- station: "Hot Line",
- })),
+  items: cart.map(({ id, name, qty, price, category, image }) => ({
+  id,
+  name,
+  qty,
+  price,
+  category: category || "Mains",
+  station: "Hot Line",
+  image: image || "",
+  })),
  subtotal,
  total: parseFloat(total.toFixed(2)),
  status: "Pending",
@@ -220,7 +220,8 @@ export default function TakeOrder() {
         qty: 1,
         price: item.price,
         category: item.category || "Drinks",
-        station: item.station || "Hot Line"
+        station: item.station || "Hot Line",
+        image: item.image || ""
       }],
       subtotal: item.price,
       total: item.price,
@@ -343,85 +344,55 @@ export default function TakeOrder() {
  Select Table
  </h3>
  <div className="flex flex-wrap items-center gap-4">
-   <div className="relative w-full sm:w-80">
-     <button
-       onClick={() => setIsTableDropdownOpen(!isTableDropdownOpen)}
-       className={`w-full flex items-center justify-between p-3.5 px-5 border-2 rounded-xl font-bold transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-50 ${
-         isTableDropdownOpen 
-           ? "border-indigo-400 bg-indigo-50/30" 
-           : "border-slate-200 bg-white hover:border-slate-300"
-       }`}
-     >
-       <div className="flex items-center gap-3">
-         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${selectedTable !== "All Tables" ? "bg-indigo-100 text-indigo-600" : "bg-slate-100 text-slate-500"}`}>
-           <Table2 size={16} />
-         </div>
-         <span className={`text-base ${selectedTable !== "All Tables" ? "text-indigo-800" : "text-slate-600"}`}>
-           {selectedTable}
-         </span>
-       </div>
-       <ChevronDown size={20} className={`text-slate-400 transition-transform duration-300 ${isTableDropdownOpen ? 'rotate-180' : ''}`} />
-     </button>
+   <div className="flex flex-wrap gap-3 w-full">
+     {dynamicTables.map((table, index) => {
+       const isUrgent = orders.some(o => o.table === table && o.status !== "Completed" && (o.elapsedMinutes || 0) >= 15);
+       const isSelected = selectedTable === table;
+       const tableObj = tables.find(t => (t.name || `Table ${t.id}`) === table);
+       
+       let statusColor = "bg-slate-50 text-slate-500 border-slate-200";
+       let statusText = "";
+       if (tableObj) {
+         if (tableObj.status === "Available") {
+           statusColor = "bg-emerald-50 text-emerald-600 border-emerald-200";
+           statusText = "Available";
+         } else if (tableObj.status === "Occupied") {
+           statusColor = "bg-rose-50 text-rose-600 border-rose-200";
+           statusText = "Occupied";
+         } else if (tableObj.status === "Reserved") {
+           statusColor = "bg-amber-50 text-amber-600 border-amber-200";
+           statusText = "Reserved";
+         }
+       }
 
-     {isTableDropdownOpen && (
-       <>
-         {/* Invisible backdrop to close on click outside */}
-         <div className="fixed inset-0 z-40" onClick={() => setIsTableDropdownOpen(false)} />
-         
-         <div className="absolute z-50 mt-2 w-full bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden max-h-72 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
-           {dynamicTables.map((table, index) => {
-             const isUrgent = orders.some(o => o.table === table && o.status !== "Completed" && (o.elapsedMinutes || 0) >= 15);
-             const isSelected = selectedTable === table;
-             const tableObj = tables.find(t => (t.name || `Table ${t.id}`) === table);
-             
-             let statusColor = "";
-             let statusText = "";
-             if (tableObj) {
-               if (tableObj.status === "Available") {
-                 statusColor = "bg-emerald-50 text-emerald-600 border-emerald-200";
-                 statusText = "Available";
-               } else if (tableObj.status === "Occupied") {
-                 statusColor = "bg-rose-50 text-rose-600 border-rose-200";
-                 statusText = "Occupied";
-               } else if (tableObj.status === "Reserved") {
-                 statusColor = "bg-amber-50 text-amber-600 border-amber-200";
-                 statusText = "Reserved";
-               }
-             }
-
-             return (
-               <button
-                 key={index}
-                 onClick={() => {
-                   setSelectedTable(table);
-                   setIsTableDropdownOpen(false);
-                 }}
-                 className={`w-full text-left px-5 py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors flex justify-between items-center group ${isSelected ? 'bg-indigo-50/50' : ''}`}
-               >
-                 <div className="flex items-center gap-3">
-                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isSelected ? 'bg-indigo-500' : 'bg-transparent group-hover:bg-slate-200 transition-colors'}`} />
-                   <span className={`font-black text-sm tracking-wide ${isSelected ? 'text-indigo-700' : 'text-slate-700 group-hover:text-slate-900'}`}>
-                     {table}
-                   </span>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   {tableObj && (
-                     <span className={`text-[9px] px-2 py-0.5 rounded border font-black uppercase tracking-widest whitespace-nowrap ${statusColor}`}>
-                       {statusText}
-                     </span>
-                   )}
-                   {isUrgent && (
-                     <span className="flex items-center gap-1 text-[9px] bg-rose-100 text-rose-600 px-2 py-0.5 rounded font-black uppercase tracking-widest shadow-sm whitespace-nowrap">
-                       <AlertTriangle size={10} /> Urgent
-                     </span>
-                   )}
-                 </div>
-               </button>
-             );
-           })}
-         </div>
-       </>
-     )}
+       return (
+         <button
+           key={index}
+           onClick={() => setSelectedTable(table)}
+           className={`flex flex-col items-start p-3 border-2 rounded-xl transition-all shadow-sm flex-grow sm:flex-grow-0 sm:min-w-[140px] ${
+             isSelected
+               ? "border-indigo-500 bg-indigo-50/50 scale-[1.02]"
+               : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/20"
+           }`}
+         >
+           <div className="flex justify-between items-center w-full gap-2">
+             <span className={`font-black text-sm tracking-wide whitespace-nowrap ${isSelected ? "text-indigo-700" : "text-slate-700"}`}>
+               {table}
+             </span>
+             {isUrgent && (
+               <span className="flex items-center gap-1 text-[9px] bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded font-black uppercase tracking-widest shadow-sm whitespace-nowrap">
+                 <AlertTriangle size={10} />
+               </span>
+             )}
+           </div>
+           {tableObj && (
+             <span className={`text-[9px] px-2 py-0.5 mt-2 rounded border font-black uppercase tracking-widest whitespace-nowrap ${statusColor}`}>
+               {statusText}
+             </span>
+           )}
+         </button>
+       );
+     })}
    </div>
 
    {(() => {

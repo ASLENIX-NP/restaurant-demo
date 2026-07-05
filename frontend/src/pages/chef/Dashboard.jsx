@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from"react";
 import { useNavigate } from"react-router-dom";
+import ProfileModal from "../../components/common/ProfileModal";
 import {
  AlarmClock,
  Bell,
@@ -14,6 +15,7 @@ import {
  Salad,
  Timer,
  UtensilsCrossed,
+ UserCircle,
 } from"lucide-react";
 import { useOrders } from "../../context/OrderContext";
 import { useAuth } from"../../context/AuthContext";
@@ -83,8 +85,9 @@ const Dashboard = () => {
  const [statusFilter, setStatusFilter] = useState("All");
  const [isAudioMuted, setIsAudioMuted] = useState(false);
  const [isFullscreen, setIsFullscreen] = useState(false);
+ const [showProfileModal, setShowProfileModal] = useState(false);
  const { orders, startCooking, markReady } = useOrders();
- const { logout } = useAuth();
+ const { user, logout } = useAuth();
  const navigate = useNavigate();
  const prevOrdersRef = useRef(orders);
 
@@ -132,7 +135,7 @@ const Dashboard = () => {
 
  const prepMap = {};
  orders
- .filter((order) => order.status !=="Ready")
+ .filter((order) => order.status !== "Ready" && order.status !== "Cancelled" && order.status !== "Completed" && order.status !== "Served")
  .forEach((order) => {
  (order.items || []).forEach((item) => {
  prepMap[item.name] = (prepMap[item.name] || 0) + item.qty;
@@ -141,7 +144,7 @@ const Dashboard = () => {
 
  return {
  totalActive: orders.filter(
- (o) => o.status !=="Completed" && o.status !=="Served"
+ (o) => o.status !== "Completed" && o.status !== "Served" && o.status !== "Cancelled"
  ).length,
  pending,
  cooking,
@@ -154,7 +157,7 @@ const Dashboard = () => {
  const filteredOrders = useMemo(() => {
  return orders
  .filter((order) => {
- if (order.status ==="Completed" || order.status ==="Served")
+ if (order.status ==="Completed" || order.status ==="Served" || order.status ==="Cancelled")
  return false;
 
  const stationMatches =
@@ -249,6 +252,14 @@ const Dashboard = () => {
           <button className="flex items-center justify-center gap-2 h-10 px-4 flex-1 lg:flex-none bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-black transition-colors" onClick={toggleFullscreen} type="button">
             <Maximize2 size={15} />
             {isFullscreen ? "Exit KDS" : "Fullscreen"}
+          </button>
+          <button className="flex items-center justify-center gap-2 h-10 px-4 flex-1 lg:flex-none bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 rounded-lg text-xs font-black transition-colors" onClick={() => setShowProfileModal(true)} type="button" title="My Profile">
+            {user?.image ? (
+              <img src={user.image} alt={user.name} className="w-5 h-5 rounded-full object-cover" />
+            ) : (
+              <UserCircle size={15} />
+            )}
+            {user?.name || "Profile"}
           </button>
           <button className="flex items-center justify-center gap-2 h-10 px-4 flex-1 lg:flex-none bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 rounded-lg text-xs font-black transition-colors" onClick={handleLogout} type="button" title="Sign Out">
             <LogOut size={15} />
@@ -542,6 +553,10 @@ const Dashboard = () => {
           </div>
         </aside>
       </main>
+
+      {showProfileModal && (
+        <ProfileModal onClose={() => setShowProfileModal(false)} />
+      )}
     </div>
   );
 };

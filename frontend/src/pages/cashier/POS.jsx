@@ -31,6 +31,7 @@ const POS = () => {
  price: parseFloat(item.price) || 0,
  qty: 0,
  revenue: 0,
+ image: item.image || "",
  };
  }
 
@@ -220,9 +221,13 @@ const POS = () => {
  >
  <td className="p-4 pl-6">
  <div className="flex items-center gap-3">
+ {item.image ? (
+ <img src={item.image} alt={item.name} className="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-sm" />
+ ) : (
  <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 shadow-sm group-hover:scale-110 transition-transform duration-300">
  <UtensilsCrossed size={16} />
  </div>
+ )}
  <span className="font-bold text-slate-900">
  {item.name}
  </span>

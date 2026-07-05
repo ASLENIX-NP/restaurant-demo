@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate } from"react-router-dom";
 import { useState, useEffect, useRef } from"react";
+import ProfileModal from "../common/ProfileModal";
 import { 
  BellRing, 
  X,
@@ -14,7 +15,8 @@ import {
  ChevronLeft,
  ChevronRight,
  Menu,
- Download
+ Download,
+ UserCircle
 } from"lucide-react";
 import { useOrders } from"../../context/OrderContext";
 import { useAuth } from"../../context/AuthContext";
@@ -28,7 +30,8 @@ const StaffLayout = () => {
  const [notification, setNotification] = useState(null);
  const [isCollapsed, setIsCollapsed] = useState(false);
  const [isMobileOpen, setIsMobileOpen] = useState(false);
- const { logout } = useAuth();
+ const [showProfileModal, setShowProfileModal] = useState(false);
+ const { user, logout } = useAuth();
  const prevOrdersRef = useRef(orders);
  const { isInstallable, installPWA } = usePWAInstall();
 
@@ -79,102 +82,121 @@ const StaffLayout = () => {
         onClick={() => setIsMobileOpen(false)}
       ></div>
 
- {/* SIDEBAR */}
- <div className={`sidebar ${isCollapsed ? "collapsed" : ""} ${isMobileOpen ? "mobile-open" : ""}`}>
-  <div className="sidebar-header flex justify-between items-center">
-    <div>
-      <div className="brand-logo">
-        <Store size={28} className="brand-icon" />
-        <h1 className="logo-text">मिठ्ठो चिया & Tiffin घर</h1>
+  {/* SIDEBAR */}
+  <div className={`sidebar ${isCollapsed ? "collapsed" : ""} ${isMobileOpen ? "mobile-open" : ""}`}>
+    <div className="sidebar-header flex justify-between items-center">
+      <div>
+        <div className="brand-logo">
+          <img src="/logo.png" alt="Logo" style={{ height: "44px", width: "auto" }} />
+          <h1 className="logo-text text-[22px]">मिठ्ठो चिया & Tiffin घर</h1>
+        </div>
+        <p className="brand-subtitle">Staff Panel</p>
       </div>
-      <p className="brand-subtitle">Staff Panel</p>
+      {/* Mobile Close Button */}
+      <button 
+        className="md:hidden text-slate-400 hover:text-white"
+        onClick={() => setIsMobileOpen(false)}
+      >
+        <X size={24} />
+      </button>
     </div>
-         {/* Mobile Close Button */}
-         <button 
-           className="md:hidden text-slate-400 hover:text-white"
-           onClick={() => setIsMobileOpen(false)}
-         >
-           <X size={24} />
-         </button>
+
+    <nav className="sidebar-menu">
+      <NavLink to="/staff" end className="menu-item" onClick={() => setIsMobileOpen(false)}>
+        <LayoutDashboard size={20} />
+        <span>Dashboard</span>
+      </NavLink>
+
+      <NavLink to="/staff/take-order" className="menu-item" onClick={() => setIsMobileOpen(false)}>
+        <PenLine size={20} />
+        <span>Take Order</span>
+      </NavLink>
+
+      <NavLink to="/staff/tables" className="menu-item" onClick={() => setIsMobileOpen(false)}>
+        <LayoutGrid size={20} />
+        <span>Tables</span>
+      </NavLink>
+
+      <NavLink to="/staff/ready-orders" className="menu-item" onClick={() => setIsMobileOpen(false)}>
+        <PackageCheck size={20} />
+        <span>Ready Orders</span>
+      </NavLink>
+
+      <NavLink to="/staff/reservations" className="menu-item" onClick={() => setIsMobileOpen(false)}>
+        <CalendarDays size={20} />
+        <span>Reservations</span>
+      </NavLink>
+
+      <NavLink to="/staff/history" className="menu-item" onClick={() => setIsMobileOpen(false)}>
+        <Clock size={20} />
+        <span>History</span>
+      </NavLink>
+    </nav>
+
+    {/* COLLAPSE TOGGLE */}
+    <button 
+      className="collapse-toggle-btn"
+      onClick={() => setIsCollapsed(!isCollapsed)}
+    >
+      {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+    </button>
+
+    {isInstallable && !isCollapsed && (
+      <button className="logout-btn" onClick={installPWA} style={{ marginBottom: '10px', backgroundColor: '#fff6f0', color: '#F37021' }}>
+        <Download size={18} />
+        <span>Install App</span>
+      </button>
+    )}
+
+    {isInstallable && isCollapsed && (
+      <button className="logout-btn" onClick={installPWA} style={{ marginBottom: '10px', backgroundColor: '#fff6f0', color: '#F37021', padding: '12px' }} title="Install App">
+        <Download size={18} style={{ margin: 0 }} />
+      </button>
+    )}
+
+    {/* PROFILE BUTTON */}
+    <button
+      className={`logout-btn flex items-center gap-3 mb-2 bg-slate-800 hover:bg-slate-700 w-[calc(100%-2rem)] mx-4 rounded-xl px-4 py-3 text-white transition-all text-left ${isCollapsed ? 'justify-center p-2' : ''}`}
+      onClick={() => setShowProfileModal(true)}
+      title="My Profile"
+    >
+      {user?.image ? (
+        <img src={user.image} alt={user?.name} className={`${isCollapsed ? 'w-8 h-8' : 'w-8 h-8'} rounded-full object-cover shrink-0`} />
+      ) : (
+        <UserCircle size={isCollapsed ? 24 : 32} className="text-slate-300 shrink-0" />
+      )}
+      {!isCollapsed && (
+        <div className="overflow-hidden">
+          <h4 className="text-sm font-bold truncate leading-tight">{user?.name || "My Profile"}</h4>
+          <p className="text-[10px] text-slate-400 font-medium truncate uppercase tracking-wider">{user?.role}</p>
+        </div>
+      )}
+    </button>
+
+    {/* LOGOUT */}
+    <button className="logout-btn" onClick={handleLogout}>
+      <LogOut size={18} />
+      <span>Logout</span>
+    </button>
   </div>
 
- <nav className="sidebar-menu">
- <NavLink to="/staff" end className="menu-item" onClick={() => setIsMobileOpen(false)}>
- <LayoutDashboard size={20} />
- <span>Dashboard</span>
- </NavLink>
-
- <NavLink to="/staff/take-order" className="menu-item" onClick={() => setIsMobileOpen(false)}>
- <PenLine size={20} />
- <span>Take Order</span>
- </NavLink>
-
- <NavLink to="/staff/tables" className="menu-item" onClick={() => setIsMobileOpen(false)}>
- <LayoutGrid size={20} />
- <span>Tables</span>
- </NavLink>
-
- <NavLink to="/staff/ready-orders" className="menu-item" onClick={() => setIsMobileOpen(false)}>
- <PackageCheck size={20} />
- <span>Ready Orders</span>
- </NavLink>
-
- <NavLink to="/staff/reservations" className="menu-item" onClick={() => setIsMobileOpen(false)}>
- <CalendarDays size={20} />
- <span>Reservations</span>
- </NavLink>
-
- <NavLink to="/staff/history" className="menu-item" onClick={() => setIsMobileOpen(false)}>
- <Clock size={20} />
- <span>History</span>
- </NavLink>
- </nav>
-
- {/* COLLAPSE TOGGLE */}
- <button 
-   className="collapse-toggle-btn"
-   onClick={() => setIsCollapsed(!isCollapsed)}
- >
-   {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
- </button>
-
- {isInstallable && !isCollapsed && (
-    <button className="logout-btn" onClick={installPWA} style={{ marginBottom: '10px', backgroundColor: '#e0e7ff', color: '#4f46e5' }}>
-      <Download size={18} />
-      <span>Install App</span>
-    </button>
-  )}
-
-  {isInstallable && isCollapsed && (
-    <button className="logout-btn" onClick={installPWA} style={{ marginBottom: '10px', backgroundColor: '#e0e7ff', color: '#4f46e5', padding: '12px' }} title="Install App">
-      <Download size={18} style={{ margin: 0 }} />
-    </button>
-  )}
-
- {/* LOGOUT */}
- <button className="logout-btn" onClick={handleLogout}>
- <LogOut size={18} />
- <span>Logout</span>
- </button>
- </div>
-
- {/* MAIN */}
- <div className="main flex flex-col min-h-screen">
-      {/* MOBILE HEADER */}
-      <div className="md:hidden flex items-center justify-between bg-white border-b border-slate-200 p-4 sticky top-0 z-50 shadow-sm">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setIsMobileOpen(true)}
-            className="text-slate-600 hover:text-slate-900 focus:outline-none"
-          >
-            <Menu size={24} />
-          </button>
-          <div className="flex items-center gap-2">
-            <Store size={20} className="text-blue-600" />
-            <span className="font-bold text-slate-900 tracking-tight">मिठ्ठो चिया & Tiffin घर</span>
-          </div>
+  {/* MAIN */}
+  <div className="main flex flex-col min-h-screen">
+    {/* MOBILE HEADER */}
+    <div className="md:hidden flex items-center justify-between bg-white border-b border-slate-200 p-4 sticky top-0 z-50 shadow-sm">
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={() => setIsMobileOpen(true)}
+          className="text-slate-600 hover:text-slate-900 focus:outline-none"
+        >
+          <Menu size={24} />
+        </button>
+        <div className="flex items-center gap-2 text-[#F37021]">
+          <img src="/logo.png" alt="Logo" style={{ height: "36px", width: "auto" }} />
+          <span className="font-black text-[18px] tracking-tight text-[#2F4858]">मिठ्ठो चिया & Tiffin घर</span>
         </div>
       </div>
+    </div>
 
  <div className="content flex-1">
  <Outlet />
@@ -219,6 +241,10 @@ const StaffLayout = () => {
  </div>
  </div>
  )}
+ 
+      {showProfileModal && (
+        <ProfileModal onClose={() => setShowProfileModal(false)} />
+      )}
  </div>
  );
 };

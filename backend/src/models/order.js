@@ -8,6 +8,7 @@ const orderItemSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   category: { type: String },
   station: { type: String },
+  image: { type: String },
 });
 
 const orderSchema = new mongoose.Schema(
@@ -16,6 +17,8 @@ const orderSchema = new mongoose.Schema(
     table: { type: String, required: true }, // E.g., Table 1, Walk-in, Queue
     customer: { type: String, default: "Guest" },
     server: { type: String, default: "System" },
+    cashier: { type: String, default: "System" },
+    chef: { type: String, default: "System" },
     channel: { type: String, default: "Dine In" }, // E.g., Dine In, Takeaway, Delivery
     priority: { type: String, default: "Normal" },
     station: { type: String, default: "Hot Line" },

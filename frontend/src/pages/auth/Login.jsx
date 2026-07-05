@@ -209,7 +209,7 @@ const Login = () => {
         <div className="flex flex-col items-center text-center mb-10">
           <img src="/logo.png" alt="Logo" style={{ height: "120px", marginBottom: "16px" }} />
           <h1 className="text-3xl font-black text-[#2F4858] mb-2 tracking-tight">
-            मिठो चिया & Tiffin घर
+            मिठ्ठो चिया & Tiffin घर
           </h1>
           <p className="text-slate-500 text-[15px] font-medium">
             {view === "login"
@@ -361,16 +361,7 @@ const Login = () => {
               </div>
               
               <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label htmlFor="login-password-input" className="block text-[13px] font-bold text-slate-700">Password</label>
-                  <button
-                    type="button"
-                    onClick={() => switchView("forgotPassword")}
-                    className="text-[13px] font-bold text-[#F37021] hover:text-[#d35f1a] transition-colors"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
+                <label htmlFor="login-password-input" className="block text-[13px] font-bold text-slate-700 mb-2">Password</label>
                 <div className="relative">
                   <input
                     id="login-password-input"
@@ -403,12 +394,21 @@ const Login = () => {
                 )}
               </button>
 
-              <p className="text-center text-[14px] text-slate-500 pt-6 mt-6 border-t border-slate-100 font-medium">
-                Don't have an account?{" "}
-                <button type="button" onClick={() => switchView("register")} className="text-[#F37021] font-bold hover:text-[#d35f1a] transition-colors">
-                  Create one now
+              <div className="flex flex-col items-center gap-4 pt-6 mt-6 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => switchView("forgotPassword")}
+                  className="text-[14px] font-bold text-[#F37021] hover:text-[#d35f1a] transition-colors"
+                >
+                  Forgot your password?
                 </button>
-              </p>
+                <p className="text-center text-[14px] text-slate-500 font-medium">
+                  Don't have an account?{" "}
+                  <button type="button" onClick={() => switchView("register")} className="text-[#F37021] font-bold hover:text-[#d35f1a] transition-colors">
+                    Create one now
+                  </button>
+                </p>
+              </div>
             </form>
           ) : view === "verifyRegOtp" ? (
             <form id="verify-reg-otp-form" onSubmit={handleVerifyRegOtp} className="space-y-6">

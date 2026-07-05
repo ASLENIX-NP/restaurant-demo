@@ -28,14 +28,18 @@ export const AuthProvider = ({ children }) => {
         logout();
       } else if (token) {
         try {
-          await apiClient.get("/api/auth/profile");
+          const { data } = await apiClient.get("/api/auth/profile");
+          if (data && data.user) {
+            setUser(data.user);
+            localStorage.setItem("restaurant_user", JSON.stringify(data.user));
+          }
         } catch (error) {
           console.error("Session verification failed:", error);
         }
       }
     };
     verifySession();
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     if (user?.role !== "Admin") {
@@ -135,6 +139,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         login,
         verify2FA,
         logout,

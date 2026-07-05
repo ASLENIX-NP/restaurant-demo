@@ -416,12 +416,16 @@ export default function CustomerMenu() {
  className="menu-item"
  key={item._id || item.id || idx}
  >
- {item.image && (
+ {item.image ? (
  <img
  src={item.image}
  alt={item.name}
  className="item-image"
  />
+ ) : (
+ <div className="item-image flex items-center justify-center bg-orange-50/50" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff9f5', border: '1px dashed rgba(194, 155, 87, 0.3)' }}>
+ <img src="/logo.png" style={{ width: '50%', opacity: 0.5, filter: 'grayscale(100%)' }} alt="placeholder" />
+ </div>
  )}
  <div className="item-details">
  <div className="item-text-container">

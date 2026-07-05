@@ -44,7 +44,16 @@ router.post("/", upload.single("image"), async (req, res) => {
   }
 
   try {
-    const filename = `menu-image-${Date.now()}${path.extname(req.file.originalname)}`;
+    const uploadType = req.body.type || "menu"; // "menu" or "profile"
+    let folderPath = "/restaurant-menu";
+    let prefix = "menu-image-";
+
+    if (uploadType === "profile") {
+      folderPath = "/restaurant-profiles";
+      prefix = "profile-image-";
+    }
+
+    const filename = `${prefix}${Date.now()}${path.extname(req.file.originalname)}`;
     
     // Check if credentials are set
     if (!process.env.IMAGEKIT_PUBLIC_KEY || !process.env.IMAGEKIT_PRIVATE_KEY || !process.env.IMAGEKIT_URL_ENDPOINT) {
@@ -54,7 +63,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     const response = await imagekit.upload({
       file: req.file.buffer, // Pass buffer directly to ImageKit
       fileName: filename,
-      folder: "/restaurant-menu", // Organizes files in ImageKit
+      folder: folderPath, // Organizes files in ImageKit
     });
 
     res.status(200).json({

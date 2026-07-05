@@ -165,52 +165,97 @@ const ReservationDashboard = ({ role ="staff" }) => {
  setReservationToDelete(id);
  };
 
- const confirmDelete = async () => {
- try {
- await apiClient.delete(`/api/reservations/${encodeURIComponent(reservationToDelete)}`);
- setSelectedReservation(null);
- setReservationToDelete(null);
- fetchReservations();
- } catch (error) {
- console.error("Failed to delete reservation:", error);
- }
- };
+  const confirmDelete = async () => {
+    try {
+      const resObj = reservationsData.find(r => r.id === reservationToDelete || r._id === reservationToDelete);
+      
+      await apiClient.delete(`/api/reservations/${encodeURIComponent(reservationToDelete)}`);
+      
+      if (resObj && resObj.table && tables && editTable) {
+        const tableObj = tables.find(
+          (t) => (t.name || `Table ${t.id}`).toLowerCase() === resObj.table.toLowerCase()
+        );
+        if (tableObj && tableObj.status === "Reserved") {
+          editTable(tableObj._id || tableObj.id, {
+            status: "Available",
+            currentCustomer: "No Customer",
+            reservationTime: null,
+          });
+        }
+      }
 
- const handleStatusChange = async (id, newStatus) => {
- try {
- await apiClient.put(`/api/reservations/${encodeURIComponent(id)}`, { status: newStatus });
- setSelectedReservation((prev) =>
- prev && (prev.id === id || prev._id === id) ? { ...prev, status: newStatus } : prev
- );
- if (editRes && (editRes.id === id || editRes._id === id)) {
- setEditRes({ ...editRes, status: newStatus });
- }
- fetchReservations();
- } catch (error) {
- console.error("Failed to update status:", error);
- }
- };
+      setSelectedReservation(null);
+      setReservationToDelete(null);
+      fetchReservations();
+    } catch (error) {
+      console.error("Failed to delete reservation:", error);
+    }
+  };
 
- const handleUpdateReservation = async (e) => {
- e.preventDefault();
- try {
- const id = editRes.id || editRes._id;
- await apiClient.put(`/api/reservations/${encodeURIComponent(id)}`, editRes);
- 
- // Update Table Status if needed (similar to create)
- if (editRes.table && tables && editRes.table !== selectedReservation.table && (editTable || updateTableStatus)) {
- // Find the new table and mark it reserved
- const tableObj = tables.find(
- (t) => (t.name || `Table ${t.id}`).toLowerCase() === editRes.table.toLowerCase()
- );
- if (tableObj && editTable) {
- editTable(tableObj._id || tableObj.id, {
- status:"Reserved",
- currentCustomer: editRes.name,
- reservationTime: editRes.time,
- });
- }
- }
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await apiClient.put(`/api/reservations/${encodeURIComponent(id)}`, { status: newStatus });
+      setSelectedReservation((prev) =>
+        prev && (prev.id === id || prev._id === id) ? { ...prev, status: newStatus } : prev
+      );
+      if (editRes && (editRes.id === id || editRes._id === id)) {
+        setEditRes({ ...editRes, status: newStatus });
+      }
+
+      if (newStatus === "Completed" || newStatus === "Cancelled") {
+        const resObj = reservationsData.find(r => r.id === id || r._id === id) || selectedReservation;
+        if (resObj && resObj.table && tables && editTable) {
+          const tableObj = tables.find(
+            (t) => (t.name || `Table ${t.id}`).toLowerCase() === resObj.table.toLowerCase()
+          );
+          if (tableObj && tableObj.status === "Reserved") {
+            editTable(tableObj._id || tableObj.id, {
+              status: "Available",
+              currentCustomer: "No Customer",
+              reservationTime: null,
+            });
+          }
+        }
+      }
+
+      fetchReservations();
+    } catch (error) {
+      console.error("Failed to update status:", error);
+    }
+  };
+
+  const handleUpdateReservation = async (e) => {
+    e.preventDefault();
+    try {
+      const id = editRes.id || editRes._id;
+      await apiClient.put(`/api/reservations/${encodeURIComponent(id)}`, editRes);
+      
+      // Update Table Status if needed (similar to create)
+      if (editRes.table && tables && editRes.table !== selectedReservation.table && (editTable || updateTableStatus)) {
+        // Free the old table
+        const oldTableObj = tables.find(
+          (t) => (t.name || `Table ${t.id}`).toLowerCase() === selectedReservation.table.toLowerCase()
+        );
+        if (oldTableObj && editTable) {
+          editTable(oldTableObj._id || oldTableObj.id, {
+            status: "Available",
+            currentCustomer: "No Customer",
+            reservationTime: null,
+          });
+        }
+
+        // Find the new table and mark it reserved
+        const tableObj = tables.find(
+          (t) => (t.name || `Table ${t.id}`).toLowerCase() === editRes.table.toLowerCase()
+        );
+        if (tableObj && editTable) {
+          editTable(tableObj._id || tableObj.id, {
+            status: "Reserved",
+            currentCustomer: editRes.name,
+            reservationTime: editRes.time,
+          });
+        }
+      }
 
  setIsEditing(false);
  setSelectedReservation(editRes);
@@ -465,9 +510,10 @@ const ReservationDashboard = ({ role ="staff" }) => {
  <div className="grid grid-cols-2 gap-4">
  <div>
  <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
- Table
+ Table *
  </label>
  <select
+ required
  value={editRes.table}
  onChange={(e) =>
  setEditRes({ ...editRes, table: e.target.value })
@@ -749,11 +795,12 @@ const ReservationDashboard = ({ role ="staff" }) => {
  <div className="grid grid-cols-2 gap-4">
  <div>
  <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
- Table
+ Table *
  </label>
  <select
  id="resTable"
  name="resTable"
+ required
  value={newRes.table}
  onChange={(e) =>
  setNewRes({ ...newRes, table: e.target.value })

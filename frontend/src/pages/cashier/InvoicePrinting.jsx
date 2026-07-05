@@ -111,6 +111,21 @@ const InvoicePrinting = () => {
  </div>
  </div>
 
+ <div className="flex flex-col gap-1 text-xs mb-6 font-semibold bg-slate-50 p-3 rounded-lg print:bg-transparent print:p-0 print:border-b print:border-slate-200 print:border-dashed print:rounded-none print:pb-2">
+  <div className="flex justify-between">
+    <span className="text-slate-500">Cashier:</span>
+    <span className="text-slate-900">{order.cashier || "System"}</span>
+  </div>
+  <div className="flex justify-between">
+    <span className="text-slate-500">Server:</span>
+    <span className="text-slate-900">{order.server || "System"}</span>
+  </div>
+  <div className="flex justify-between">
+    <span className="text-slate-500">Chef:</span>
+    <span className="text-slate-900">{order.chef || "System"}</span>
+  </div>
+ </div>
+
  <table className="w-full text-sm mb-6">
  <thead>
  <tr className="border-b border-slate-200 border-dashed">

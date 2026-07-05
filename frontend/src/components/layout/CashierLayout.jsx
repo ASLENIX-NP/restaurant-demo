@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ProfileModal from "../common/ProfileModal";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -13,9 +14,9 @@ import {
   Wallet,
   LogOut,
   Store,
-  Download,
   Menu,
-  X
+  X,
+  UserCircle
 } from "lucide-react";
 
 import "../../styles/layout.css";
@@ -23,8 +24,9 @@ import { usePWAInstall } from "../../hooks/usePWAInstall";
 
 const CashierLayout = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -50,8 +52,8 @@ const CashierLayout = () => {
         <div className="sidebar-header flex justify-between items-center">
           <div>
             <div className="brand-logo">
-              <Store size={28} className="brand-icon" />
-              <h1 className="logo-text">मिठ्ठो चिया & Tiffin घर</h1>
+              <img src="/logo.png" alt="Logo" style={{ height: "44px", width: "auto" }} />
+              <h1 className="logo-text text-[22px]">मिठ्ठो चिया & Tiffin घर</h1>
             </div>
             <p className="brand-subtitle">Cashier Panel</p>
           </div>
@@ -113,18 +115,34 @@ const CashierLayout = () => {
           </NavLink>
 
           {/* SHIFT */}
-          <NavLink to="/cashier/shift" className="menu-item" onClick={closeMobileMenu}>
+          {/* <NavLink to="/cashier/shift" className="menu-item" onClick={closeMobileMenu}>
             <Wallet size={20} />
             <span>Shift & Drawer</span>
-          </NavLink>
+          </NavLink> */}
         </nav>
 
         {isInstallable && (
-          <button className="logout-btn" onClick={installPWA} style={{ marginBottom: '10px', backgroundColor: '#e0e7ff', color: '#4f46e5' }}>
+          <button className="logout-btn" onClick={installPWA} style={{ marginBottom: '10px', backgroundColor: '#fff6f0', color: '#F37021' }}>
             <Download size={18} />
             <span>Install POS</span>
           </button>
         )}
+
+        {/* PROFILE BUTTON */}
+        <button
+          className="logout-btn flex items-center gap-3 mb-2 bg-slate-800 hover:bg-slate-700 w-[calc(100%-2rem)] mx-4 rounded-xl px-4 py-3 text-white transition-all text-left"
+          onClick={() => setShowProfileModal(true)}
+        >
+          {user?.image ? (
+            <img src={user.image} alt={user?.name} className="w-8 h-8 rounded-full object-cover shrink-0" />
+          ) : (
+            <UserCircle size={32} className="text-slate-300 shrink-0" />
+          )}
+          <div className="overflow-hidden">
+            <h4 className="text-sm font-bold truncate leading-tight">{user?.name || "My Profile"}</h4>
+            <p className="text-[10px] text-slate-400 font-medium truncate uppercase tracking-wider">{user?.role}</p>
+          </div>
+        </button>
 
         {/* LOGOUT */}
         <button className="logout-btn" onClick={handleLogout}>
@@ -137,9 +155,9 @@ const CashierLayout = () => {
       <div className="main flex flex-col min-h-screen">
         {/* MOBILE HEADER TABS */}
         <div className="md:hidden print:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center sticky top-0 z-40 shadow-sm">
-          <div className="flex items-center gap-2 text-indigo-600">
-            <Store size={24} />
-            <span className="font-black text-xl tracking-tight text-slate-800">मिठ्ठो चिया & Tiffin घर</span>
+          <div className="flex items-center gap-2 text-[#F37021]">
+            <img src="/logo.png" alt="Logo" style={{ height: "36px", width: "auto" }} />
+            <span className="font-black text-[18px] tracking-tight text-[#2F4858]">मिठ्ठो चिया & Tiffin घर</span>
           </div>
           <button 
             onClick={() => setIsMobileOpen(true)}
@@ -153,6 +171,10 @@ const CashierLayout = () => {
           <Outlet />
         </div>
       </div>
+
+      {showProfileModal && (
+        <ProfileModal onClose={() => setShowProfileModal(false)} />
+      )}
     </div>
   );
 };

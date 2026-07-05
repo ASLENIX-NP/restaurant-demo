@@ -33,12 +33,14 @@ import"react-datepicker/dist/react-datepicker.css";
 import { useOrders } from"../../context/OrderContext";
 import apiClient from"../../api/apiClient";
 import { useToast } from "../../context/ToastContext";
+import { useAuth } from "../../context/AuthContext";
 
 const ITEMS_PER_PAGE = 8;
 
 export default function SalesHistory() {
  const { orders = [], fetchOrders, cancelOrder, addOrder } = useOrders() || {};
  const { showToast } = useToast();
+ const { user } = useAuth();
  const navigate = useNavigate();
 
  useEffect(() => {
@@ -868,253 +870,88 @@ export default function SalesHistory() {
  color:"#94a3b8",
  }}
  >
- <p>This is a system generated report. No signature required.</p>
- </div>
- </div>
- );
+  <p>This is a system generated report. No signature required.</p>
+  </div>
+  </div>
+  );
 
- const renderEODReport = () => (
- <div
- key="eod-report"
- style={{
- width:"100%",
- maxWidth:"800px",
- margin:"0 auto",
- padding:"20px",
- fontFamily:"sans-serif",
- color:"#000",
- }}
- >
- <div
- style={{
- textAlign:"center",
- marginBottom:"30px",
- borderBottom:"2px solid #e2e8f0",
- paddingBottom:"20px",
- }}
- >
- <h1 style={{ fontSize:"24px", margin:"0 0 10px 0" }}>
- मिठ्ठो चिया & Tiffin घर
- </h1>
- <h2 style={{ fontSize:"18px", margin:"0 0 5px 0", color:"#475569" }}>
- End of Day Summary (Z-Report)
- </h2>
- <p style={{ margin: 0, color:"#64748b" }}>
- Date: {new Date().toLocaleDateString()}
- </p>
- </div>
+  const renderEODReport = () => (
+    <div key="eod-report" className="w-full max-w-[800px] mx-auto p-8 font-sans text-slate-900 bg-white">
+      {/* Header Section */}
+      <div className="text-center mb-8 pb-6 border-b-2 border-slate-200">
+        <h1 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">मिठ्ठो चिया & Tiffin घर</h1>
+        <h2 className="text-xl font-bold text-slate-600 uppercase tracking-widest mb-1">End of Day Summary (Z-Report)</h2>
+        <p className="text-sm font-medium text-slate-400">Date: {new Date().toLocaleDateString()}</p>
+      </div>
 
- <h3
- style={{
- fontSize:"18px",
- borderBottom:"1px solid #e2e8f0",
- paddingBottom:"10px",
- marginBottom:"15px",
- }}
- >
- Sales Summary
- </h3>
- <table
- style={{
- width:"100%",
- borderCollapse:"collapse",
- marginBottom:"30px",
- }}
- >
- <tbody>
- <tr>
- <td
- style={{
- padding:"10px",
- borderBottom:"1px solid #f1f5f9",
- fontWeight:"bold",
- }}
- >
- Total Revenue Today
- </td>
- <td
- style={{
- padding:"10px",
- borderBottom:"1px solid #f1f5f9",
- textAlign:"right",
- }}
- >
- Rs.{""}
- {eodMetrics.total.toLocaleString(undefined, {
- minimumFractionDigits: 2,
- })}
- </td>
- </tr>
- <tr>
- <td
- style={{
- padding:"10px",
- borderBottom:"1px solid #f1f5f9",
- fontWeight:"bold",
- }}
- >
- Total Orders Today
- </td>
- <td
- style={{
- padding:"10px",
- borderBottom:"1px solid #f1f5f9",
- textAlign:"right",
- }}
- >
- {eodMetrics.ordersCount}
- </td>
- </tr>
- </tbody>
- </table>
+      <div className="grid grid-cols-2 gap-12 mb-8">
+        {/* Sales Summary */}
+        <div>
+          <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 pb-2 border-b border-slate-100">Sales Summary</h3>
+          <table className="w-full text-left border-collapse">
+            <tbody>
+              <tr>
+                <td className="py-3 font-semibold border-b border-slate-50 text-slate-600">Total Revenue Today</td>
+                <td className="py-3 text-right font-black text-lg border-b border-slate-50 text-slate-900">Rs. {eodMetrics.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              </tr>
+              <tr>
+                <td className="py-3 font-semibold border-b border-slate-50 text-slate-600">Total Orders Today</td>
+                <td className="py-3 text-right font-bold border-b border-slate-50 text-slate-900">{eodMetrics.ordersCount}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
- <h3
- style={{
- fontSize:"18px",
- borderBottom:"1px solid #e2e8f0",
- paddingBottom:"10px",
- marginBottom:"15px",
- }}
- >
- Payment Breakdown
- </h3>
- <table
- style={{
- width:"100%",
- borderCollapse:"collapse",
- marginBottom:"30px",
- }}
- >
- <tbody>
- <tr>
- <td
- style={{
- padding:"10px",
- borderBottom:"1px solid #f1f5f9",
- fontWeight:"bold",
- }}
- >
- Cash
- </td>
- <td
- style={{
- padding:"10px",
- borderBottom:"1px solid #f1f5f9",
- textAlign:"right",
- }}
- >
- Rs.{""}
- {eodMetrics.cash.toLocaleString(undefined, {
- minimumFractionDigits: 2,
- })}
- </td>
- </tr>
- <tr>
- <td
- style={{
- padding:"10px",
- borderBottom:"1px solid #f1f5f9",
- fontWeight:"bold",
- }}
- >
- Card
- </td>
- <td
- style={{
- padding:"10px",
- borderBottom:"1px solid #f1f5f9",
- textAlign:"right",
- }}
- >
- Rs.{""}
- {eodMetrics.card.toLocaleString(undefined, {
- minimumFractionDigits: 2,
- })}
- </td>
- </tr>
- <tr>
- <td
- style={{
- padding:"10px",
- borderBottom:"1px solid #f1f5f9",
- fontWeight:"bold",
- }}
- >
- eSewa
- </td>
- <td
- style={{
- padding:"10px",
- borderBottom:"1px solid #f1f5f9",
- textAlign:"right",
- }}
- >
- Rs.{""}
- {eodMetrics.esewa.toLocaleString(undefined, {
- minimumFractionDigits: 2,
- })}
- </td>
- </tr>
- <tr>
- <td
- style={{
- padding:"10px",
- borderBottom:"1px solid #f1f5f9",
- fontWeight:"bold",
- }}
- >
- Khalti
- </td>
- <td
- style={{
- padding:"10px",
- borderBottom:"1px solid #f1f5f9",
- textAlign:"right",
- }}
- >
- Rs.{""}
- {eodMetrics.khalti.toLocaleString(undefined, {
- minimumFractionDigits: 2,
- })}
- </td>
- </tr>
- </tbody>
- </table>
+        {/* Payment Breakdown */}
+        <div>
+          <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 pb-2 border-b border-slate-100">Payment Breakdown</h3>
+          <table className="w-full text-left border-collapse">
+            <tbody>
+              <tr>
+                <td className="py-2.5 font-medium border-b border-slate-50 text-slate-600">Cash</td>
+                <td className="py-2.5 text-right font-bold border-b border-slate-50 text-slate-900">Rs. {eodMetrics.cash.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              </tr>
+              <tr>
+                <td className="py-2.5 font-medium border-b border-slate-50 text-slate-600">Card</td>
+                <td className="py-2.5 text-right font-bold border-b border-slate-50 text-slate-900">Rs. {eodMetrics.card.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              </tr>
+              <tr>
+                <td className="py-2.5 font-medium border-b border-slate-50 text-slate-600">eSewa</td>
+                <td className="py-2.5 text-right font-bold border-b border-slate-50 text-slate-900">Rs. {eodMetrics.esewa.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              </tr>
+              <tr>
+                <td className="py-2.5 font-medium border-b border-slate-50 text-slate-600">Khalti</td>
+                <td className="py-2.5 text-right font-bold border-b border-slate-50 text-slate-900">Rs. {eodMetrics.khalti.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
- <div
- style={{
- marginTop:"20px",
- padding:"15px",
- backgroundColor:"#f8fafc",
- border:"1px solid #e2e8f0",
- borderRadius:"8px",
- display:"flex",
- justifyContent:"space-between",
- }}
- >
- <span style={{ fontWeight:"bold", fontSize:"16px" }}>
- Expected Cash in Drawer:
- </span>
- <span style={{ fontWeight:"bold", fontSize:"16px" }}>
- Rs.{""}
- {eodMetrics.cash.toLocaleString(undefined, {
- minimumFractionDigits: 2,
- })}
- </span>
- </div>
+      {/* Expected Drawer */}
+      <div className="mt-10 p-6 bg-slate-50 border border-slate-200 rounded-2xl flex justify-between items-center" style={{ WebkitPrintColorAdjust: 'exact' }}>
+        <span className="font-bold text-lg text-slate-700 uppercase tracking-wider">Expected Cash in Drawer:</span>
+        <span className="font-black text-2xl text-emerald-600">Rs. {eodMetrics.cash.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+      </div>
 
- <div
- style={{
- textAlign:"center",
- marginTop:"40px",
- fontSize:"12px",
- color:"#94a3b8",
- }}
- >
- <p>End of Day System Report. No signature required.</p>
- </div>
- </div>
- );
+      {/* Footer / Signature Block */}
+      <div className="mt-24 pt-8 border-t border-slate-200 grid grid-cols-2 gap-8 text-sm text-slate-800">
+        <div>
+          <div className="w-48 border-b-2 border-slate-400 mb-2"></div>
+          <p className="font-bold uppercase tracking-wider">Approved By</p>
+          <p className="text-xs text-slate-500 mt-1">Manager / Administrator</p>
+        </div>
+        <div className="text-right flex flex-col items-end">
+          <div className="w-48 border-b-2 border-slate-400 mb-2"></div>
+          <p className="font-bold uppercase tracking-wider">{user?.name || user?.username || "Cashier"}</p>
+          <p className="text-xs text-slate-500 mt-1">{user?.role || "Cashier"}</p>
+        </div>
+      </div>
+      <div className="text-center mt-12 text-xs font-semibold text-slate-400 uppercase tracking-widest">
+        <p className="opacity-50">Generated securely by Restaurant POS</p>
+      </div>
+    </div>
+  );
 
  return (
  <div className="sales-history-page p-6 md:p-8 bg-slate-50 min-h-screen text-slate-800 font-sans">
@@ -1125,12 +962,12 @@ export default function SalesHistory() {
  ${
  printMode ==="ledger" || printMode ==="summary" || printMode ==="eod"
  ? `
-  @page { margin: 10mm; size: auto; }
+  @page { margin: 0; size: auto; }
   html, body { 
     width: 100% !important; 
     background: #fff !important; 
     margin: 0 !important; 
-    padding: 0 !important; 
+    padding: 15mm !important; 
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -1337,7 +1174,7 @@ export default function SalesHistory() {
  </div>
 
  {viewMode === "eod" ? (
- <div className={`max-w-4xl mx-auto my-8 bg-white p-8 rounded-xl shadow-sm border border-slate-100 ${printMode === 'eod' ? 'print-container' : ''}`}>
+ <div className="max-w-4xl mx-auto my-8 bg-white p-8 rounded-xl shadow-sm border border-slate-100">
  <div className="text-center mb-8 pb-8 border-b border-slate-100">
  <h2 className="text-3xl font-black text-slate-900 mb-2">
  End of Day Report
@@ -2028,6 +1865,7 @@ export default function SalesHistory() {
  .filter((t) => selectedTxns.includes(t.transactionId))
  .map(renderReceipt)}
  {printMode ==="summary" && renderSummaryReport()}
+ {printMode ==="eod" && renderEODReport()}
  </div>
 
  {/* CREATE NEW INVOICE MODAL */}

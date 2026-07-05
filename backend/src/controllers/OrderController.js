@@ -149,9 +149,7 @@ exports.getOrders = async (req, res) => {
     // Let MongoDB filter the data instead of loading everything into Node.js RAM
     let dbQuery = {};
     if (req.user.role === "Chef") {
-      dbQuery.status = { $nin: ["Completed", "Served"] };
-    } else if (req.user.role === "Staff") {
-      dbQuery.status = { $ne: "Completed" };
+      dbQuery.status = { $nin: ["Completed", "Served", "Cancelled"] };
     }
 
     // Support optional frontend query filters (e.g., /api/orders?status=Pending)
@@ -187,6 +185,8 @@ exports.getOrders = async (req, res) => {
           id: order.id,
           table: order.table,
           server: order.server,
+          cashier: order.cashier,
+          chef: order.chef,
           status: order.status,
           time: order.time,
           date: order.date,
@@ -229,6 +229,9 @@ exports.getOrders = async (req, res) => {
         id: order.id,
         table: order.table,
         customer: order.customer,
+        server: order.server,
+        cashier: order.cashier,
+        chef: order.chef,
         total: order.total,
         status: order.status,
         time: order.time,
@@ -444,9 +447,14 @@ exports.updateOrderStatus = async (req, res) => {
       ? { _id: req.params.id }
       : { id: req.params.id };
 
+    const updateFields = { status };
+    if (req.user && req.user.role === "Chef") {
+      updateFields.chef = req.user.name;
+    }
+
     const updatedOrder = await Order.findOneAndUpdate(
       query,
-      { status },
+      updateFields,
       { new: true }
     );
 
@@ -499,6 +507,7 @@ exports.completeOrder = async (req, res) => {
         serviceCharge: serviceCharge || 0,
         amount: finalAmount,
         status: "Completed",
+        cashier: req.user && req.user.name ? req.user.name : "System",
       },
       { new: true }
     );

@@ -46,7 +46,6 @@ import CashierDashboard from"../pages/cashier/Dashboard";
 import PendingBills from"../pages/cashier/PendingBills";
 import SalesHistory from"../pages/cashier/SalesHistory";
 import POS from"../pages/cashier/POS";
-import ShiftManagement from"../pages/cashier/ShiftManagement";
 import CashierReservations from"../pages/cashier/Reservations";
 import TotalOrders from"../pages/cashier/TotalOrders";
 import InvoicePrinting from"../pages/cashier/InvoicePrinting";
@@ -151,7 +150,6 @@ const AppRoutes = () => {
  <Route path="pending-bills" element={<PendingBills />} />
  <Route path="sales" element={<SalesHistory />} />
  <Route path="total-orders" element={<TotalOrders />} />
- <Route path="shift" element={<ShiftManagement />} />
  <Route path="customers" element={<Customers />} />
  <Route path="invoice/:orderId" element={<InvoicePrinting />} />
  

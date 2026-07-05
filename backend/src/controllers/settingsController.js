@@ -24,7 +24,28 @@ exports.getSettings = async (req, res) => {
           { title: "Automated Daily Backups", desc: "Securely backup database at 3:00 AM", active: true },
         ],
         taxSettings: { vat: 13, serviceCharge: 10, defaultDiscount: 0 },
+        restaurantInfo: {
+          name: "मिठ्ठो चिया & Tiffin घर",
+          branch: "Main Branch",
+          email: "",
+          phone: "+977 9812345678",
+          pan: "123456789",
+          website: "www.restaurant.com",
+          address: "Kathmandu, Nepal"
+        },
       });
+    } else if (!settings.restaurantInfo || !settings.restaurantInfo.name) {
+      // Retrofit existing document
+      settings.restaurantInfo = {
+        name: "मिठ्ठो चिया & Tiffin घर",
+        branch: "Main Branch",
+        email: "",
+        phone: "+977 9812345678",
+        pan: "123456789",
+        website: "www.restaurant.com",
+        address: "Kathmandu, Nepal"
+      };
+      await settings.save();
     }
 
     res.status(200).json(settings);
@@ -39,19 +60,24 @@ exports.getSettings = async (req, res) => {
 // @access  Private/Admin
 exports.updateSettings = async (req, res) => {
   try {
-    const { taxSettings, paymentMethods, systemPreferences } = req.body;
+    const { taxSettings, paymentMethods, systemPreferences, restaurantInfo } = req.body;
 
-    let settings = await Settings.findOne();
-    if (!settings) {
+    const updateData = {};
+    if (taxSettings) updateData.taxSettings = taxSettings;
+    if (paymentMethods) updateData.paymentMethods = paymentMethods;
+    if (systemPreferences) updateData.systemPreferences = systemPreferences;
+    if (restaurantInfo) updateData.restaurantInfo = restaurantInfo;
+
+    const updatedSettings = await Settings.findOneAndUpdate(
+      {},
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedSettings) {
       return res.status(404).json({ message: "Settings not found" });
     }
 
-    if (taxSettings) settings.taxSettings = taxSettings;
-    if (paymentMethods) settings.paymentMethods = paymentMethods;
-    if (systemPreferences) settings.systemPreferences = systemPreferences;
-
-    const updatedSettings = await settings.save();
-    
     // Broadcast to connected clients so Cashiers get instant tax/payment updates
     if (req.io) req.io.emit("settingsUpdated", updatedSettings);
 
@@ -70,12 +96,12 @@ exports.backupDatabase = async (req, res) => {
     const backupData = {};
     const modelNames = mongoose.modelNames();
     for (const name of modelNames) {
-       const Model = mongoose.model(name);
-       backupData[name] = await Model.find({});
+      const Model = mongoose.model(name);
+      backupData[name] = await Model.find({});
     }
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', 'attachment; filename=restaurant_backup.json');
-    res.status(200).send(JSON.stringify(backupData));
+    res.status(200).send(JSON.stringify(backupData, null, 2));
   } catch (error) {
     console.error("Error backing up database:", error);
     res.status(500).json({ message: "Server error during backup" });
@@ -89,16 +115,16 @@ exports.restoreDatabase = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
     const backupData = JSON.parse(req.file.buffer.toString());
-    
+
     // Drop all existing data for the keys in backupData, then insert
     for (const name of Object.keys(backupData)) {
-       if (mongoose.modelNames().includes(name)) {
-          const Model = mongoose.model(name);
-          await Model.deleteMany({}); // Clear existing
-          if (backupData[name] && backupData[name].length > 0) {
-             await Model.insertMany(backupData[name]); // Restore data
-          }
-       }
+      if (mongoose.modelNames().includes(name)) {
+        const Model = mongoose.model(name);
+        await Model.deleteMany({}); // Clear existing
+        if (backupData[name] && backupData[name].length > 0) {
+          await Model.insertMany(backupData[name]); // Restore data
+        }
+      }
     }
     res.status(200).json({ message: "Database restored successfully" });
   } catch (error) {
@@ -116,22 +142,23 @@ exports.exportCSV = async (req, res) => {
     if (!items.length) {
       return res.status(400).json({ message: "No menu items to export" });
     }
-    
+
     const headers = ["name", "description", "price", "category", "isAvailable", "image"];
     const rows = items.map(item => {
-       return [
-          `"${(item.name || "").replace(/"/g, '""')}"`,
-          `"${(item.description || "").replace(/"/g, '""')}"`,
-          item.price || 0,
-          `"${(item.category || "").replace(/"/g, '""')}"`,
-          item.isAvailable !== false,
-          `"${(item.image || "").replace(/"/g, '""')}"`
-       ].join(",");
+      return [
+        `"${(item.name || "").replace(/"/g, '""')}"`,
+        `"${(item.description || "").replace(/"/g, '""')}"`,
+        item.price || 0,
+        `"${(item.category || "").replace(/"/g, '""')}"`,
+        item.isAvailable !== false,
+        `"${(item.image || "").replace(/"/g, '""')}"`
+      ].join(",");
     });
-    
-    const csvContent = headers.join(",") + "\n" + rows.join("\n");
-    
-    res.setHeader('Content-Type', 'text/csv');
+
+    // Add UTF-8 BOM so Excel opens it properly with special characters
+    const csvContent = '\uFEFF' + headers.join(",") + "\n" + rows.join("\n");
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename=menu_items.csv');
     res.status(200).send(csvContent);
   } catch (error) {
@@ -142,22 +169,22 @@ exports.exportCSV = async (req, res) => {
 
 // Helper for basic CSV row parsing respecting quotes
 function parseCSVRow(row) {
-    let result = [];
-    let insideQuote = false;
-    let currentVal = '';
-    for (let i = 0; i < row.length; i++) {
-        let char = row[i];
-        if (char === '"') {
-            insideQuote = !insideQuote;
-        } else if (char === ',' && !insideQuote) {
-            result.push(currentVal.trim());
-            currentVal = '';
-        } else {
-            currentVal += char;
-        }
+  let result = [];
+  let insideQuote = false;
+  let currentVal = '';
+  for (let i = 0; i < row.length; i++) {
+    let char = row[i];
+    if (char === '"') {
+      insideQuote = !insideQuote;
+    } else if (char === ',' && !insideQuote) {
+      result.push(currentVal.trim());
+      currentVal = '';
+    } else {
+      currentVal += char;
     }
-    result.push(currentVal.trim());
-    return result;
+  }
+  result.push(currentVal.trim());
+  return result;
 }
 
 // @desc    Upload CSV file to bulk import menu items
@@ -166,42 +193,44 @@ function parseCSVRow(row) {
 exports.importCSV = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    const csvString = req.file.buffer.toString();
+    
+    // Convert buffer to string and strip potential UTF-8 BOM
+    let csvString = req.file.buffer.toString('utf8').replace(/^\uFEFF/, '');
     const rows = csvString.split(/\r?\n/).filter(row => row.trim());
-    
+
     if (rows.length < 2) return res.status(400).json({ message: "CSV file is empty or missing headers" });
-    
+
     const headers = parseCSVRow(rows[0]).map(h => h.toLowerCase());
     const newItems = [];
-    
+
     for (let i = 1; i < rows.length; i++) {
-       const values = parseCSVRow(rows[i]);
-       const itemData = {};
-       
-       headers.forEach((header, index) => {
-           let val = values[index] !== undefined ? values[index] : "";
-           if (header === "price") val = parseFloat(val) || 0;
-           if (header === "isavailable") val = val.toLowerCase() !== 'false';
-           itemData[header] = val;
-       });
-       
-       // Only add if name and price exist
-       if (itemData.name && itemData.price > 0) {
-           newItems.push({
-               name: itemData.name,
-               description: itemData.description || "",
-               price: itemData.price,
-               category: itemData.category || "Uncategorized",
-               isAvailable: itemData.isavailable !== undefined ? itemData.isavailable : true,
-               image: itemData.image || ""
-           });
-       }
+      const values = parseCSVRow(rows[i]);
+      const itemData = {};
+
+      headers.forEach((header, index) => {
+        let val = values[index] !== undefined ? values[index] : "";
+        if (header === "price") val = parseFloat(val) || 0;
+        if (header === "isavailable") val = val.toLowerCase() !== 'false';
+        itemData[header] = val;
+      });
+
+      // Only add if name and price exist
+      if (itemData.name && itemData.price > 0) {
+        newItems.push({
+          name: itemData.name,
+          description: itemData.description || "",
+          price: itemData.price,
+          category: itemData.category || "Uncategorized",
+          isAvailable: itemData.isavailable !== undefined ? itemData.isavailable : true,
+          image: itemData.image || ""
+        });
+      }
     }
-    
+
     if (newItems.length > 0) {
-       await MenuItem.insertMany(newItems);
+      await MenuItem.insertMany(newItems);
     }
-    
+
     res.status(200).json({ message: `Successfully imported ${newItems.length} menu items` });
   } catch (error) {
     console.error("Error importing CSV:", error);

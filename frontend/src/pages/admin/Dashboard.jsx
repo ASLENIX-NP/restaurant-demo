@@ -93,21 +93,26 @@ export default function AdminDashboard() {
  ).size, [dateFilteredOrders]);
  const avgOrderValue = completedSales.length > 0 ? totalRevenue / completedSales.length : 0;
 
- const { dineInCount, takeawayCount, deliveryCount } = useMemo(() => {
- let dineIn = 0, takeaway = 0, delivery = 0;
- dateFilteredOrders.forEach((o) => {
- if (o.channel ==="Dine In" || o.channel ==="Dining") dineIn++;
- else if (o.channel ==="Takeaway") takeaway++;
- else if (o.channel ==="Delivery") delivery++;
- });
- return { dineInCount: dineIn, takeawayCount: takeaway, deliveryCount: delivery };
- }, [dateFilteredOrders]);
-
- const orderDistributionData = useMemo(() => [
- { name:"Dine In", value: dineInCount, color:"#6366f1" },
- { name:"Takeaway", value: takeawayCount, color:"#f97316" },
- { name:"Delivery", value: deliveryCount, color:"#10b981" },
- ], [dineInCount, takeawayCount, deliveryCount]);
+  const paymentDistributionData = useMemo(() => {
+    let cash = 0, card = 0, esewa = 0, khalti = 0;
+    completedSales.forEach((order) => {
+      const pm = (order.paymentMethod || "Cash").toLowerCase();
+      if (pm === "card") card++;
+      else if (pm === "esewa") esewa++;
+      else if (pm === "khalti") khalti++;
+      else cash++;
+    });
+    
+    const dist = [
+      { name: "Cash", value: cash, color: "#10b981" },
+      { name: "eSewa", value: esewa, color: "#2563eb" },
+      { name: "Card", value: card, color: "#f97316" },
+      { name: "Khalti", value: khalti, color: "#8b5cf6" },
+    ];
+    
+    const filtered = dist.filter(item => item.value > 0);
+    return filtered.length > 0 ? filtered : [{ name: "No Data", value: 1, color: "#e2e8f0" }];
+  }, [completedSales]);
 
  const topItems = useMemo(() => {
  const itemsMap = {};
@@ -387,14 +392,14 @@ export default function AdminDashboard() {
  </div>
  </div>
 
- {/* DOUGHNUT PIE CHART: ORDER FULFILLMENT BREAKDOWN */}
+ {/* DOUGHNUT PIE CHART: PAYMENT METHODS BREAKDOWN */}
  <div className="lg:col-span-4 bg-white rounded-xl sm:rounded-xl p-4 sm:p-6 border border-slate-100 shadow-sm">
  <div>
  <h2 className="text-base font-bold text-slate-900">
- Orders Overview
+ Payment Methods
  </h2>
  <p className="text-slate-400 text-xs mt-0.5">
- Distribution by channel types
+ Completed orders by payment type
  </p>
  </div>
 
@@ -402,7 +407,7 @@ export default function AdminDashboard() {
  <ResponsiveContainer width="100%" height="100%">
  <PieChart>
  <Pie
- data={orderDistributionData}
+ data={paymentDistributionData}
  cx="50%"
  cy="50%"
  innerRadius={65}
@@ -412,7 +417,7 @@ export default function AdminDashboard() {
  cornerRadius={6}
  stroke="none"
  >
- {orderDistributionData.map((entry, index) => (
+ {paymentDistributionData.map((entry, index) => (
  <Cell 
    key={`cell-${index}`} 
    fill={entry.color} 
@@ -429,7 +434,7 @@ export default function AdminDashboard() {
      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
    }}
    itemStyle={{ color: "#e2e8f0", fontSize: "13px", fontWeight: "600" }}
-   formatter={(value) => [`${value} Orders`, "Amount"]} 
+   formatter={(value, name) => [name === "No Data" ? "0 Orders" : `${value} Orders`, "Amount"]} 
  />
  </PieChart>
  </ResponsiveContainer>
@@ -440,14 +445,14 @@ export default function AdminDashboard() {
  Total
  </span>
  <span className="text-2xl font-black text-slate-800">
- {totalOrders}
+ {completedSales.length}
  </span>
  </div>
  </div>
 
  {/* Micro-Badges Component List Grid Layout */}
  <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-600 mt-2">
- {orderDistributionData.map((item) => (
+ {paymentDistributionData.map((item) => (
  <div
  key={item.name}
  className="flex items-center gap-2 border border-slate-50 p-2 rounded-xl bg-slate-50/50"
@@ -457,7 +462,7 @@ export default function AdminDashboard() {
  style={{ backgroundColor: item.color }}
  />
  <span className="truncate">
- {item.name} ({item.value})
+ {item.name} ({item.name === "No Data" ? 0 : item.value})
  </span>
  </div>
  ))}

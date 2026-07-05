@@ -19,10 +19,17 @@ exports.register = async (req, res) => {
 
     const formattedRole = allowedRoles.includes(requestedRole) ? requestedRole : "Staff";
 
-    const existingUser = await User.findOne({ username });
-    const existingAdmin = await Admin.findOne({ username });
-    if (existingUser || existingAdmin) {
-      return res.status(400).json({ message: "Username already exists" });
+    const existingUsername = await User.findOne({ username }) || await Admin.findOne({ username });
+    if (existingUsername) return res.status(400).json({ message: "Username is already taken by another person." });
+
+    if (email) {
+      const existingEmail = await User.findOne({ email }) || await Admin.findOne({ email });
+      if (existingEmail) return res.status(400).json({ message: "Email is already registered to another account." });
+    }
+
+    if (phone) {
+      const existingPhone = await User.findOne({ phone }) || await Admin.findOne({ phone });
+      if (existingPhone) return res.status(400).json({ message: "Phone number is already in use by another person." });
     }
 
     // Force ALL public registrations into the User collection with 'Pending' status.
@@ -69,6 +76,12 @@ exports.register = async (req, res) => {
       },
     });
   } catch (error) {
+    if (error.code === 11000) {
+      if (error.keyPattern?.username) return res.status(400).json({ message: "Username is already taken." });
+      if (error.keyPattern?.email) return res.status(400).json({ message: "Email is already registered." });
+      if (error.keyPattern?.phone) return res.status(400).json({ message: "Phone number is already in use." });
+      return res.status(400).json({ message: "An account with these details already exists." });
+    }
     console.error("Registration error:", error);
     res.status(500).json({
       message: "Server error during registration",
@@ -217,16 +230,19 @@ exports.login = async (req, res) => {
       status: "Success",
     });
 
-    res.status(200).json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        role: user.role,
-        name: user.name,
-      },
-    });
+      res.status(200).json({
+        success: true,
+        token,
+        user: {
+          id: user._id,
+          username: user.username,
+          role: user.role,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          image: user.image,
+        },
+      });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({
@@ -288,16 +304,19 @@ exports.verify2FA = async (req, res) => {
       status: "Success",
     });
 
-    res.status(200).json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        role: user.role,
-        name: user.name,
-      },
-    });
+      res.status(200).json({
+        success: true,
+        token,
+        user: {
+          id: user._id,
+          username: user.username,
+          role: user.role,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          image: user.image,
+        },
+      });
   } catch (error) {
     console.error("2FA Verification Error:", error);
     res.status(500).json({ message: "Server error verifying 2FA" });
@@ -309,10 +328,17 @@ exports.addUser = async (req, res) => {
   try {
     const { username, password, role, name, email, phone, shift, salary, status, image } = req.body;
 
-    const existingUser = await User.findOne({ username });
-    const existingAdmin = await Admin.findOne({ username });
-    if (existingUser || existingAdmin) {
-      return res.status(400).json({ message: "Username already exists" });
+    const existingUsername = await User.findOne({ username }) || await Admin.findOne({ username });
+    if (existingUsername) return res.status(400).json({ message: "Username is already taken by another person." });
+
+    if (email) {
+      const existingEmail = await User.findOne({ email }) || await Admin.findOne({ email });
+      if (existingEmail) return res.status(400).json({ message: "Email is already registered to another account." });
+    }
+
+    if (phone) {
+      const existingPhone = await User.findOne({ phone }) || await Admin.findOne({ phone });
+      if (existingPhone) return res.status(400).json({ message: "Phone number is already in use by another person." });
     }
 
     const user = new User({
@@ -336,6 +362,12 @@ exports.addUser = async (req, res) => {
       user,
     });
   } catch (error) {
+    if (error.code === 11000) {
+      if (error.keyPattern?.username) return res.status(400).json({ message: "Username is already taken." });
+      if (error.keyPattern?.email) return res.status(400).json({ message: "Email is already registered." });
+      if (error.keyPattern?.phone) return res.status(400).json({ message: "Phone number is already in use." });
+      return res.status(400).json({ message: "An account with these details already exists." });
+    }
     console.error("Add user error:", error);
     res.status(500).json({
       message: "Server error adding employee",
@@ -486,10 +518,13 @@ exports.updateUser = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Update user error:", error);
     if (error.code === 11000) {
-      return res.status(400).json({ message: "Username or email already in use." });
+      if (error.keyPattern?.username) return res.status(400).json({ message: "Username is already taken." });
+      if (error.keyPattern?.email) return res.status(400).json({ message: "Email is already registered." });
+      if (error.keyPattern?.phone) return res.status(400).json({ message: "Phone number is already in use." });
+      return res.status(400).json({ message: "An account with these details already exists." });
     }
+    console.error("Update user error:", error);
     res.status(500).json({ message: "Server error updating user" });
   }
 };
@@ -559,12 +594,13 @@ exports.updateProfile = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Update profile error:", error);
     if (error.code === 11000) {
-      return res
-        .status(400)
-        .json({ message: "Username is already taken by another user." });
+      if (error.keyPattern?.username) return res.status(400).json({ message: "Username is already taken." });
+      if (error.keyPattern?.email) return res.status(400).json({ message: "Email is already registered." });
+      if (error.keyPattern?.phone) return res.status(400).json({ message: "Phone number is already in use." });
+      return res.status(400).json({ message: "An account with these details already exists." });
     }
+    console.error("Update profile error:", error);
     res.status(500).json({ message: "Server error updating profile." });
   }
 };

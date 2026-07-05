@@ -25,6 +25,7 @@ const EmployeeModal = ({
 
     const formData = new FormData();
     formData.append("image", file);
+    formData.append("type", "profile");
 
     setUploadingImage(true);
     try {
@@ -137,7 +138,7 @@ const EmployeeModal = ({
                 <option value="" disabled>Select Role</option>
                 <option value="Chef">Chef</option>
                 <option value="Cashier">Cashier</option>
-                <option value="Waiter">Waiter</option>
+                <option value="Staff">Staff</option>
               </select>
             </div>
             <div>

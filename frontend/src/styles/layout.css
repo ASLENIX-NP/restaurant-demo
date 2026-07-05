@@ -7,9 +7,7 @@
 /* ULTRA-PREMIUM SIDEBAR */
 .sidebar {
     width: 280px;
-    background: rgba(11, 15, 25, 0.98); /* Deepest navy/black */
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    background: #0f172a; /* Deep Slate to contrast with logo */
     color: #8b9bb4;
     padding: 32px 20px;
     display: flex;
@@ -52,14 +50,12 @@
     font-weight: 800;
     letter-spacing: 0.5px;
     margin: 0;
-    background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #ffffff;
 }
 
 .brand-subtitle {
     font-size: 10px;
-    color: #4f46e5;
+    color: #F37021;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 4px;
@@ -121,9 +117,9 @@
     transform: translateY(-50%);
     height: 60%;
     width: 4px;
-    background: #4f46e5;
+    background: #F37021;
     border-radius: 0 4px 4px 0;
-    box-shadow: 0 0 12px #4f46e5;
+    box-shadow: 0 0 12px #F37021;
 }
 
 /* LOGOUT BUTTON */
