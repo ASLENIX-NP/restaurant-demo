@@ -23,7 +23,7 @@ export const OrderProvider = ({ children }) => {
       return;
     }
     try {
-      const { data } = await apiClient.get("/api/orders");
+      const { data } = await apiClient.get("/api/orders?limit=1000");
       // Handle both the old array format and the new paginated object format
       setOrders(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
