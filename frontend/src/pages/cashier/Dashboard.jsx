@@ -33,7 +33,7 @@ const Dashboard = () => {
  const { orders = [], fetchOrders } = useOrders() || {};
  const navigate = useNavigate();
  const [selectedOrder, setSelectedOrder] = useState(null);
- const [dateRange, setDateRange] = useState([null, null]);
+ const [dateRange, setDateRange] = useState([new Date(), new Date()]);
  const [startDate, endDate] = dateRange;
 
  useEffect(() => {
@@ -41,79 +41,112 @@ const Dashboard = () => {
  }, [fetchOrders]);
 
  // Dynamically filter orders between selected dates
- const filteredOrders = React.useMemo(() => {
- if (!startDate || !endDate) return orders;
- return orders.filter((order) => {
- const orderDate = order.timestamp
- ? new Date(order.timestamp)
- : order.date
- ? new Date(order.date)
- : null;
- if (!orderDate) return false;
+  const filteredOrders = React.useMemo(() => {
+  if (!startDate || !endDate) return orders;
+  return orders.filter((order) => {
+    let orderDate = null;
+    
+    if (order.createdAt) {
+      orderDate = new Date(order.createdAt);
+    } else if (order.timestamp) {
+      orderDate = new Date(order.timestamp);
+    } else if (order.date) {
+      // Handle standard and potentially non-standard date strings
+      orderDate = new Date(order.date);
+      if (isNaN(orderDate.getTime()) && order.date.includes("/")) {
+        // Fallback for DD/MM/YYYY if parsing failed or was incorrect
+        const parts = order.date.split("/");
+        if (parts.length === 3) {
+          orderDate = new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+      }
+    }
 
- const start = new Date(startDate);
- start.setHours(0, 0, 0, 0);
- const end = new Date(endDate);
- end.setHours(23, 59, 59, 999);
+    if (!orderDate || isNaN(orderDate.getTime())) {
+      // If we completely failed to parse any time, fallback to string matching
+      const startStr = new Date(startDate).toLocaleDateString();
+      return order.date === startStr;
+    }
+ 
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+ 
+    return orderDate >= start && orderDate <= end;
+  });
+  }, [orders, startDate, endDate]);
 
- return orderDate >= start && orderDate <= end;
- });
- }, [orders, startDate, endDate]);
+  const completedSales = orders.filter((order) => order.status === "Completed");
+  const pendingBills = orders.filter(
+    (order) => order.status !== "Completed" && order.status !== "Cancelled"
+  );
 
- const completedSales = filteredOrders.filter(
- (order) => order.status ==="Completed"
- );
- const pendingBills = filteredOrders.filter(
-   (order) => order.status !== "Completed" && order.status !== "Cancelled"
- );
+  const totalSalesAmount = completedSales.reduce((acc, order) => {
+    const subtotal = (order.items || []).reduce(
+      (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
+      0
+    );
+    return acc + (order.amount || subtotal + (subtotal > 0 ? 50 : 0));
+  }, 0);
 
- const totalSalesAmount = completedSales.reduce((acc, order) => {
- const subtotal = (order.items || []).reduce(
- (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
- 0
- );
- return acc + (order.amount || subtotal + (subtotal > 0 ? 50 : 0));
- }, 0);
+  const totalOrders = orders.length;
 
- const pendingBillsAmount = pendingBills.reduce((acc, order) => {
- const subtotal = (order.items || []).reduce(
- (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
- 0
- );
- return acc + (order.amount || subtotal + (subtotal > 0 ? 50 : 0));
- }, 0);
+  const avgOrderValue =
+    completedSales.length > 0 ? totalSalesAmount / completedSales.length : 0;
 
- const totalOrders = filteredOrders.length;
+  const filteredCompletedSales = filteredOrders.filter(
+    (order) => order.status === "Completed"
+  );
+  
+  const filteredPendingBills = filteredOrders.filter(
+    (order) => order.status !== "Completed" && order.status !== "Cancelled"
+  );
 
- const totalItemsSold = completedSales.reduce((acc, order) => {
- return acc + (order.items || []).reduce((sum, item) => sum + item.qty, 0);
- }, 0);
+  const filteredSalesAmount = filteredCompletedSales.reduce((acc, order) => {
+    const subtotal = (order.items || []).reduce(
+      (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
+      0
+    );
+    return acc + (order.amount || subtotal + (subtotal > 0 ? 50 : 0));
+  }, 0);
 
- const avgOrderValue =
- completedSales.length > 0 ? totalSalesAmount / completedSales.length : 0;
+  const filteredPendingAmount = filteredPendingBills.reduce((acc, order) => {
+    const subtotal = (order.items || []).reduce(
+      (sum, item) => sum + item.qty * (parseFloat(item.price) || 0),
+      0
+    );
+    return acc + (order.amount || subtotal + (subtotal > 0 ? 50 : 0));
+  }, 0);
 
- // Prepare dynamic data for the Pie Chart
- const paymentData = React.useMemo(() => {
- let cash = 0,
- card = 0,
- esewa = 0,
- khalti = 0;
- completedSales.forEach((order) => {
- const amt =
- order.amount ||
- (order.items || []).reduce((sum, i) => sum + i.qty * i.price, 0) + 50;
- if (order.paymentMethod ==="Card") card += amt;
- else if (order.paymentMethod ==="eSewa") esewa += amt;
- else if (order.paymentMethod ==="Khalti") khalti += amt;
- else cash += amt;
- });
- return [
- { name:"Cash", value: cash, color:"#10b981" },
- { name:"Card", value: card, color:"#3b82f6" },
- { name:"eSewa", value: esewa, color:"#22c55e" },
- { name:"Khalti", value: khalti, color:"#8b5cf6" },
- ].filter((item) => item.value > 0); // Only show methods that have sales
- }, [completedSales]);
+  const filteredTotalOrders = filteredOrders.length;
+
+  const filteredItemsSold = filteredCompletedSales.reduce((acc, order) => {
+    return acc + (order.items || []).reduce((sum, item) => sum + item.qty, 0);
+  }, 0);
+
+  // Prepare dynamic data for the Pie Chart (All-Time)
+  const paymentData = React.useMemo(() => {
+    let cash = 0,
+      card = 0,
+      esewa = 0,
+      khalti = 0;
+    completedSales.forEach((order) => {
+      const amt =
+        order.amount ||
+        (order.items || []).reduce((sum, i) => sum + i.qty * i.price, 0) + 50;
+      if (order.paymentMethod === "Card") card += amt;
+      else if (order.paymentMethod === "eSewa") esewa += amt;
+      else if (order.paymentMethod === "Khalti") khalti += amt;
+      else cash += amt;
+    });
+    return [
+      { name: "Cash", value: cash, color: "#10b981" },
+      { name: "Card", value: card, color: "#3b82f6" },
+      { name: "eSewa", value: esewa, color: "#22c55e" },
+      { name: "Khalti", value: khalti, color: "#8b5cf6" },
+    ].filter((item) => item.value > 0);
+  }, [completedSales]);
 
   const salesTrendData = React.useMemo(() => {
     const hoursMap = {};
@@ -123,11 +156,30 @@ const Dashboard = () => {
       hoursMap[label] = 0;
     }
 
-    completedSales.forEach(order => {
-      const orderDate = order.timestamp ? new Date(order.timestamp) : order.date ? new Date(order.date) : null;
-      if (orderDate) {
-        const hour = orderDate.getHours();
-        const label = hour === 0 ? "12 AM" : hour === 12 ? "12 PM" : hour > 12 ? `${hour - 12} PM` : `${hour} AM`;
+    filteredCompletedSales.forEach(order => {
+      let label = null;
+      
+      if (order.time) {
+        // Parse explicit string like "11:00 AM" or "05:30 PM"
+        const match = order.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (match) {
+           let h = parseInt(match[1], 10);
+           const ampm = match[3].toUpperCase();
+           if (ampm === "PM" && h !== 12) h += 12;
+           if (ampm === "AM" && h === 12) h = 0;
+           label = h === 0 ? "12 AM" : h === 12 ? "12 PM" : h > 12 ? `${h - 12} PM` : `${h} AM`;
+        }
+      }
+
+      if (!label) {
+        const orderDate = order.createdAt ? new Date(order.createdAt) : order.timestamp ? new Date(order.timestamp) : order.date ? new Date(order.date) : null;
+        if (orderDate) {
+          const hour = orderDate.getHours();
+          label = hour === 0 ? "12 AM" : hour === 12 ? "12 PM" : hour > 12 ? `${hour - 12} PM` : `${hour} AM`;
+        }
+      }
+      
+      if (label) {
         
         if (hoursMap[label] === undefined) {
           hoursMap[label] = 0;
@@ -150,7 +202,7 @@ const Dashboard = () => {
       };
       return parseHour(a) - parseHour(b);
     }).map(time => ({ time, sales: hoursMap[time] }));
-  }, [completedSales]);
+  }, [filteredCompletedSales]);
 
  const CustomTooltip = ({ active, payload, label }) => {
  if (active && payload && payload.length) {
@@ -278,7 +330,7 @@ const Dashboard = () => {
  </div>
  <strong className="item-val">
  Rs.{""}
- {totalSalesAmount.toLocaleString(undefined, {
+ {filteredSalesAmount.toLocaleString(undefined, {
  minimumFractionDigits: 2,
  maximumFractionDigits: 2,
  })}
@@ -294,7 +346,7 @@ const Dashboard = () => {
  </div>
  <span className="item-label">Orders</span>
  </div>
- <strong className="item-val">{totalOrders}</strong>
+ <strong className="item-val">{filteredTotalOrders}</strong>
  </div>
  <div
  className="overview-item cursor-pointer"
@@ -306,7 +358,7 @@ const Dashboard = () => {
  </div>
  <span className="item-label">Items Sold</span>
  </div>
- <strong className="item-val">{totalItemsSold}</strong>
+ <strong className="item-val">{filteredItemsSold}</strong>
  </div>
  <div className="overview-item">
  <div className="flex items-center gap-3">
@@ -317,7 +369,7 @@ const Dashboard = () => {
  </div>
  <strong className="item-val">
  Rs.{""}
- {pendingBillsAmount.toLocaleString(undefined, {
+ {filteredPendingAmount.toLocaleString(undefined, {
  minimumFractionDigits: 2,
  maximumFractionDigits: 2,
  })}
@@ -327,7 +379,7 @@ const Dashboard = () => {
 
  {/* DYNAMIC RECHARTS AREA CHART */}
  <div
- className="chart-area-container"
+ className="chart-area-container min-w-0 min-h-[340px]"
  style={{ height:"340px", width:"100%", marginTop:"16px" }}
  >
  <ResponsiveContainer width="99%" height="100%">
@@ -375,7 +427,7 @@ const Dashboard = () => {
  <h3>Sales by Payment Method</h3>
  </div>
  <div className="payment-chart-wrapper flex flex-col justify-center mt-4">
- <div className="relative h-[220px] w-[220px] mx-auto mb-6">
+ <div className="relative h-[220px] w-[220px] mx-auto mb-6 min-w-0 min-h-[220px]">
  <ResponsiveContainer width="99%" height="100%">
                 <PieChart>
                 <Pie
@@ -499,18 +551,21 @@ const Dashboard = () => {
  <th className="p-4 pr-6 text-right">Time</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-100 text-sm">
- {filteredOrders.length === 0 ? (
- <tr>
- <td
- colSpan="7"
- className="text-center py-12 text-slate-400 font-medium"
- >
- No recent transactions found.
- </td>
- </tr>
- ) : (
- [...filteredOrders].slice(0, 5).map((order) => {
+  <tbody className="divide-y divide-slate-100 text-sm">
+  {orders.length === 0 ? (
+  <tr>
+  <td
+  colSpan="7"
+  className="text-center py-12 text-slate-400 font-medium"
+  >
+  No recent transactions found.
+  </td>
+  </tr>
+  ) : (
+  [...orders]
+    .sort((a, b) => new Date(b.createdAt || b.timestamp || b.date || 0) - new Date(a.createdAt || a.timestamp || a.date || 0))
+    .slice(0, 5)
+    .map((order) => {
  const subtotal = (order.items || []).reduce(
  (sum, item) =>
  sum + item.qty * (parseFloat(item.price) || 0),

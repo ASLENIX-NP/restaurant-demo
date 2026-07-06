@@ -35,6 +35,9 @@ const Menu = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const { showToast } = useToast();
 
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+
   const [newItem, setNewItem] = useState({
     name: "",
     category: "",
@@ -133,15 +136,22 @@ const Menu = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this menu item?")) {
-      try {
-        await apiClient.delete(`/api/menu/${id}`);
-        queryClient.invalidateQueries({ queryKey: ['menu'] });
-        showToast("Menu item deleted successfully!", "success");
-      } catch (error) {
-        showToast(`Error: ${error.response?.data?.message || error.message}`, "error");
-      }
+  const confirmDelete = (item) => {
+    setItemToDelete(item);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+    const id = itemToDelete._id || itemToDelete.id;
+    try {
+      await apiClient.delete(`/api/menu/${id}`);
+      queryClient.invalidateQueries({ queryKey: ['menu'] });
+      showToast("Menu item deleted successfully!", "success");
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
+    } catch (error) {
+      showToast(`Error: ${error.response?.data?.message || error.message}`, "error");
     }
   };
 
@@ -416,7 +426,7 @@ const Menu = () => {
                               <Edit2 size={16} />
                             </button>
                             <button
-                              onClick={() => handleDelete(item._id || item.id)}
+                              onClick={() => confirmDelete(item)}
                               className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
                             >
                               <Trash2 size={16} />
@@ -656,6 +666,41 @@ const Menu = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="Delete Menu Item"
+        icon={<Trash2 size={18} className="text-rose-500" />}
+        maxWidth="max-w-sm"
+      >
+        <div className="p-6">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 mb-4 shadow-sm">
+              <Trash2 size={32} />
+            </div>
+            <h3 className="text-lg font-black text-slate-900 mb-2">Delete Item</h3>
+            <p className="text-sm text-slate-500 font-medium mb-8">
+              Are you sure you want to delete <span className="font-bold text-slate-700">{itemToDelete?.name}</span>? This action cannot be undone.
+            </p>
+            <div className="flex w-full gap-3">
+              <button
+                onClick={() => setDeleteModalOpen(false)}
+                className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition shadow-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 bg-rose-600 text-white font-bold py-3 rounded-xl hover:bg-rose-700 shadow-md transition"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       </Modal>
     </div>
   );

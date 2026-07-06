@@ -651,9 +651,42 @@ const AdminTables = () => {
  </button>
  </div>
  </form>
- </div>
- </div>
- )}
+  </div>
+  </div>
+  )}
+
+  {/* DELETE TABLE MODAL OVERLAY */}
+  {showDeleteModal && (
+  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 transition-opacity">
+    <div className="bg-white rounded-xl shadow-md w-full max-w-sm overflow-hidden animate-slide-in">
+    <div className="p-6">
+      <div className="flex flex-col items-center text-center">
+      <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 mb-4 shadow-sm">
+        <Trash2 size={32} />
+      </div>
+      <h3 className="text-lg font-black text-slate-900 mb-2">Delete Table</h3>
+      <p className="text-sm text-slate-500 font-medium mb-8">
+        Are you sure you want to delete this table? This action cannot be undone.
+      </p>
+      <div className="flex w-full gap-3">
+        <button
+        onClick={() => setShowDeleteModal(false)}
+        className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition shadow-sm"
+        >
+        Cancel
+        </button>
+        <button
+        onClick={handleConfirmDelete}
+        className="flex-1 bg-rose-600 text-white font-bold py-3 rounded-xl hover:bg-rose-700 shadow-md transition"
+        >
+        Delete
+        </button>
+      </div>
+      </div>
+    </div>
+    </div>
+  </div>
+  )}
  </div>
  );
 };

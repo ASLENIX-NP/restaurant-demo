@@ -18,6 +18,10 @@ export const OrderProvider = ({ children }) => {
   const { showToast } = useToast();
 
   const fetchOrders = useCallback(async () => {
+    if (!localStorage.getItem("token")) {
+      setIsLoading(false);
+      return;
+    }
     try {
       const { data } = await apiClient.get("/api/orders");
       // Handle both the old array format and the new paginated object format

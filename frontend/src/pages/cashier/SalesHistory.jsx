@@ -1574,7 +1574,7 @@ export default function SalesHistory() {
  Sales by Payment Method
  </h3>
  <div className="flex flex-col items-center">
- <div className="relative h-[200px] w-[200px] mb-6">
+ <div className="relative h-[200px] w-[200px] mb-6 min-w-0 min-h-[200px]">
  <ResponsiveContainer width="99%" height="100%">
  <PieChart>
  <Pie

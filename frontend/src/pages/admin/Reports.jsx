@@ -141,7 +141,9 @@ export default function Reports() {
  const dateFilteredOrders = useMemo(() => {
  if (!startDate || !endDate) return orders;
  return orders.filter((order) => {
- const txDate = order.timestamp
+ const txDate = order.createdAt
+ ? new Date(order.createdAt)
+ : order.timestamp
  ? new Date(order.timestamp)
  : order.date
  ? new Date(order.date)
@@ -154,18 +156,35 @@ export default function Reports() {
  }, [orders, startDate, endDate]);
 
  const ordersByHourData = useMemo(() => {
- const hours = Array.from({ length: 24 }, (_, i) => ({ hour: i, count: 0 }));
- dateFilteredOrders.forEach((o) => {
- const txDate = o.timestamp ? new Date(o.timestamp) : null;
- if (txDate) {
- hours[txDate.getHours()].count += 1;
- }
- });
- return hours.filter((h) => h.count > 0).map((h) => {
- const ampm = h.hour >= 12 ?"PM" :"AM";
- const hr = h.hour % 12 || 12;
- return { time: `${hr} ${ampm}`, Orders: h.count };
- });
+    const hours = Array.from({ length: 24 }, (_, i) => ({ hour: i, count: 0 }));
+    dateFilteredOrders.forEach((o) => {
+      let hour = null;
+      if (o.time) {
+        const match = o.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (match) {
+          hour = parseInt(match[1], 10);
+          const ampm = match[3].toUpperCase();
+          if (ampm === "PM" && hour !== 12) hour += 12;
+          if (ampm === "AM" && hour === 12) hour = 0;
+        }
+      }
+      
+      if (hour === null) {
+        const txDate = o.createdAt ? new Date(o.createdAt) : o.timestamp ? new Date(o.timestamp) : null;
+        if (txDate) {
+          hour = txDate.getHours();
+        }
+      }
+      
+      if (hour !== null) {
+        hours[hour].count += 1;
+      }
+    });
+    return hours.filter((h) => h.count > 0).map((h) => {
+      const ampm = h.hour >= 12 ?"PM" :"AM";
+      const hr = h.hour % 12 || 12;
+      return { time: `${hr} ${ampm}`, Orders: h.count };
+    });
  }, [dateFilteredOrders]);
 
  const ordersByChannelData = useMemo(() => {
@@ -773,7 +792,7 @@ export default function Reports() {
  <p className="text-xs text-slate-400 font-medium mt-1">Fulfillment type distribution</p>
  </div>
  <div className="pie-section-wrapper flex flex-col items-center justify-center flex-1 gap-6">
- <div className="pie-canvas-container relative w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] shrink-0">
+ <div className="pie-canvas-container relative w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] shrink-0 min-w-0 min-h-[160px]">
  <ResponsiveContainer width="100%" height="100%">
  <PieChart>
  <Pie

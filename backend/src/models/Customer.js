@@ -33,7 +33,6 @@ const customerSchema = new mongoose.Schema(
 );
 
 // Performance indexes for faster querying and sorting
-customerSchema.index({ phone: 1 });
 customerSchema.index({ createdAt: -1 });
 customerSchema.index({ loyaltyPoints: -1 });
 

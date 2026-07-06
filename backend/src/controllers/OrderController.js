@@ -435,10 +435,10 @@ exports.updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
-    // Security Check: Only Admin and Cashier can mark an order as "Completed"
+    // Security Check: Only Admin, Cashier, and Staff can mark an order as "Completed"
     if (status === "Completed") {
-      if (req.user.role !== "Admin" && req.user.role !== "Cashier") {
-        return res.status(403).json({ message: "Only Cashier and Admin can complete orders." });
+      if (req.user.role !== "Admin" && req.user.role !== "Cashier" && req.user.role !== "Staff") {
+        return res.status(403).json({ message: "Only Cashier, Staff, and Admin can complete orders." });
       }
     }
 

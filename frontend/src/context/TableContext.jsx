@@ -18,6 +18,10 @@ export const TableProvider = ({ children }) => {
   const socket = useSocket();
 
   const fetchTables = useCallback(async () => {
+    if (!localStorage.getItem("token")) {
+      setIsLoading(false);
+      return;
+    }
     try {
       const { data } = await apiClient.get("/api/tables");
       setTables(data.map((t) => ({ ...t, id: t._id || t.id })));

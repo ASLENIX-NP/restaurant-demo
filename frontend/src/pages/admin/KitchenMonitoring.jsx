@@ -31,7 +31,7 @@ const Kitchen = () => {
  // Helper to ensure strict FIFO (Oldest first)
  const sortFIFO = (orderList) => {
  return [...orderList].sort((a, b) => 
- new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()
+ new Date(a.createdAt || a.timestamp || 0).getTime() - new Date(b.createdAt || b.timestamp || 0).getTime()
  );
  };
 

@@ -31,8 +31,8 @@ const Billing = () => {
 
  const billsData = [...orders]
  .sort((a, b) => {
- const timeA = new Date(a.timestamp || a.createdAt || 0).getTime();
- const timeB = new Date(b.timestamp || b.createdAt || 0).getTime();
+ const timeA = new Date(a.createdAt || a.timestamp || 0).getTime();
+ const timeB = new Date(b.createdAt || b.timestamp || 0).getTime();
  return timeB - timeA;
  })
  .map((o) => {

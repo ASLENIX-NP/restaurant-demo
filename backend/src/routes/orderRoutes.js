@@ -13,11 +13,11 @@ router.put("/:id/status", protect, orderController.updateOrderStatus);
 // Cancel an order (Mistakes, voids, etc.)
 router.put("/:id/cancel", protect, orderController.cancelOrder);
 
-// Complete/Checkout an order (Restricted to Cashier and Admin)
+// Complete/Checkout an order (Restricted to Cashier, Staff, and Admin)
 router.put(
   "/:id/complete",
   protect,
-  authorize("Admin", "Cashier"),
+  authorize("Admin", "Cashier", "Staff"),
   orderController.completeOrder
 );
 

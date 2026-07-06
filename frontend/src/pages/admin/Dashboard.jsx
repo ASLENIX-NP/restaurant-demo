@@ -50,20 +50,41 @@ export default function AdminDashboard() {
  const [dateRange, setDateRange] = useState([null, null]);
  const [startDate, endDate] = dateRange;
 
- const dateFilteredOrders = useMemo(() => {
- if (!startDate || !endDate) return orders;
- return orders.filter((order) => {
- const txDate = order.timestamp
- ? new Date(order.timestamp)
- : order.date
- ? new Date(order.date)
- : null;
- if (!txDate) return false;
- const endOfDay = new Date(endDate);
- endOfDay.setHours(23, 59, 59, 999);
- return txDate >= startDate && txDate <= endOfDay;
- });
- }, [orders, startDate, endDate]);
+  const dateFilteredOrders = useMemo(() => {
+    if (!startDate || !endDate) return orders;
+    return orders.filter((order) => {
+      let orderDate = null;
+      
+      if (order.createdAt) {
+        orderDate = new Date(order.createdAt);
+      } else if (order.timestamp) {
+        orderDate = new Date(order.timestamp);
+      } else if (order.date) {
+        // Handle standard and potentially non-standard date strings
+        orderDate = new Date(order.date);
+        if (isNaN(orderDate.getTime()) && order.date.includes("/")) {
+          // Fallback for DD/MM/YYYY if parsing failed or was incorrect
+          const parts = order.date.split("/");
+          if (parts.length === 3) {
+            orderDate = new Date(parts[2], parts[1] - 1, parts[0]);
+          }
+        }
+      }
+
+      if (!orderDate || isNaN(orderDate.getTime())) {
+        // If we completely failed to parse any time, fallback to string matching
+        const startStr = new Date(startDate).toLocaleDateString();
+        return order.date === startStr;
+      }
+      
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      
+      return orderDate >= start && orderDate <= end;
+    });
+  }, [orders, startDate, endDate]);
 
  const pendingPaymentsCount = useMemo(() => dateFilteredOrders.filter(
  (o) => o.status !=="Completed" && o.status !=="Cancelled"
@@ -142,8 +163,8 @@ export default function AdminDashboard() {
 
  const recentOrders = useMemo(() => [...dateFilteredOrders]
  .sort((a, b) => {
- const timeA = new Date(a.timestamp || a.createdAt || 0).getTime();
- const timeB = new Date(b.timestamp || b.createdAt || 0).getTime();
+ const timeA = new Date(a.createdAt || a.timestamp || 0).getTime();
+ const timeB = new Date(b.createdAt || b.timestamp || 0).getTime();
  return timeB - timeA;
  })
  .slice(0, 5)
@@ -172,7 +193,9 @@ export default function AdminDashboard() {
  const dayName = d.toLocaleDateString("en-US", { weekday:"short" });
 
  const dayRevenue = completedSales.reduce((acc, o) => {
- const orderDate = o.timestamp
+ const orderDate = o.createdAt
+ ? new Date(o.createdAt).toISOString().split("T")[0]
+ : o.timestamp
  ? new Date(o.timestamp).toISOString().split("T")[0]
  : o.date
  ? new Date(o.date).toISOString().split("T")[0]
@@ -330,7 +353,7 @@ export default function AdminDashboard() {
  </button>
  </div>
 
- <div className="w-full h-[250px] sm:h-[300px] text-xs mt-2 overflow-hidden">
+ <div className="w-full h-[250px] sm:h-[300px] min-w-0 min-h-[250px] text-xs mt-2 overflow-hidden">
  <ResponsiveContainer width="100%" height="100%">
  <AreaChart
  data={revenueTrendData}
@@ -403,7 +426,7 @@ export default function AdminDashboard() {
  </p>
  </div>
 
- <div className="w-full h-[220px] relative mt-4 mb-2 overflow-hidden">
+ <div className="w-full h-[220px] min-w-0 min-h-[220px] relative mt-4 mb-2 overflow-hidden">
  <ResponsiveContainer width="100%" height="100%">
  <PieChart>
  <Pie
