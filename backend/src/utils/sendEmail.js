@@ -16,7 +16,7 @@ const sendEmail = async (options) => {
     // Fallback: Generate test SMTP service account from ethereal.email
     console.log("No Gmail credentials found in .env, falling back to Ethereal Email test popups.");
     const testAccount = await nodemailer.createTestAccount();
-    
+
     transporter = nodemailer.createTransport({
       host: "smtp.ethereal.email",
       port: 587,
@@ -51,7 +51,7 @@ const sendEmail = async (options) => {
     console.log("Preview URL: %s", previewUrl);
     return previewUrl; // Return the preview URL so we can show it in the UI
   }
-  
+
   console.log("Email sent successfully via Gmail SMTP.");
   return null;
 };

@@ -35,14 +35,14 @@ exports.register = async (req, res) => {
     // Force ALL public registrations into the User collection with 'Pending' status.
     // Admins MUST be created by other Admins through a secure internal endpoint or DB seed.
     const user = new User({
-        username,
-        password,
-        role: formattedRole,
-        name,
-        email,
-        phone,
-        status: "Pending", // Explicitly pending for Admin approval
-        isEmailVerified: false,
+      username,
+      password,
+      role: formattedRole,
+      name,
+      email,
+      phone,
+      status: "Pending", // Explicitly pending for Admin approval
+      isEmailVerified: false,
     });
 
     // Generate 6-digit OTP for email verification
@@ -213,7 +213,7 @@ exports.login = async (req, res) => {
     }
 
     const expiresIn = (user.role === "Admin" || user.role === "Manager") ? "1h" : "12h";
-    
+
     const token = jwt.sign(
       { userId: user._id, role: user.role, username: user.username },
       process.env.JWT_SECRET || "fallback_secret_key",
@@ -230,19 +230,19 @@ exports.login = async (req, res) => {
       status: "Success",
     });
 
-      res.status(200).json({
-        success: true,
-        token,
-        user: {
-          id: user._id,
-          username: user.username,
-          role: user.role,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          image: user.image,
-        },
-      });
+    res.status(200).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        role: user.role,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        image: user.image,
+      },
+    });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({
@@ -287,7 +287,7 @@ exports.verify2FA = async (req, res) => {
     await user.save();
 
     const expiresIn = (user.role === "Admin" || user.role === "Manager") ? "1h" : "12h";
-    
+
     const token = jwt.sign(
       { userId: user._id, role: user.role, username: user.username },
       process.env.JWT_SECRET || "fallback_secret_key",
@@ -304,19 +304,19 @@ exports.verify2FA = async (req, res) => {
       status: "Success",
     });
 
-      res.status(200).json({
-        success: true,
-        token,
-        user: {
-          id: user._id,
-          username: user.username,
-          role: user.role,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          image: user.image,
-        },
-      });
+    res.status(200).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        role: user.role,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        image: user.image,
+      },
+    });
   } catch (error) {
     console.error("2FA Verification Error:", error);
     res.status(500).json({ message: "Server error verifying 2FA" });
@@ -342,16 +342,16 @@ exports.addUser = async (req, res) => {
     }
 
     const user = new User({
-        username,
-        password,
-        role,
-        name,
-        email,
-        phone,
-        shift,
-        salary,
-        status: status || "Active",
-        image: image || "https://randomuser.me/api/portraits/men/1.jpg",
+      username,
+      password,
+      role,
+      name,
+      email,
+      phone,
+      shift,
+      salary,
+      status: status || "Active",
+      image: image || "https://randomuser.me/api/portraits/men/1.jpg",
     });
 
     await user.save();
@@ -400,7 +400,7 @@ exports.getUsers = async (req, res) => {
     const limitNum = parseInt(limit, 10);
 
     let usersPromise = User.find(query).select("-password").lean();
-    
+
     if (limitNum > 0) {
       usersPromise = usersPromise
         .skip((pageNum - 1) * limitNum)
@@ -697,8 +697,8 @@ exports.forgotPassword = async (req, res) => {
 
     if (!user) {
       // Return a generic message so as not to leak registered emails
-      return res.status(200).json({ 
-        success: true, 
+      return res.status(200).json({
+        success: true,
         message: "If an account exists with this email, a reset link will be generated.",
       });
     }

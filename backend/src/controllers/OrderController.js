@@ -262,169 +262,179 @@ exports.getOrders = async (req, res) => {
 // @route   POST /api/orders
 // @access  Private
 exports.createOrder = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    // Staff don't ask for customer name, so default it to "Guest"
-    req.body.customer = req.body.customer || "Guest";
+  let retries = 3;
+  while (retries > 0) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      // Staff don't ask for customer name, so default it to "Guest"
+      req.body.customer = req.body.customer || "Guest";
 
-    // Automatically mark who took the order based on the logged-in user
-    if (req.user && req.user.name) {
-      req.body.server = req.user.name;
-    } else {
-      req.body.server = "System";
-    }
-
-    // 1. Check Table Availability BEFORE creating the order
-    if (
-      req.body.table &&
-      req.body.table.trim() !== "Walk-in" &&
-      req.body.table.trim() !== "Queue"
-    ) {
-      const targetTable = await Table.findOne({
-        name: { $regex: new RegExp(`^${req.body.table.trim()}$`, "i") },
-      }).session(session);
-
-      if (!targetTable) {
-        return res.status(404).json({
-          message: `Table '${req.body.table}' not found. Please check the table name.`,
-        });
+      // Automatically mark who took the order based on the logged-in user
+      if (req.user && req.user.name) {
+        req.body.server = req.user.name;
+      } else {
+        req.body.server = "System";
       }
 
-      if (targetTable.status === "Occupied") {
-        // 🚀 MERGE LOGIC: Instead of rejecting, find the active order and append the new items!
-        const activeOrder = await Order.findOne({
-          table: { $regex: new RegExp(`^${req.body.table.trim()}$`, "i") },
-          status: { $nin: ["Completed", "Cancelled"] },
+      // 1. Check Table Availability BEFORE creating the order
+      if (
+        req.body.table &&
+        req.body.table.trim() !== "Walk-in" &&
+        req.body.table.trim() !== "Queue"
+      ) {
+        const targetTable = await Table.findOne({
+          name: { $regex: new RegExp(`^${req.body.table.trim()}$`, "i") },
         }).session(session);
 
-        if (activeOrder) {
-          // Append new items and calculate the new combined totals
-          activeOrder.items.push(...(req.body.items || []));
-          activeOrder.total = (activeOrder.total || 0) + (req.body.total || 0);
-          if (activeOrder.amount !== undefined)
-            activeOrder.amount = activeOrder.total;
-
-          // Bump status back to Pending so the kitchen sees the new items
-          activeOrder.status = "Pending";
-
-          const updatedOrder = await activeOrder.save({ session });
-
-          // Deduct inventory for the newly appended items (pass null for io to defer emission)
-          await deductInventory(req.body.items || [], null, session);
-
-          await session.commitTransaction();
+        if (!targetTable) {
+          await session.abortTransaction();
           session.endSession();
+          return res.status(404).json({
+            message: `Table '${req.body.table}' not found. Please check the table name.`,
+          });
+        }
 
-          // 📢 Broadcast to all clients that an existing order was updated
-          if (req.io) {
-            req.io.emit("orderUpdated", updatedOrder);
-            req.io.emit("inventoryUpdated");
+        if (targetTable.status === "Occupied") {
+          // 🚀 MERGE LOGIC: Instead of rejecting, find the active order and append the new items!
+          const activeOrder = await Order.findOne({
+            table: { $regex: new RegExp(`^${req.body.table.trim()}$`, "i") },
+            status: { $nin: ["Completed", "Cancelled"] },
+          }).session(session);
+
+          if (activeOrder) {
+            // Append new items and calculate the new combined totals
+            activeOrder.items.push(...(req.body.items || []));
+            activeOrder.total = (activeOrder.total || 0) + (req.body.total || 0);
+            if (activeOrder.amount !== undefined)
+              activeOrder.amount = activeOrder.total;
+
+            // Bump status back to Pending so the kitchen sees the new items
+            activeOrder.status = "Pending";
+
+            const updatedOrder = await activeOrder.save({ session });
+
+            // Deduct inventory for the newly appended items (pass null for io to defer emission)
+            await deductInventory(req.body.items || [], null, session);
+
+            await session.commitTransaction();
+            session.endSession();
+
+            // 📢 Broadcast to all clients that an existing order was updated
+            if (req.io) {
+              req.io.emit("orderUpdated", updatedOrder);
+              req.io.emit("inventoryUpdated");
+            }
+
+            return res.status(200).json(updatedOrder);
           }
-
-          return res.status(200).json(updatedOrder);
         }
       }
-    }
 
-    // 2. Fetch True Prices from Database to Prevent Tampering
-    const MenuItem = require("../models/MenuItem"); // Ensure MenuItem is required
-    let safeTotal = 0;
-    const sanitizedItems = [];
+      // 2. Fetch True Prices from Database to Prevent Tampering
+      const MenuItem = require("../models/MenuItem"); // Ensure MenuItem is required
+      let safeTotal = 0;
+      const sanitizedItems = [];
 
-    if (req.body.items && req.body.items.length > 0) {
-      for (const item of req.body.items) {
-        // Find the official menu item to get its true price
-        const officialItem = await MenuItem.findOne({
-          name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") },
-        }).session(session);
+      if (req.body.items && req.body.items.length > 0) {
+        for (const item of req.body.items) {
+          // Find the official menu item to get its true price
+          const officialItem = await MenuItem.findOne({
+            name: { $regex: new RegExp(`^${item.name.trim()}$`, "i") },
+          }).session(session);
 
-        const safePrice = officialItem ? officialItem.price : 0;
-        const safeQty = Math.max(1, parseInt(item.qty, 10) || 1); // Prevent negative or zero quantities
+          const safePrice = officialItem ? officialItem.price : 0;
+          const safeQty = Math.max(1, parseInt(item.qty, 10) || 1); // Prevent negative or zero quantities
 
-        safeTotal += safePrice * safeQty;
+          safeTotal += safePrice * safeQty;
 
-        sanitizedItems.push({
-          ...item,
-          qty: safeQty,
-          price: safePrice, // Force the real price onto the order item
-        });
+          sanitizedItems.push({
+            ...item,
+            qty: safeQty,
+            price: safePrice, // Force the real price onto the order item
+          });
+        }
       }
-    }
 
-    req.body.items = sanitizedItems;
-    req.body.total = safeTotal;
-    req.body.amount = safeTotal;
+      req.body.items = sanitizedItems;
+      req.body.total = safeTotal;
+      req.body.amount = safeTotal;
 
-    // 3. Automatically generate a sequential Order ID (e.g., #ORD-0001)
-    // We do this here so the frontend (or Postman) never has to provide one manually.
-    const lastOrder = await Order.findOne().sort({ createdAt: -1 }).session(session);
-    let nextSeq = 1;
-    if (lastOrder && lastOrder.id && lastOrder.id.startsWith("#ORD-")) {
-      const lastSeq = parseInt(lastOrder.id.replace("#ORD-", ""), 10);
-      if (!isNaN(lastSeq)) {
-        nextSeq = lastSeq + 1;
+      // 3. Automatically generate a sequential Order ID (e.g., #ORD-0001)
+      // We do this here so the frontend (or Postman) never has to provide one manually.
+      const lastOrder = await Order.findOne().sort({ createdAt: -1 }).session(session);
+      let nextSeq = 1;
+      if (lastOrder && lastOrder.id && lastOrder.id.startsWith("#ORD-")) {
+        const lastSeq = parseInt(lastOrder.id.replace("#ORD-", ""), 10);
+        if (!isNaN(lastSeq)) {
+          nextSeq = lastSeq + 1;
+        }
       }
-    }
-    req.body.id = `#ORD-${nextSeq.toString().padStart(4, "0")}`;
+      req.body.id = `#ORD-${nextSeq.toString().padStart(4, "0")}`;
 
-    // 4. Automatically generate the server-side timestamp, date, and time
-    const now = new Date();
-    req.body.timestamp = now;
-    req.body.date = now.toISOString().split("T")[0];
-    req.body.time = now.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+      // 4. Automatically generate the server-side timestamp, date, and time
+      const now = new Date();
+      req.body.timestamp = now;
+      req.body.date = now.toISOString().split("T")[0];
+      req.body.time = now.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
 
-    const order = new Order(req.body);
-    const createdOrder = await order.save({ session });
+      const order = new Order(req.body);
+      const createdOrder = await order.save({ session });
 
-    // Deduct inventory for the new order items
-    await deductInventory(req.body.items || [], null, session);
+      // Deduct inventory for the new order items
+      await deductInventory(req.body.items || [], null, session);
 
-    // Automatically mark the table as Occupied if a specific table is assigned
-    if (
-      order.table &&
-      order.table.trim() !== "Walk-in" &&
-      order.table.trim() !== "Queue"
-    ) {
-      const updateData = {
-        status: "Occupied",
-        currentCustomer: order.customer,
-      };
+      // Automatically mark the table as Occupied if a specific table is assigned
+      if (
+        order.table &&
+        order.table.trim() !== "Walk-in" &&
+        order.table.trim() !== "Queue"
+      ) {
+        const updateData = {
+          status: "Occupied",
+          currentCustomer: order.customer,
+        };
 
-      const updatedTable = await Table.findOneAndUpdate(
-        { name: { $regex: new RegExp(`^${order.table.trim()}$`, "i") } }, // Case-insensitive match
-        updateData,
-        { new: true, session }
-      );
-
-      if (!updatedTable) {
-        console.warn(
-          `[Warning] Could not find table matching '${order.table}' to mark as Occupied. Check for typos in Postman!`
+        const updatedTable = await Table.findOneAndUpdate(
+          { name: { $regex: new RegExp(`^${order.table.trim()}$`, "i") } }, // Case-insensitive match
+          updateData,
+          { new: true, session }
         );
+
+        if (!updatedTable) {
+          console.warn(
+            `[Warning] Could not find table matching '${order.table}' to mark as Occupied. Check for typos in Postman!`
+          );
+        }
       }
+
+      await session.commitTransaction();
+      session.endSession();
+
+      // 📢 Broadcast to all clients (like the Kitchen screen) that a brand new order arrived!
+      if (req.io) {
+        req.io.emit("newOrder", createdOrder);
+        req.io.emit("inventoryUpdated");
+      }
+
+      return res.status(201).json(createdOrder);
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+      if (error.hasErrorLabel && error.hasErrorLabel("TransientTransactionError") && retries > 1) {
+        retries--;
+        console.warn(`TransientTransactionError in createOrder, retrying... (${retries} retries left)`);
+        continue;
+      }
+      console.error("Error creating order:", error);
+      return res
+        .status(500)
+        .json({ message: "Server error creating order", error: error.message });
     }
-
-    await session.commitTransaction();
-    session.endSession();
-
-    // 📢 Broadcast to all clients (like the Kitchen screen) that a brand new order arrived!
-    if (req.io) {
-      req.io.emit("newOrder", createdOrder);
-      req.io.emit("inventoryUpdated");
-    }
-
-    res.status(201).json(createdOrder);
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    console.error("Error creating order:", error);
-    res
-      .status(500)
-      .json({ message: "Server error creating order", error: error.message });
   }
 };
 
