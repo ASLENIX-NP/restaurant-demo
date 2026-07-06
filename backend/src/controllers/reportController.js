@@ -30,11 +30,27 @@ exports.getDashboardStats = async (req, res) => {
     const salesStats = await Order.aggregate([
       { $match: { status: "Completed", ...dateFilter } },
       {
+        $addFields: {
+          effectiveAmount: {
+            $cond: {
+              if: { $gt: ["$amount", 0] },
+              then: "$amount",
+              else: {
+                $add: [
+                  { $sum: { $map: { input: "$items", as: "item", in: { $multiply: ["$$item.qty", "$$item.price"] } } } },
+                  50
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
         $group: {
           _id: null,
-          totalRevenue: { $sum: "$amount" },
+          totalRevenue: { $sum: "$effectiveAmount" },
           totalOrders: { $sum: 1 },
-          avgOrderValue: { $avg: "$amount" },
+          avgOrderValue: { $avg: "$effectiveAmount" },
         },
       },
     ]);
@@ -48,9 +64,25 @@ exports.getDashboardStats = async (req, res) => {
         },
       },
       {
+        $addFields: {
+          effectiveAmount: {
+            $cond: {
+              if: { $gt: ["$amount", 0] },
+              then: "$amount",
+              else: {
+                $add: [
+                  { $sum: { $map: { input: "$items", as: "item", in: { $multiply: ["$$item.qty", "$$item.price"] } } } },
+                  50
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
         $group: {
           _id: null,
-          todayRevenue: { $sum: "$amount" },
+          todayRevenue: { $sum: "$effectiveAmount" },
           todayOrders: { $sum: 1 },
         },
       },
@@ -60,9 +92,25 @@ exports.getDashboardStats = async (req, res) => {
     const paymentMethods = await Order.aggregate([
       { $match: { status: "Completed", ...dateFilter } },
       {
+        $addFields: {
+          effectiveAmount: {
+            $cond: {
+              if: { $gt: ["$amount", 0] },
+              then: "$amount",
+              else: {
+                $add: [
+                  { $sum: { $map: { input: "$items", as: "item", in: { $multiply: ["$$item.qty", "$$item.price"] } } } },
+                  50
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
         $group: {
           _id: "$paymentMethod",
-          total: { $sum: "$amount" },
+          total: { $sum: "$effectiveAmount" },
           count: { $sum: 1 },
         },
       },
@@ -104,9 +152,25 @@ exports.getDashboardStats = async (req, res) => {
         $match: { status: "Completed", ...dateFilter },
       },
       {
+        $addFields: {
+          effectiveAmount: {
+            $cond: {
+              if: { $gt: ["$amount", 0] },
+              then: "$amount",
+              else: {
+                $add: [
+                  { $sum: { $map: { input: "$items", as: "item", in: { $multiply: ["$$item.qty", "$$item.price"] } } } },
+                  50
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
         $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          revenue: { $sum: "$amount" },
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "+05:45" } },
+          revenue: { $sum: "$effectiveAmount" },
         },
       },
       { $sort: { _id: 1 } },
