@@ -4,13 +4,16 @@ const sendEmail = async (options) => {
   let transporter;
 
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    // Create a transporter using Gmail SMTP
+    // Create a transporter using Gmail SMTP, explicitly forcing IPv4 to fix Render's IPv6 routing bugs
     transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
+      family: 4, // Force IPv4
     });
   } else {
     // Fallback: Generate test SMTP service account from ethereal.email
