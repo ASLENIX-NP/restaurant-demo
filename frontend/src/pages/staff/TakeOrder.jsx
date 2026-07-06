@@ -24,7 +24,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useTables } from "../../context/TableContext";
 import { useMenuData } from "../../hooks/useMenuData";
 
-const API_URL = `http://${window.location.hostname}:5001`;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
 export default function TakeOrder() {
  const { addOrder, orders = [] } = useOrders();
