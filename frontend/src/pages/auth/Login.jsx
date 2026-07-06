@@ -314,15 +314,20 @@ const Login = () => {
 
                 <div>
                   <label htmlFor="reg-confirmpassword-input" className={labelClass}>Confirm</label>
-                  <input
-                    id="reg-confirmpassword-input"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={registration.confirmPassword}
-                    onChange={(e) => setRegistration({ ...registration, confirmPassword: e.target.value })}
-                    className={inputClass}
-                    placeholder="••••••••"
-                    required minLength={8}
-                  />
+                  <div className="relative">
+                    <input
+                      id="reg-confirmpassword-input"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={registration.confirmPassword}
+                      onChange={(e) => setRegistration({ ...registration, confirmPassword: e.target.value })}
+                      className={`${inputClass} pr-12`}
+                      placeholder="••••••••"
+                      required minLength={8}
+                    />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
                 </div>
 
               </div>
