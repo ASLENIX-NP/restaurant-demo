@@ -10,11 +10,27 @@ const path = require("path");
 // Initialize Express app
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Secure CORS origin
-    methods: ["GET", "POST", "PUT", "DELETE"],
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "http://localhost:5173",
+  "http://localhost:5173",
+  "http://localhost:4173",
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman) or matching origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked: ${origin}`));
+    }
   },
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  credentials: true,
+};
+
+const io = new Server(server, {
+  cors: corsOptions,
 });
 
 // Connect to MongoDB
@@ -25,7 +41,7 @@ const helmet = require("helmet");
 app.use(helmet({
   crossOriginResourcePolicy: false, // Allows images to be accessed cross-origin
 }));
-app.use(cors()); // Allows your React frontend to communicate with this backend
+app.use(cors(corsOptions)); // Allows your React frontend to communicate with this backend
 app.use(express.json()); // Allows the server to accept JSON data in request bodies
 
 
