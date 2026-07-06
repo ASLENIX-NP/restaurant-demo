@@ -37,6 +37,7 @@ const io = new Server(server, {
 connectDB();
 
 // Middleware
+app.set('trust proxy', 1); // Trust first proxy (Render load balancer) to get real client IPs for rate limiting
 const helmet = require("helmet");
 app.use(helmet({
   crossOriginResourcePolicy: false, // Allows images to be accessed cross-origin
