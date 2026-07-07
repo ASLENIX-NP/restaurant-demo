@@ -13,7 +13,7 @@ const sendEmail = async (options) => {
     
     try {
       const { data, error } = await resend.emails.send({
-        from: `मिठ्ठो चिया & Tiffin घर <${fromEmail}>`,
+        from: fromEmail.includes("<") ? fromEmail : `मिठ्ठो चिया & Tiffin घर <${fromEmail}>`,
         to: options.email,
         subject: options.subject,
         text: options.message,
