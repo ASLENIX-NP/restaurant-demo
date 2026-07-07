@@ -1,4 +1,5 @@
 require("dotenv").config();
+require("node:dns").setDefaultResultOrder("ipv4first"); // Force IPv4 for all outbound requests (fixes Render IPv6 issues with Resend API)
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./db");
