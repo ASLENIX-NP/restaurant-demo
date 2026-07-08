@@ -24,7 +24,8 @@ import {
   Banknote,
   ChefHat,
   Utensils,
-  CheckCircle
+  CheckCircle,
+  Trash2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../api/apiClient";
@@ -264,6 +265,21 @@ const Settings = () => {
     }
   };
 
+  const handleRemoveImage = async () => {
+    try {
+      const { data } = await apiClient.put("/api/auth/profile", { image: "" });
+
+      const currentUser = JSON.parse(localStorage.getItem("restaurant_user")) || {};
+      const updatedUser = { ...currentUser, ...data.user };
+      localStorage.setItem("restaurant_user", JSON.stringify(updatedUser));
+
+      setUser(updatedUser);
+      showToast("Profile image removed!", "success");
+    } catch (error) {
+      showToast(`Failed to remove image: ${error.response?.data?.message || error.message}`, "error");
+    }
+  };
+
   const restoreFileRef = React.useRef(null);
   const handleRestoreDB = async (e) => {
     const file = e.target.files[0];
@@ -387,10 +403,17 @@ const Settings = () => {
                             </div>
                           )}
                         </div>
-                        <label className="absolute bottom-2 right-2 w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center border-2 border-white shadow-md hover:bg-slate-800 hover:scale-105 transition-all cursor-pointer">
-                          <Camera size={14} />
-                          <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
-                        </label>
+                        <div className="absolute bottom-2 right-2 flex gap-1">
+                          {user?.image && (
+                            <button onClick={handleRemoveImage} className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center border-2 border-white shadow-md hover:bg-red-600 hover:scale-105 transition-all">
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+                          <label className="w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center border-2 border-white shadow-md hover:bg-slate-800 hover:scale-105 transition-all cursor-pointer">
+                            <Camera size={14} />
+                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
+                          </label>
+                        </div>
                       </div>
 
                       {/* Action Buttons */}

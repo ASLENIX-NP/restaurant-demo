@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { UserCircle, ShieldCheck, Camera, X } from "lucide-react";
+import { UserCircle, ShieldCheck, Camera, X, CheckCircle, AlertCircle, Mail } from "lucide-react";
 import apiClient from "../../api/apiClient";
 import { useToast } from "../../context/ToastContext";
 import { useAuth } from "../../context/AuthContext";
@@ -14,6 +14,9 @@ const ProfileModal = ({ onClose }) => {
   const [profileForm, setProfileForm] = useState({ name: "", email: "", phone: "", username: "" });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -56,6 +59,38 @@ const ProfileModal = ({ onClose }) => {
       setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (error) {
       showToast(error.response?.data?.message || "Failed to update password", "error");
+    }
+  };
+
+  const handleRequestVerification = async () => {
+    try {
+      setVerifying(true);
+      const { data } = await apiClient.post("/api/auth/request-email-verification");
+      showToast(data.message, "success");
+      setShowOtpInput(true);
+    } catch (error) {
+      showToast(error.response?.data?.message || "Failed to request verification", "error");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    try {
+      setVerifying(true);
+      const { data } = await apiClient.post("/api/auth/verify-profile-email", { otp });
+      const currentUser = JSON.parse(localStorage.getItem("restaurant_user")) || {};
+      const updatedUser = { ...currentUser, isEmailVerified: true };
+      localStorage.setItem("restaurant_user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      showToast("Email verified successfully!", "success");
+      setShowOtpInput(false);
+      setOtp("");
+    } catch (error) {
+      showToast(error.response?.data?.message || "Invalid or expired OTP", "error");
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -158,9 +193,39 @@ const ProfileModal = ({ onClose }) => {
                 <label className="block text-xs font-bold text-slate-500 mb-1">Username</label>
                 <input type="text" required className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-blue-500 focus:bg-white transition-colors" value={profileForm.username} onChange={e => setProfileForm({...profileForm, username: e.target.value})} />
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">Email</label>
-                <input type="email" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-blue-500 focus:bg-white transition-colors" value={profileForm.email} onChange={e => setProfileForm({...profileForm, email: e.target.value})} />
+              <div className="bg-white border border-slate-200 rounded-xl p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-xs font-bold text-slate-500">Email Address</label>
+                  {user?.email && profileForm.email === user.email && (
+                    user?.isEmailVerified ? (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                        <CheckCircle size={12} /> Verified
+                      </span>
+                    ) : (
+                      <button type="button" onClick={handleRequestVerification} disabled={verifying} className="flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded-full transition-colors cursor-pointer">
+                        <AlertCircle size={12} /> {verifying ? "Sending..." : "Unverified - Click to Verify"}
+                      </button>
+                    )
+                  )}
+                </div>
+                <input type="email" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-blue-500 focus:bg-white transition-colors" value={profileForm.email} onChange={e => {
+                  setProfileForm({...profileForm, email: e.target.value});
+                  setShowOtpInput(false);
+                }} />
+                {profileForm.email !== user?.email && (
+                  <p className="text-[10px] text-amber-600 mt-2 font-medium flex items-center gap-1">
+                    <AlertCircle size={12} /> You will need to verify your new email after saving.
+                  </p>
+                )}
+                
+                {showOtpInput && (
+                  <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center gap-2">
+                    <input type="text" placeholder="Enter 6-digit OTP" className="flex-1 bg-white border border-slate-200 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500" value={otp} onChange={e => setOtp(e.target.value)} />
+                    <button type="button" onClick={handleVerifyOTP} disabled={verifying || !otp} className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-1.5 rounded-md transition-colors disabled:opacity-50">
+                      Verify
+                    </button>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-500 mb-1">Phone</label>

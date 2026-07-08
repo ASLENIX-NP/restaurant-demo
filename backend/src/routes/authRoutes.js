@@ -71,6 +71,16 @@ router.get("/profile", protect, authController.getProfile);
 // @access  Private (Any logged-in user)
 router.put("/profile", protect, authController.updateProfile);
 
+// @route   POST /api/auth/request-email-verification
+// @desc    Request email verification OTP for logged-in user
+// @access  Private
+router.post("/request-email-verification", protect, authController.requestEmailVerification);
+
+// @route   POST /api/auth/verify-profile-email
+// @desc    Verify profile email OTP
+// @access  Private
+router.post("/verify-profile-email", protect, authController.verifyProfileEmail);
+
 // @route   PUT /api/auth/2fa/toggle
 // @desc    Toggle 2FA for current user
 // @access  Private (Any logged-in user)

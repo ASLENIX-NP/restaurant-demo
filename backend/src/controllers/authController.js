@@ -241,6 +241,7 @@ exports.login = async (req, res) => {
         email: user.email,
         phone: user.phone,
         image: user.image,
+        isEmailVerified: user.isEmailVerified,
       },
     });
   } catch (error) {
@@ -315,6 +316,7 @@ exports.verify2FA = async (req, res) => {
         email: user.email,
         phone: user.phone,
         image: user.image,
+        isEmailVerified: user.isEmailVerified,
       },
     });
   } catch (error) {
@@ -514,7 +516,8 @@ exports.updateUser = async (req, res) => {
         salary: user.salary,
         shift: user.shift,
         image: user.image,
-        status: user.status
+        status: user.status,
+        isEmailVerified: user.isEmailVerified
       }
     });
   } catch (error) {
@@ -574,7 +577,10 @@ exports.updateProfile = async (req, res) => {
     // Update other details if provided
     if (username) user.username = username;
     if (name) user.name = name;
-    if (email) user.email = email;
+    if (email && email !== user.email) {
+      user.email = email;
+      user.isEmailVerified = false; // Reset verification status on email change
+    }
     if (phone) user.phone = phone;
     if (image !== undefined) user.image = image;
 
@@ -590,7 +596,8 @@ exports.updateProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        image: user.image
+        image: user.image,
+        isEmailVerified: user.isEmailVerified
       },
     });
   } catch (error) {
@@ -789,5 +796,75 @@ exports.resetPassword = async (req, res) => {
   } catch (error) {
     console.error("Reset password error:", error);
     res.status(500).json({ message: "Server error resetting password." });
+  }
+};
+
+// @desc    Request Email Verification OTP (Logged-in user)
+// @route   POST /api/auth/request-email-verification
+// @access  Private
+exports.requestEmailVerification = async (req, res) => {
+  try {
+    let user = await Admin.findById(req.user._id);
+    if (!user) user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (!user.email) return res.status(400).json({ message: "No email address on file to verify." });
+    if (user.isEmailVerified) return res.status(400).json({ message: "Email is already verified." });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.emailVerificationOtp = otp;
+    user.emailVerificationExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    await user.save();
+
+    const message = `मिठ्ठो चिया & Tiffin घर\n\nYour email verification OTP is: ${otp}\n\nPlease enter this code to verify your email. The code is valid for 10 minutes.\n\nThank you,\nThe Team`;
+    
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "Verify your email - मिठ्ठो चिया & Tiffin घर",
+        message,
+      });
+    } catch (err) {
+      console.error("Email could not be sent:", err);
+      return res.status(500).json({ message: "Failed to send OTP email." });
+    }
+
+    res.status(200).json({ success: true, message: "Verification OTP sent to your email." });
+  } catch (error) {
+    console.error("Request Verification error:", error);
+    res.status(500).json({ message: "Server error requesting verification." });
+  }
+};
+
+// @desc    Verify Profile Email OTP
+// @route   POST /api/auth/verify-profile-email
+// @access  Private
+exports.verifyProfileEmail = async (req, res) => {
+  try {
+    const { otp } = req.body;
+    if (!otp) return res.status(400).json({ message: "OTP is required." });
+
+    let user = await Admin.findById(req.user._id);
+    if (!user) user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.emailVerificationOtp !== otp || user.emailVerificationExpires < Date.now()) {
+      return res.status(400).json({ message: "Invalid or expired OTP." });
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationOtp = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Email verified successfully!",
+      isEmailVerified: true
+    });
+  } catch (error) {
+    console.error("Verify Profile Email error:", error);
+    res.status(500).json({ message: "Server error verifying email." });
   }
 };
