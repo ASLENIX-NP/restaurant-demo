@@ -353,14 +353,14 @@ const Login = () => {
             <form id="login-form" onSubmit={handleLogin} className="space-y-6">
               
               <div>
-                <label htmlFor="login-username-input" className={labelClass}>Username</label>
+                <label htmlFor="login-username-input" className={labelClass}>Email or Username</label>
                 <input
                   id="login-username-input"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className={inputClass}
-                  placeholder="Enter your username"
+                  placeholder="Enter your email or username"
                   required
                 />
               </div>
@@ -459,28 +459,46 @@ const Login = () => {
 
               <div>
                 <label htmlFor="new-password-input" className={labelClass}>New Password</label>
-                <input
-                  id="new-password-input"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className={inputClass}
-                  placeholder="••••••••"
-                  required minLength={8}
-                />
+                <div className="relative">
+                  <input
+                    id="new-password-input"
+                    type={showPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className={inputClass}
+                    placeholder="••••••••"
+                    required minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
 
               <div>
                 <label htmlFor="confirm-new-password-input" className={labelClass}>Confirm New Password</label>
-                <input
-                  id="confirm-new-password-input"
-                  type="password"
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className={inputClass}
-                  placeholder="••••••••"
-                  required minLength={8}
-                />
+                <div className="relative">
+                  <input
+                    id="confirm-new-password-input"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    className={inputClass}
+                    placeholder="••••••••"
+                    required minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                  >
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
 
               <button

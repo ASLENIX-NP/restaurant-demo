@@ -8,8 +8,8 @@ describe('Auth API', () => {
     name: 'Test Admin',
     email: 'admin@test.com',
     phone: '1234567890',
-    password: 'password123',
-    confirmPassword: 'password123',
+    password: 'Password123!',
+    confirmPassword: 'Password123!',
     role: 'Admin'
   };
 

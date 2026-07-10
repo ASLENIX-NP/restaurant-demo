@@ -141,9 +141,9 @@ exports.login = async (req, res) => {
     const { username, password } = req.body;
 
     // Check Admin collection first, then User collection
-    let user = await Admin.findOne({ username });
+    let user = await Admin.findOne({ $or: [{ username }, { email: username }] });
     if (!user) {
-      user = await User.findOne({ username });
+      user = await User.findOne({ $or: [{ username }, { email: username }] });
     }
     if (!user) {
       // Log failed attempt for non-existent user

@@ -11,8 +11,8 @@ describe('Reservations API', () => {
       name: 'Test Staff',
       email: 'staff2_res@test.com',
       phone: '1234567890',
-      password: 'password123',
-      confirmPassword: 'password123',
+      password: 'Password123!',
+      confirmPassword: 'Password123!',
       role: 'Admin'
     };
     await request(app).post('/api/auth/register').send(testUser);
