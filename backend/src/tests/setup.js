@@ -22,6 +22,7 @@ afterAll(async () => {
 });
 
 afterEach(async () => {
+  if (!mongoServer) return; // Safeguard: only wipe collections when running inside MongoMemoryServer
   const collections = mongoose.connection.collections;
   for (const key in collections) {
     const collection = collections[key];
