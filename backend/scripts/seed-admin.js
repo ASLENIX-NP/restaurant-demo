@@ -1,6 +1,7 @@
-require("dotenv").config();
-const connectDB = require("./src/db");
-const Admin = require("./src/models/Admin");
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
+const connectDB = require("../src/db");
+const Admin = require("../src/models/Admin");
 
 const seedAdmin = async () => {
   await connectDB();
