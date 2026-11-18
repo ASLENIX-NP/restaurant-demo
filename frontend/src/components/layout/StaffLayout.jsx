@@ -88,7 +88,7 @@ const StaffLayout = () => {
       <div>
         <div className="brand-logo">
           <img src="/logo.png" alt="Logo" style={{ height: "44px", width: "auto" }} />
-          <h1 className="logo-text text-[22px]">मिठ्ठो चिया & Tiffin घर</h1>
+          <h1 className="logo-text text-[22px]">Restaurant Demo</h1>
         </div>
         <p className="brand-subtitle">Staff Panel</p>
       </div>
@@ -193,7 +193,7 @@ const StaffLayout = () => {
         </button>
         <div className="flex items-center gap-2 text-[#F37021]">
           <img src="/logo.png" alt="Logo" style={{ height: "36px", width: "auto" }} />
-          <span className="font-black text-[18px] tracking-tight text-[#2F4858]">मिठ्ठो चिया & Tiffin घर</span>
+          <span className="font-black text-[18px] tracking-tight text-[#2F4858]">Restaurant Demo</span>
         </div>
       </div>
     </div>

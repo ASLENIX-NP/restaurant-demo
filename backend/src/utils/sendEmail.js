@@ -13,13 +13,13 @@ const sendEmail = async (options) => {
     
     try {
       const { data, error } = await resend.emails.send({
-        from: fromEmail.includes("<") ? fromEmail : `मिठ्ठो चिया & Tiffin घर <${fromEmail}>`,
+        from: fromEmail.includes("<") ? fromEmail : `Restaurant Demo <${fromEmail}>`,
         to: options.email,
         subject: options.subject,
         text: options.message,
         html: options.html || `
           <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-            <h2 style="color: #4f46e5;">मिठ्ठो चिया & Tiffin घर</h2>
+            <h2 style="color: #4f46e5;">Restaurant Demo</h2>
             <p style="white-space: pre-wrap; font-size: 16px;">${options.message}</p>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
             <p style="font-size: 12px; color: #999;">This is an automated system message. Please do not reply directly to this email.</p>
@@ -72,14 +72,14 @@ const sendEmail = async (options) => {
   }
 
   const mailOptions = {
-    from: process.env.EMAIL_USER ? `"मिठ्ठो चिया & Tiffin घर" <${process.env.EMAIL_USER}>` : '"मिठ्ठो चिया & Tiffin घर" <test@ethereal.email>',
+    from: process.env.EMAIL_USER ? `"Restaurant Demo" <${process.env.EMAIL_USER}>` : '"Restaurant Demo" <test@ethereal.email>',
     replyTo: process.env.EMAIL_USER,
     to: options.email,
     subject: options.subject,
     text: options.message,
     html: options.html || `
       <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-        <h2 style="color: #4f46e5;">मिठ्ठो चिया & Tiffin घर</h2>
+        <h2 style="color: #4f46e5;">Restaurant Demo</h2>
         <p style="white-space: pre-wrap; font-size: 16px;">${options.message}</p>
         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
         <p style="font-size: 12px; color: #999;">This is an automated system message. Please do not reply directly to this email.</p>

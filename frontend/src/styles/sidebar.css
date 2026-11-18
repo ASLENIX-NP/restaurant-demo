@@ -5,8 +5,9 @@
 
 .sidebar {
     width: 260px;
-    background: #020817;
-    color: white;
+    background: #fff0db;
+    color: #0f172a;
+    border-right: 1px solid #fed7aa;
     padding: 24px;
 }
 

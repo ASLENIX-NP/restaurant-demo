@@ -886,7 +886,7 @@ export default function Reports() {
  <div id="printable-report-container">
  <div style={{ textAlign:"center", marginBottom:"20px" }}>
  <h2 style={{ fontSize:"22px", margin:"0 0 8px 0" }}>
- मिठ्ठो चिया & Tiffin घर
+ Restaurant Demo
  </h2>
  <h3
  style={{ fontSize:"16px", margin:"0 0 5px 0", color:"#475569" }}

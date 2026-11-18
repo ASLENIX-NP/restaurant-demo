@@ -114,7 +114,7 @@ export default function CustomerMenu() {
   width: 100%;
   height: 100%;
   background-image: url('/logo.png');
-  background-size: 140%;
+  background-size: min(750px, 80%);
   background-position: center;
   background-repeat: no-repeat;
   opacity: 0.05; 
@@ -374,7 +374,7 @@ export default function CustomerMenu() {
 
  <section className="menu-hero">
  <img src="/logo.png" alt="Logo" style={{ height: "180px", margin: "0 auto 15px auto", display: "block" }} />
- <h1>मिठ्ठो चिया & Tiffin घर Menu</h1>
+ <h1>Restaurant Demo Menu</h1>
  </section>
 
  <div className="menu-container">

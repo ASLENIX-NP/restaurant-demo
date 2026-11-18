@@ -27,7 +27,7 @@ const settingsSchema = new mongoose.Schema(
     ],
     
     restaurantInfo: {
-      name: { type: String, default: "मिठ्ठो चिया & Tiffin घर" },
+      name: { type: String, default: "Restaurant Demo" },
       branch: { type: String, default: "Main Branch" },
       email: { type: String, default: "" },
       phone: { type: String, default: "+977 9812345678" },

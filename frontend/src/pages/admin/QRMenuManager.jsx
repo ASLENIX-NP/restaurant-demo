@@ -285,7 +285,7 @@ const QRMenuManager = () => {
  Point your phone camera here to view our delicious offerings.
  </p>
  <QRCodeSVG value={targetUrl} size={300} fgColor="#2F4858" />
- <p className="qr-print-footer">मिठ्ठो चिया & Tiffin घर</p>
+ <p className="qr-print-footer">Restaurant Demo</p>
  </div>
  )}
  </div>

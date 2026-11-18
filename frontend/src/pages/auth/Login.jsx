@@ -192,10 +192,10 @@ const Login = () => {
         className="absolute inset-0 z-0 pointer-events-none" 
         style={{
           backgroundImage: "url('/logo.png')",
-          backgroundSize: "140%",
+          backgroundSize: "115%",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          opacity: 0.05
+          opacity: 0.06
         }}
       />
 
@@ -209,7 +209,7 @@ const Login = () => {
         <div className="flex flex-col items-center text-center mb-10">
           <img src="/logo.png" alt="Logo" style={{ height: "120px", marginBottom: "16px" }} />
           <h1 className="text-3xl font-black text-[#2F4858] mb-2 tracking-tight">
-            मिठ्ठो चिया & Tiffin घर
+            Restaurant Demo
           </h1>
           <p className="text-slate-500 text-[15px] font-medium">
             {view === "login"

@@ -469,7 +469,7 @@ export default function SalesHistory() {
  >
  <div style={{ textAlign:"center", marginBottom:"15px" }}>
  <h2 style={{ fontSize:"18px", margin:"0 0 5px 0" }}>
- मिठ्ठो चिया & Tiffin घर
+ Restaurant Demo
  </h2>
  <p style={{ margin:"2px 0" }}>Kathmandu, Nepal</p>
  <p style={{ margin:"2px 0" }}>Tel: +977 9812345678</p>
@@ -629,7 +629,7 @@ export default function SalesHistory() {
  }}
  >
  <h1 style={{ fontSize:"24px", margin:"0 0 10px 0" }}>
- मिठ्ठो चिया & Tiffin घर
+ Restaurant Demo
  </h1>
  <h2 style={{ fontSize:"18px", margin:"0 0 5px 0", color:"#475569" }}>
  Sales & Payment Summary Report
@@ -879,7 +879,7 @@ export default function SalesHistory() {
     <div key="eod-report" className="w-full max-w-[800px] mx-auto p-8 font-sans text-slate-900 bg-white">
       {/* Header Section */}
       <div className="text-center mb-8 pb-6 border-b-2 border-slate-200">
-        <h1 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">मिठ्ठो चिया & Tiffin घर</h1>
+        <h1 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">Restaurant Demo</h1>
         <h2 className="text-xl font-bold text-slate-600 uppercase tracking-widest mb-1">End of Day Summary (Z-Report)</h2>
         <p className="text-sm font-medium text-slate-400">Date: {new Date().toLocaleDateString()}</p>
       </div>

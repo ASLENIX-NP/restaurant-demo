@@ -53,11 +53,11 @@ exports.register = async (req, res) => {
     await user.save();
 
     // Send the OTP via email
-    const message = `Welcome to मिठ्ठो चिया & Tiffin घर!\n\nYour registration OTP is: ${otp}\n\nPlease use this to verify your email. The code is valid for 10 minutes.\n\nThank you,\nThe Team`;
+    const message = `Welcome to Restaurant Demo!\n\nYour registration OTP is: ${otp}\n\nPlease use this to verify your email. The code is valid for 10 minutes.\n\nThank you,\nThe Team`;
     try {
       await sendEmail({
         email: user.email,
-        subject: "मिठ्ठो चिया & Tiffin घर Registration - Verify your email",
+        subject: "Restaurant Demo Registration - Verify your email",
         message,
       });
     } catch (err) {
@@ -193,11 +193,11 @@ exports.login = async (req, res) => {
       user.twoFactorExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
       await user.save();
 
-      const message = `मिठ्ठो चिया & Tiffin घर Login Attempt\n\nYour 2-Factor Authentication code is: ${otp}\n\nPlease enter this code to complete your login. It is valid for 10 minutes.\n\nIf you did not request this, please change your password immediately.\n\nThank you,\nThe Team`;
+      const message = `Restaurant Demo Login Attempt\n\nYour 2-Factor Authentication code is: ${otp}\n\nPlease enter this code to complete your login. It is valid for 10 minutes.\n\nIf you did not request this, please change your password immediately.\n\nThank you,\nThe Team`;
       try {
         await sendEmail({
           email: user.email,
-          subject: "मिठ्ठो चिया & Tiffin घर - Your 2FA Login Code",
+          subject: "Restaurant Demo - Your 2FA Login Code",
           message,
         });
       } catch (err) {
@@ -720,12 +720,12 @@ exports.forgotPassword = async (req, res) => {
     await user.save({ validateBeforeSave: false });
 
     // In a real application, send this via Email.
-    const message = `You are receiving this email because you (or someone else) requested a password reset for your मिठ्ठो चिया & Tiffin घर account.\n\nYour One-Time Password (OTP) is: ${otpCode}\n\nThis code will expire in 10 minutes.\n\nIf you did not request this, please ignore this email and your password will remain unchanged.\n`;
+    const message = `You are receiving this email because you (or someone else) requested a password reset for your Restaurant Demo account.\n\nYour One-Time Password (OTP) is: ${otpCode}\n\nThis code will expire in 10 minutes.\n\nIf you did not request this, please ignore this email and your password will remain unchanged.\n`;
 
     try {
       const previewUrl = await sendEmail({
         email: user.email,
-        subject: "Password Reset Request - मिठ्ठो चिया & Tiffin घर",
+        subject: "Password Reset Request - Restaurant Demo",
         message,
       });
 
@@ -817,12 +817,12 @@ exports.requestEmailVerification = async (req, res) => {
 
     await user.save();
 
-    const message = `मिठ्ठो चिया & Tiffin घर\n\nYour email verification OTP is: ${otp}\n\nPlease enter this code to verify your email. The code is valid for 10 minutes.\n\nThank you,\nThe Team`;
+    const message = `Restaurant Demo\n\nYour email verification OTP is: ${otp}\n\nPlease enter this code to verify your email. The code is valid for 10 minutes.\n\nThank you,\nThe Team`;
     
     try {
       await sendEmail({
         email: user.email,
-        subject: "Verify your email - मिठ्ठो चिया & Tiffin घर",
+        subject: "Verify your email - Restaurant Demo",
         message,
       });
     } catch (err) {

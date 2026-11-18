@@ -47,7 +47,7 @@ describe('Login Component', () => {
     renderWithProviders(<Login />);
     
     // Check for branding
-    expect(screen.getByText(/मिठ्ठो चिया/i)).toBeInTheDocument();
+    expect(screen.getByText(/Restaurant Demo/i)).toBeInTheDocument();
     
     // Check for inputs
     const usernameInput = screen.getByPlaceholderText(/username/i);

@@ -40,7 +40,7 @@ const Settings = () => {
   const [systemPreferences, setSystemPreferences] = useState([]);
   const [taxSettings, setTaxSettings] = useState({ vat: 13, serviceCharge: 10, defaultDiscount: 0 });
   const [restaurantInfo, setRestaurantInfo] = useState({
-    name: "मिठ्ठो चिया & Tiffin घर",
+    name: "Restaurant Demo",
     branch: "Main Branch",
     email: "restaurant@gmail.com",
     phone: "+977 9812345678",

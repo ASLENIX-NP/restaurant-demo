@@ -53,7 +53,7 @@ const CashierLayout = () => {
           <div>
             <div className="brand-logo">
               <img src="/logo.png" alt="Logo" style={{ height: "44px", width: "auto" }} />
-              <h1 className="logo-text text-[22px]">मिठ्ठो चिया & Tiffin घर</h1>
+              <h1 className="logo-text text-[22px]">Restaurant Demo</h1>
             </div>
             <p className="brand-subtitle">Cashier Panel</p>
           </div>
@@ -157,7 +157,7 @@ const CashierLayout = () => {
         <div className="md:hidden print:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center sticky top-0 z-40 shadow-sm">
           <div className="flex items-center gap-2 text-[#F37021]">
             <img src="/logo.png" alt="Logo" style={{ height: "36px", width: "auto" }} />
-            <span className="font-black text-[18px] tracking-tight text-[#2F4858]">मिठ्ठो चिया & Tiffin घर</span>
+            <span className="font-black text-[18px] tracking-tight text-[#2F4858]">Restaurant Demo</span>
           </div>
           <button 
             onClick={() => setIsMobileOpen(true)}

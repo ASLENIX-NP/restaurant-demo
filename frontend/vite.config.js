@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       devOptions: { enabled: false }, // Disabled in dev to prevent caching old CSS/UI
       manifest: {
-        name: 'मिठ्ठो चिया & Tiffin घर',
-        short_name: 'मिठ्ठो चिया & Tiffin घर',
+        name: 'Restaurant Demo',
+        short_name: 'Restaurant Demo',
         description: 'Restaurant Point of Sale System',
         theme_color: '#ffffff',
         background_color: '#ffffff',

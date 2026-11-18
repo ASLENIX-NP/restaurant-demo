@@ -36,7 +36,7 @@ const MenuView = () => {
  <div className="menu-view-page min-h-screen bg-slate-50 pb-12 transition-colors duration-300">
  <div className="menu-header bg-white text-slate-900 p-6 rounded-b-[40px] mb-8 shadow-sm border-b border-slate-200 flex flex-col items-center">
  <img src="/logo.svg" alt="Logo" className="h-24 md:h-32 object-contain mb-4" />
- <h1 className="text-3xl font-black text-center tracking-tighter text-[#2F4858]">मिठ्ठो चिया <span className="text-[#F37021]">& Tiffin घर</span></h1>
+ <h1 className="text-3xl font-black text-center tracking-tighter text-[#2F4858]">Restaurant <span className="text-[#F37021]">Demo</span></h1>
  <p className="text-center text-[#F37021] font-bold mt-1 text-sm uppercase tracking-widest">Table {tableId ||"Walk-in"}</p>
  </div>
 

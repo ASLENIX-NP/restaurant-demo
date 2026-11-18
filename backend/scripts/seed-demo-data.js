@@ -6,12 +6,13 @@ const Category = require("../src/models/category");
 const MenuItem = require("../src/models/MenuItem");
 
 const demoCategories = [
-  { name: "Tea & Beverages", description: "Hot specialty teas, cold beverages and traditional lassi" },
-  { name: "Momo", description: "Authentic steamed, fried, and jhol dumplings" },
-  { name: "Chowmein & Noodles", description: "Wok-fried noodles seasoned with Nepali spices" },
-  { name: "Tiffin & Snacks", description: "Savory afternoon snacks, sekuwa, and chaat" },
-  { name: "Khaja Sets", description: "Hearty traditional Nepali and Newari snack platters" },
-  { name: "Breakfast", description: "Morning favorites, parathas, eggs and toast" },
+  { name: "Burgers & Sandwiches", description: "Gourmet beef & chicken burgers served on artisanal brioche buns" },
+  { name: "Pizzas", description: "Hand-stretched stone oven pizzas with premium toppings and melted cheeses" },
+  { name: "Mains & Pasta", description: "Chef's specialty steaks, seafood, pasta, and wok dishes" },
+  { name: "Appetizers & Sides", description: "Crispy wings, artisanal dumplings, tacos, and loaded golden fries" },
+  { name: "Salads & Bowls", description: "Crisp wholesome greens, nutrient-dense bowls, and fresh garden toppings" },
+  { name: "Desserts", description: "Decadent cakes, creamy cheesecakes, and sweet artisanal treats" },
+  { name: "Beverages", description: "Specialty coffees, fresh iced mojitos, and refreshing craft mocktails" },
 ];
 
 const demoTables = [
@@ -26,132 +27,216 @@ const demoTables = [
 ];
 
 const demoMenuItems = [
+  // 1. Burgers & Sandwiches
   {
-    name: "Special Matka Chiya",
-    description: "Authentic slow-brewed spiced milk tea served in an earthen clay pot.",
-    price: 60,
-    category: "Tea & Beverages",
+    name: "Classic Double Smash Cheeseburger",
+    description: "Double beef smash patties, melted cheddar, pickles, crisp lettuce, tomato, and secret house sauce on a toasted sesame brioche.",
+    price: 280,
+    category: "Burgers & Sandwiches",
     isAvailable: true,
     isSpecial: true,
-    image: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80",
+    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80",
   },
   {
-    name: "Masala Milk Tea",
-    description: "Aromatic Nepali milk tea infused with cardamom, cinnamon, and ginger.",
-    price: 40,
-    category: "Tea & Beverages",
+    name: "Gourmet Angus Burger with Fries",
+    description: "Flame-grilled thick Angus beef patty, fresh red onion, tomato, cheddar, and garlic aioli, served with crisp steak fries.",
+    price: 340,
+    category: "Burgers & Sandwiches",
     isAvailable: true,
     isSpecial: false,
-    image: "https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&w=600&q=80",
+    image: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&w=600&q=80",
   },
+
+  // 2. Pizzas
   {
-    name: "Fresh Sweet Lassi",
-    description: "Rich and creamy churned yogurt drink topped with crushed pistachios.",
-    price: 120,
-    category: "Tea & Beverages",
-    isAvailable: true,
-    isSpecial: false,
-    image: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    name: "Steamed Chicken Momo",
-    description: "Juicy minced chicken dumplings seasoned with Himalayan spices, served with homemade tomato achar.",
-    price: 180,
-    category: "Momo",
+    name: "Wood-Fired Margherita Pizza",
+    description: "Traditional Neapolitan crust topped with San Marzano tomato sauce, fresh mozzarella, extra virgin olive oil, and rosemary.",
+    price: 420,
+    category: "Pizzas",
     isAvailable: true,
     isSpecial: true,
-    image: "https://images.unsplash.com/photo-1625398407796-82650a8c135f?auto=format&fit=crop&w=600&q=80",
+    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
   },
   {
-    name: "Kothey Veg Momo",
-    description: "Pan-fried vegetable dumplings with a crispy golden bottom and tender top.",
-    price: 140,
-    category: "Momo",
+    name: "Artisan Pepperoni & Salami Pizza",
+    description: "Loaded with sliced pepperoni, smoked salami, crumbled Italian sausage, mozzarella cheese, and crushed red pepper.",
+    price: 480,
+    category: "Pizzas",
     isAvailable: true,
     isSpecial: false,
-    image: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?auto=format&fit=crop&w=600&q=80",
+    image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80",
   },
+
+  // 3. Mains & Pasta
   {
-    name: "Jhol Momo (Special)",
-    description: "Steamed dumplings submerged in a warm, tangy roasted sesame, tomato and soybean broth.",
-    price: 210,
-    category: "Momo",
-    isAvailable: true,
-    isSpecial: true,
-    image: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    name: "Chicken Chowmein",
-    description: "Wok-tossed noodles with tender shredded chicken, crisp cabbage, carrots, and spring onions.",
-    price: 170,
-    category: "Chowmein & Noodles",
-    isAvailable: true,
-    isSpecial: false,
-    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    name: "Vegetable Hakka Chowmein",
-    description: "Classic stir-fried noodles with bell peppers, green beans, cabbage, and savory soy glaze.",
-    price: 130,
-    category: "Chowmein & Noodles",
-    isAvailable: true,
-    isSpecial: false,
-    image: "https://images.unsplash.com/photo-1612927601601-6638404737ce?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    name: "Newari Khaja Set",
-    description: "Traditional sampler platter with beaten rice (baji), spiced choila, aloo tama, roasted soya beans, and spicy pickle.",
-    price: 320,
-    category: "Khaja Sets",
-    isAvailable: true,
-    isSpecial: true,
-    image: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    name: "Aloo Paratha with Dahi",
-    description: "Golden griddle-cooked flatbread stuffed with spiced mashed potatoes, served with fresh curd and pickle.",
-    price: 150,
-    category: "Breakfast",
-    isAvailable: true,
-    isSpecial: false,
-    image: "https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    name: "Samosa Chaat",
-    description: "Crushed crispy samosas layered with spiced chickpea gravy, sweet yoghurt, tamarind chutney, and crunchy sev.",
-    price: 110,
-    category: "Tiffin & Snacks",
-    isAvailable: true,
-    isSpecial: false,
-    image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    name: "Sel Roti with Aloo Dum",
-    description: "Traditional crispy sweet rice doughnut rings paired with fiery slow-cooked potato curry.",
-    price: 130,
-    category: "Tiffin & Snacks",
-    isAvailable: true,
-    isSpecial: true,
-    image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    name: "Char-Grilled Chicken Sekuwa",
-    description: "Skewered char-grilled chicken marinated with Himalayan herbs, mustard oil, garlic, and chili.",
-    price: 260,
-    category: "Tiffin & Snacks",
+    name: "Smoky BBQ Ribs Platter",
+    description: "Slow-smoked tender pork ribs glazed in smoky barbecue sauce, served with loaded fries, pickles, and dipping sauce.",
+    price: 650,
+    category: "Mains & Pasta",
     isAvailable: true,
     isSpecial: true,
     image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
   },
   {
-    name: "Masala Omelette & Toast",
-    description: "Fluffy two-egg omelette folded with chopped onions, tomatoes, cilantro, and toast with butter.",
-    price: 100,
-    category: "Breakfast",
+    name: "Pan-Seared Atlantic Salmon",
+    description: "Crispy skin Atlantic salmon fillet served over garlic sautéed baby spinach with fresh diced tomato relish and balsamic reduction.",
+    price: 580,
+    category: "Mains & Pasta",
+    isAvailable: true,
+    isSpecial: true,
+    image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    name: "Penne Arrabbiata Pasta",
+    description: "Al dente penne pasta tossed in a spicy garlic and herb tomato sauce, topped with aged grated parmesan cheese.",
+    price: 350,
+    category: "Mains & Pasta",
     isAvailable: true,
     isSpecial: false,
-    image: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80",
+    image: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=600&q=80",
   },
+  {
+    name: "Wok-Fried Special Chowmein",
+    description: "Stir-fried noodles with bell peppers, julienne carrots, cabbage, and aromatics tossed in savory dark soy and sesame sauce.",
+    price: 220,
+    category: "Mains & Pasta",
+    isAvailable: true,
+    isSpecial: false,
+    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=600&q=80",
+  },
+
+  // 4. Appetizers & Sides
+  {
+    name: "Spicy Buffalo Chicken Wings",
+    description: "Crispy fried chicken wings tossed in tangy cayenne pepper buffalo sauce, served with buttermilk ranch and celery.",
+    price: 290,
+    category: "Appetizers & Sides",
+    isAvailable: true,
+    isSpecial: true,
+    image: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    name: "Steamed Artisanal Dumplings",
+    description: "Tender handmade dumplings filled with minced seasoned filling, garnished with fresh cilantro, spring onions, and roasted sesame.",
+    price: 220,
+    category: "Appetizers & Sides",
+    isAvailable: true,
+    isSpecial: false,
+    image: "https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    name: "Crispy Avocado Street Tacos",
+    description: "Soft warm corn tortillas stuffed with spiced chickpeas, roasted vegetables, fresh avocado slices, cilantro, and fresh lime.",
+    price: 260,
+    category: "Appetizers & Sides",
+    isAvailable: true,
+    isSpecial: false,
+    image: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    name: "Golden Crispy French Fries",
+    description: "Twice-cooked seasoned french fries dusted with sea salt and paprika, served hot and extra crispy.",
+    price: 150,
+    category: "Appetizers & Sides",
+    isAvailable: true,
+    isSpecial: false,
+    image: "https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?auto=format&fit=crop&w=600&q=80",
+  },
+
+  // 5. Salads & Bowls
+  {
+    name: "Rainbow Mediterranean Salad Bowl",
+    description: "Fresh baby spinach, sliced avocado, cherry tomatoes, broccoli florets, purple cabbage, radishes, and citrus vinaigrette.",
+    price: 240,
+    category: "Salads & Bowls",
+    isAvailable: true,
+    isSpecial: false,
+    image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    name: "Grilled Tofu Buddha Bowl",
+    description: "Marinated pan-grilled tofu cubes, steamed edamame, sweet corn, cherry tomatoes, red cabbage, and hard-boiled egg.",
+    price: 260,
+    category: "Salads & Bowls",
+    isAvailable: true,
+    isSpecial: false,
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+  },
+
+  // 6. Desserts
+  {
+    name: "Double Chocolate Fudge Cake",
+    description: "Decadent dark chocolate sponge layered with rich chocolate fudge frosting and finished with chocolate ganache drip.",
+    price: 210,
+    category: "Desserts",
+    isAvailable: true,
+    isSpecial: true,
+    image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    name: "Blueberry Glazed Cheesecake",
+    description: "Silky New York baked cheesecake slice topped with sweet wild blueberry compote on a buttery graham crust.",
+    price: 250,
+    category: "Desserts",
+    isAvailable: true,
+    isSpecial: false,
+    image: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=600&q=80",
+  },
+
+  // 7. Beverages
+  {
+    name: "Fresh Mint Lime Mojito",
+    description: "Refreshing muddled fresh garden mint, tart lime slices, organic cane syrup, and bubbly soda over crushed crystal ice.",
+    price: 160,
+    category: "Beverages",
+    isAvailable: true,
+    isSpecial: true,
+    image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    name: "Artisan Hot Cappuccino",
+    description: "Freshly pulled double shot of espresso topped with silky textured milk and delicate barista latte art.",
+    price: 140,
+    category: "Beverages",
+    isAvailable: true,
+    isSpecial: false,
+    image: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    name: "Signature Handcrafted Mocktails",
+    description: "Trio of seasonal tropical fruit mocktails: passionfruit citrus, classic mint lime, and dragonfruit berry fizz.",
+    price: 190,
+    category: "Beverages",
+    isAvailable: true,
+    isSpecial: false,
+    image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80",
+  },
+];
+
+const oldDemoItemNames = [
+  "Special Matka Chiya",
+  "Masala Milk Tea",
+  "Fresh Sweet Lassi",
+  "Steamed Chicken Momo",
+  "Kothey Veg Momo",
+  "Jhol Momo (Special)",
+  "Chicken Chowmein",
+  "Vegetable Hakka Chowmein",
+  "Newari Khaja Set",
+  "Aloo Paratha with Dahi",
+  "Samosa Chaat",
+  "Sel Roti with Aloo Dum",
+  "Char-Grilled Chicken Sekuwa",
+  "Masala Omelette & Toast",
+];
+
+const oldDemoCategoryNames = [
+  "Tea & Beverages",
+  "Momo",
+  "Chowmein & Noodles",
+  "Tiffin & Snacks",
+  "Khaja Sets",
+  "Breakfast",
 ];
 
 async function seedDemoData() {
@@ -160,8 +245,15 @@ async function seedDemoData() {
     await mongoose.connect(process.env.MONGO_URI, { dbName: "restaurant_db" });
     console.log("Connected to MongoDB (restaurant_db)");
 
+    // 0. Remove old mismatched demo items & categories
+    console.log("Cleaning up old mismatched demo items and categories...");
+    const deletedItems = await MenuItem.deleteMany({ name: { $in: oldDemoItemNames } });
+    console.log(`Removed ${deletedItems.deletedCount} old demo menu items.`);
+    const deletedCats = await Category.deleteMany({ name: { $in: oldDemoCategoryNames } });
+    console.log(`Removed ${deletedCats.deletedCount} old demo categories.`);
+
     // 1. Categories
-    console.log("Seeding categories...");
+    console.log("Seeding new categories...");
     for (const cat of demoCategories) {
       await Category.findOneAndUpdate(
         { name: cat.name },
@@ -183,7 +275,7 @@ async function seedDemoData() {
     console.log(`✅ ${demoTables.length} tables seeded/updated.`);
 
     // 3. Menu Items
-    console.log("Seeding menu items...");
+    console.log("Seeding verified menu items...");
     for (const item of demoMenuItems) {
       await MenuItem.findOneAndUpdate(
         { name: item.name },

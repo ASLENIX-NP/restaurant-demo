@@ -25,7 +25,7 @@ exports.getSettings = async (req, res) => {
         ],
         taxSettings: { vat: 13, serviceCharge: 10, defaultDiscount: 0 },
         restaurantInfo: {
-          name: "मिठ्ठो चिया & Tiffin घर",
+          name: "Restaurant Demo",
           branch: "Main Branch",
           email: "",
           phone: "+977 9812345678",
@@ -37,7 +37,7 @@ exports.getSettings = async (req, res) => {
     } else if (!settings.restaurantInfo || !settings.restaurantInfo.name) {
       // Retrofit existing document
       settings.restaurantInfo = {
-        name: "मिठ्ठो चिया & Tiffin घर",
+        name: "Restaurant Demo",
         branch: "Main Branch",
         email: "",
         phone: "+977 9812345678",
